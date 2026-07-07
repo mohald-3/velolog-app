@@ -36,3 +36,6 @@ yarn-error.*
 # IDE
 .vscode/
 .idea/
+
+# Claude Code local settings (personal permission approvals)
+.claude/settings.local.json

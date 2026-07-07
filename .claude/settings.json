@@ -1,0 +1,26 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'FILE=$(echo \"$TOOL_INPUT\" | jq -r \".file_path // empty\" 2>/dev/null); if [ -n \"$FILE\" ] && echo \"$FILE\" | grep -qE \"\\.(ts|tsx)$\"; then echo \"[hook] TS/TSX file modified: $FILE — run npm test before commit\"; fi'"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'if [ -f \".planning/STATE.md\" ]; then echo \"[context] Active plan detected — read .planning/STATE.md for current state\"; fi'"
+          }
+        ]
+      }
+    ]
+  }
+}
