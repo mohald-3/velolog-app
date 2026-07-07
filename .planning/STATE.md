@@ -39,7 +39,9 @@ product code.
 - [x] typecheck / lint / test all green locally
 
 ### Phase 2: Real-device field test — medium (NEXT, manual)
-- [ ] `eas build --profile development --platform android`, install the APK on your phone
+- [x] `eas build --profile development --platform android` — build `9462890c-5fe9-43c5-8cb6-e5c445df7be9`
+      finished 2026-07-08. Install: https://expo.dev/accounts/mohald-3/projects/velolog-app/builds/9462890c-5fe9-43c5-8cb6-e5c445df7be9
+      (APK expires 2026-07-21 — rebuild after that if not installed by then)
 - [ ] Grant foreground location, then background ("Allow all the time")
 - [ ] Start tracking, lock the phone, ride 30+ min outdoors
 - [ ] Note battery % before/after, compute %/hour
@@ -52,7 +54,7 @@ product code.
 
 ```
 Phase: 2 of 2
-Task:  0 of 6
+Task:  1 of 6 (build done, install + field test remain)
 Status: Waiting on real-device field test (manual)
 ```
 
@@ -74,3 +76,4 @@ Status: Waiting on real-device field test (manual)
 | Date | Session | What happened |
 |------|---------|---------------|
 | 2026-07-08 | Planning + Phase 1 | Scaffolded Expo TS app, background location task, spike UI, eas.json, linked EAS project. All local checks green. Phase 2 (field test) handed off — needs the user's phone. |
+| 2026-07-08 | Phase 2 build | Ran `eas build --profile development --platform android --non-interactive`. Cloud-generated Android keystore (no local keytool), build finished in ~7 min. APK ready to install; remaining Phase 2 steps (permissions, real ride, battery, kill-test, urban/open-road, map pick) are manual. |
