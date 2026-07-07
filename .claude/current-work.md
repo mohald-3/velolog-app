@@ -22,3 +22,6 @@ pass locally (see `.claude/commands/verify.md`).
   track looks plotted on a map — that's Spike 0's exit criteria
 
 See `.planning/STATE.md` for the full phase breakdown.
+
+---
+_Last updated: 2026-07-08 (session paused — nothing uncommitted, waiting on manual field test)._
