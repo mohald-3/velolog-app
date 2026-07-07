@@ -1,6 +1,22 @@
 # Current Work
 
-No active work tracked yet.
+## Spike 0 — GPS de-risk (M0)
 
-Use `/plan <feature>` to start a planning session, `/status` for a quick overview,
-or `/pause` to save state before ending a session.
+**Phase 1 (done, 2026-07-08):** Minimal Expo TS app scaffolded at repo root — expo-location,
+expo-task-manager, expo-dev-client, expo-file-system, expo-sharing installed. Background
+location task (`tasks/locationTask.ts`) logs points to an NDJSON file on disk (survives app
+kill), foreground service notification configured for Android. `App.tsx` has a bare
+Start/Stop/Share-log UI. `eas.json` added, EAS project linked
+(`@mohald-3/velolog-app`, id `7d4f16da-d37f-475c-a30f-40a5f9b2c541`). Typecheck/lint/test all
+pass locally (see `.claude/commands/verify.md`).
+
+**Phase 2 (next, manual — needs your phone):**
+- Run `eas build --profile development --platform android`, install the resulting APK
+- Run through issues #1–#7 (milestone M0): grant foreground + "Allow all the time" background
+  location, start tracking, lock the phone, ride 30+ min, check battery drain, kill the app
+  mid-ride and confirm the log survives, compare urban vs. open-road accuracy
+- Use "Share log file" in-app to pull `spike-track.ndjson` off the device for analysis
+- Report back: battery %/hour, whether tracking survived app-kill/screen-off, and how the
+  track looks plotted on a map — that's Spike 0's exit criteria
+
+See `.planning/STATE.md` for the full phase breakdown.
