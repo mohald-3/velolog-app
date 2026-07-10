@@ -1,12 +1,16 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { ActivityIndicator, Alert, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import type { Component } from '../../../domain/types';
+import { computeComponentWearM } from '../../../domain/wear';
 import { useArchiveBike, useBike } from '../hooks/useBikes';
+import { useComponents } from '../hooks/useComponents';
 
 export default function BikeDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { data: bike, isLoading } = useBike(id);
+  const { data: components } = useComponents(id);
   const archiveBike = useArchiveBike();
 
   if (isLoading) {
@@ -41,6 +45,7 @@ export default function BikeDetailScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.content}>
+      <Stack.Screen options={{ title: bike.name }} />
       {bike.photoUri && <Image source={{ uri: bike.photoUri }} style={styles.photo} />}
 
       <Text style={styles.title}>{bike.name}</Text>
@@ -62,6 +67,23 @@ export default function BikeDetailScreen() {
         </View>
       )}
 
+      <View style={styles.componentsHeader}>
+        <Text style={styles.sectionTitle}>Components</Text>
+        <Pressable onPress={() => router.push(`/bikes/${bike.id}/components/new`)}>
+          <Text style={styles.addComponentLink}>+ Add</Text>
+        </Pressable>
+      </View>
+
+      {!components || components.length === 0 ? (
+        <Text style={styles.emptyComponents}>
+          No components yet — add your chain, tires, or brake pads to start tracking wear.
+        </Text>
+      ) : (
+        components.map((component) => (
+          <ComponentRow key={component.id} bikeId={bike.id} component={component} currentOdometerM={bike.startingOdometerM} />
+        ))
+      )}
+
       <Pressable style={styles.primaryButton} onPress={() => router.push(`/bikes/${bike.id}/edit`)}>
         <Text style={styles.primaryButtonText}>Edit</Text>
       </Pressable>
@@ -78,6 +100,32 @@ function Row({ label, value }: { label: string; value: string }) {
       <Text style={styles.label}>{label}</Text>
       <Text style={styles.value}>{value}</Text>
     </View>
+  );
+}
+
+function ComponentRow({
+  bikeId,
+  component,
+  currentOdometerM,
+}: {
+  bikeId: string;
+  component: Component;
+  currentOdometerM: number;
+}) {
+  const router = useRouter();
+  const wearKm = computeComponentWearM(currentOdometerM, component.installedAtOdometerM) / 1000;
+
+  return (
+    <Pressable
+      style={styles.componentRow}
+      onPress={() => router.push(`/bikes/${bikeId}/components/${component.id}/edit`)}
+    >
+      <View>
+        <Text style={styles.componentName}>{component.name}</Text>
+        <Text style={styles.componentType}>{component.type}</Text>
+      </View>
+      <Text style={styles.componentWear}>{wearKm.toFixed(0)} km</Text>
+    </Pressable>
   );
 }
 
@@ -131,6 +179,49 @@ const styles = StyleSheet.create({
   notes: {
     fontSize: 14,
     marginTop: 6,
+  },
+  componentsHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 24,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  addComponentLink: {
+    fontSize: 14,
+    color: '#2f6f4f',
+    fontWeight: '600',
+  },
+  emptyComponents: {
+    fontSize: 13,
+    color: '#888888',
+    marginTop: 8,
+  },
+  componentRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#f2f2f2',
+    borderRadius: 10,
+    padding: 12,
+    marginTop: 8,
+  },
+  componentName: {
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  componentType: {
+    fontSize: 12,
+    color: '#888888',
+    marginTop: 2,
+  },
+  componentWear: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#2f6f4f',
   },
   primaryButton: {
     marginTop: 24,

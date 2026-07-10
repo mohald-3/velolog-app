@@ -12,6 +12,8 @@ import {
   stopTrackingAsync,
 } from '../../../tasks/locationTask';
 
+export const options = { title: 'GPS Spike Test' };
+
 export default function GpsSpikeScreen() {
   const [tracking, setTracking] = useState(false);
   const [permissionStatus, setPermissionStatus] = useState('unknown');
