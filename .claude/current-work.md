@@ -11,11 +11,15 @@ Start/Stop/Share-log UI. `eas.json` added, EAS project linked
 pass locally (see `.claude/commands/verify.md`).
 
 **Phase 2 (in progress, manual — needs your phone):**
-- [x] `development` build installed (had to enable "install unknown apps" for the browser) —
-  then realized it needs a live Metro connection, wrong fit for an outdoor ride. Superseded.
-- [x] `preview` build (standalone, no PC needed) finished 2026-07-08:
-  https://expo.dev/accounts/mohald-3/projects/velolog-app/builds/da6449c5-92be-4af0-b861-cc1de928e9e3
-  — **install this one and use it for the actual field test.**
+- [x] `development` build installed — needs a live Metro connection, wrong fit for an outdoor
+  ride. Superseded.
+- [x] First `preview` build installed — **crashed on Start tracking**. Root-caused via
+  `adb logcat` (phone connected via USB) to a missing `RECEIVE_BOOT_COMPLETED` permission
+  (expo-location schedules a persisted JobScheduler job for the background task). Fixed in
+  `app.json`, commit `1fcb3c8`.
+- [x] Rebuilt `preview` with the fix, finished 2026-07-10:
+  https://expo.dev/accounts/mohald-3/projects/velolog-app/builds/134fc1d4-131c-4c47-bb30-2444ecc5b726
+  — **install this one (replaces the crashing one) and retry Start tracking.**
 - Run through issues #1–#7 (milestone M0): grant foreground + "Allow all the time" background
   location, start tracking, lock the phone, ride 30+ min, check battery drain, kill the app
   mid-ride and confirm the log survives, compare urban vs. open-road accuracy
@@ -26,4 +30,4 @@ pass locally (see `.claude/commands/verify.md`).
 See `.planning/STATE.md` for the full phase breakdown.
 
 ---
-_Last updated: 2026-07-08 (preview build finished; waiting on manual field test)._
+_Last updated: 2026-07-10 (crash fixed and rebuilt; waiting on user to retry field test)._
