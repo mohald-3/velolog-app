@@ -19,15 +19,21 @@ pass locally (see `.claude/commands/verify.md`).
   `app.json`, commit `1fcb3c8`.
 - [x] Rebuilt `preview` with the fix, finished 2026-07-10:
   https://expo.dev/accounts/mohald-3/projects/velolog-app/builds/134fc1d4-131c-4c47-bb30-2444ecc5b726
-  — **install this one (replaces the crashing one) and retry Start tracking.**
-- Run through issues #1–#7 (milestone M0): grant foreground + "Allow all the time" background
-  location, start tracking, lock the phone, ride 30+ min, check battery drain, kill the app
-  mid-ride and confirm the log survives, compare urban vs. open-road accuracy
-- Use "Share log file" in-app to pull `spike-track.ndjson` off the device for analysis
-- Report back: battery %/hour, whether tracking survived app-kill/screen-off, and how the
-  track looks plotted on a map — that's Spike 0's exit criteria
+- [x] **First successful field test, 2026-07-10:** 39.4 min walk, 485 points, no crashes, no
+  out-of-order timestamps, no implausible jumps, accuracy median 4.6m, speed consistent with
+  walking pace. Two 30-50s gaps matched the user stopping — looks like normal distanceInterval
+  throttling, not a tracking failure. Log analyzed in `Temp_log_files/spike-track.ndjson`
+  (gitignored/local, not committed).
+
+**Still open before Spike 0's exit criteria are met:**
+- Battery % before/after a ride (not captured yet)
+- A deliberate force-kill-from-recent-apps test (the walk only showed screen-lock/stopped
+  survival, not an explicit kill)
+- An open-road route to compare against this residential/office-area one
+- Actually rendering the track on a map (only did stats analysis so far) to help pick
+  MapLibre vs react-native-maps
 
 See `.planning/STATE.md` for the full phase breakdown.
 
 ---
-_Last updated: 2026-07-10 (crash fixed and rebuilt; waiting on user to retry field test)._
+_Last updated: 2026-07-10 (first successful field test analyzed; battery/kill-test/open-road/map-render still open)._

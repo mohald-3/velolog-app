@@ -44,3 +44,6 @@ yarn-error.*
 
 # Claude Code local settings (personal permission approvals)
 .claude/settings.local.json
+
+# Spike 0 field-test log dumps (personal test data, not source)
+/Temp_log_files/
