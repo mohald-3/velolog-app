@@ -1,34 +1,15 @@
 # Current Work
 
-## M1 — Bike Garage (v0.1a) — ACTIVE
+## M1 — Bike Garage (v0.1a) — COMPLETE (2026-07-10)
 
-**Phase 1 (done, 2026-07-10):** Project scaffold. expo-router (auto-detects `src/app`),
-Drizzle ORM + expo-sqlite (dialect sqlite, driver expo), initial migration for `bikes` +
-`components` tables scoped to what M1 needs. Root layout (`src/app/_layout.tsx`) runs
-`useMigrations` with a loading/error state. Relocated the Spike 0 GPS screen into
-`src/app/dev/gps-spike.tsx` (still reachable). Verified via `npm ci`, typecheck, lint, test,
-and a full `expo export --platform android` (1345 modules). Along the way: added
-`babel-preset-expo`/`babel-plugin-inline-import` as explicit top-level devDependencies (they
-were only hoisted nested), and committed `.npmrc` (`legacy-peer-deps=true`) + a clean lockfile
-regen after CI's `npm ci` first failed on lockfile drift. CI green. Issue #8 closed.
+All 4 phases done, all 6 issues (#8-#13) closed, milestone closed. Scaffold (expo-router +
+Drizzle/expo-sqlite), repository layer, and full Bike + Component CRUD with derived wear.
+First real domain logic + unit test (`src/domain/wear.ts`). Full summary archived at
+`.planning/archive/m1-bike-garage/SUMMARY.md`.
 
-**Phase 2 (done, 2026-07-10):** Repository layer. `src/domain/types.ts` (Bike, Component,
-New*/*Update variants, zero framework imports). `BikeRepository`/`ComponentRepository`
-interfaces + Drizzle-backed implementations in `src/data/repositories/`. IDs via expo-crypto's
-`randomUUID()`. No unit tests here (CRUD glue, not domain math — those start in M2). CI green,
-issue #9 closed.
-
-**Phase 3 (done, 2026-07-10):** Bike CRUD. Installed @tanstack/react-query + expo-image-picker.
-`useBikes`/`useBike`/`useCreateBike`/`useUpdateBike`/`useArchiveBike` hooks. `BikeListScreen`
-(empty state + FAB), `AddEditBikeScreen` (photo picker, starting odometer in km converted to
-meters — keyed inner form component to avoid a set-state-in-effect lint error), `BikeDetailScreen`
-(edit + archive with confirm). Routes wired under `src/app/bikes/`. CI green, issues #10 and
-#12 closed.
-
-**Phase 4 (next, final M1 phase):** Component CRUD attached to a bike (issue #11) + empty
-states/nav polish (issue #13).
-
-See `.planning/STATE.md` for the full plan.
+No active feature plan right now. Next up is M2 — Ride Recording (v0.1b): the recording state
+machine and the GPS filtering pipeline (the big one — `src/domain` gets its next and much
+larger set of pure functions + unit tests per CLAUDE.md's testing conventions).
 
 ---
 
@@ -48,4 +29,4 @@ See `.planning/STATE.md` for the full plan.
 Full detail archived at `.planning/archive/spike-0-gps-derisk/STATE.md`.
 
 ---
-_Last updated: 2026-07-10 (M1 Phase 3 bike CRUD done and closed; Spike 0 ride still pending for tomorrow)._
+_Last updated: 2026-07-10 (M1 complete and archived; Spike 0 ride still pending for tomorrow)._

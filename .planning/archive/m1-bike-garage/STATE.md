@@ -1,7 +1,7 @@
 # Feature: M1 — Bike Garage (v0.1a)
 
 > Created: 2026-07-10
-> Status: Phase 3 complete — Phase 4 next
+> Status: COMPLETE — all 4 phases done, milestone closed
 > Milestone: M1 - Bike Garage (v0.1a)
 
 ## Goal
@@ -14,9 +14,9 @@ establishing the architecture (domain/data/services/features/app) that everythin
 - [x] Project scaffold: Expo + TypeScript + Drizzle + expo-sqlite, migrations (issue #8)
 - [x] Repository layer (interfaces now, so a synced implementation can swap in later) (issue #9)
 - [x] Bike CRUD (create, edit, archive) with photo (expo-image-picker) (issue #10)
-- [ ] Component CRUD attached to a bike, with installedAtOdometer (issue #11)
+- [x] Component CRUD attached to a bike, with installedAtOdometer (issue #11)
 - [x] Bike detail screen: static odometer (manually settable initial value) (issue #12)
-- [ ] Empty states + basic navigation (expo-router) (issue #13)
+- [x] Empty states + basic navigation (expo-router) (issue #13)
 
 (Issues #8-#13 in `mohald-3/velolog-app`, milestone M1.)
 
@@ -78,22 +78,32 @@ establishing the architecture (domain/data/services/features/app) that everythin
       wrappers per the architecture rules, screens live in `features/`
 - [x] Verified typecheck/lint/test/export all pass; closed issues #10 and #12, CI green
 
-### Phase 4: Component CRUD + polish — medium
-- [ ] Component CRUD attached to a bike (type enum, installedAtOdometer)
-- [ ] Empty states across bike list / detail / component list
-- [ ] Navigation polish (tabs vs stack — decide when the screen count is clearer)
+### Phase 4: Component CRUD + polish — medium (DONE)
+- [x] `src/domain/wear.ts` + `wear.test.ts`: `computeComponentWearM`, pure, clamped at 0 —
+      first real domain logic + unit test in the repo
+- [x] Component hooks (`useComponents`, `useComponent`, `useCreateComponent`,
+      `useUpdateComponent`, `useRetireComponent`) in `src/features/bikes/hooks/useComponents.ts`
+- [x] `AddEditComponentScreen`: type as selectable chips, name, installed-at-odometer in km,
+      installed date, optional expected lifetime + notes, retire action when editing
+- [x] `BikeDetailScreen` Components section: empty state, list with derived wear-in-km, tap
+      to edit, "+ Add" link
+- [x] Routes: `src/app/bikes/[id]/components/{new,[componentId]/edit}.tsx`
+- [x] Nav polish: static `options = { title }` across routes, dynamic bike-name title on the
+      detail screen via `<Stack.Screen options={{ title }} />`. Decided to stay with a single
+      Stack (no tabs) — only one feature exists yet; revisit once M2/M3 add Rides screens
+- [x] Fixed a real gap: `@types/jest` wasn't resolving even though installed — needed explicit
+      `"types": ["jest"]` in `tsconfig.json` (only surfaced once we had a first test file)
+- [x] Verified typecheck/lint/test(4 passing)/export all pass; closed issues #11 and #13, CI green
 
 ## Current Position
 
 ```
-Phase: 4 of 4
-Task:  0 of 3 (component CRUD + polish not started)
-Status: Phase 3 done and closed (issues #10, #12); starting Phase 4 (final phase)
+All 4 phases complete. Milestone M1 closed (6/6 issues closed).
 ```
 
 ## Progress
 
-[███████████████░░░░░] 3/4 phases complete
+[█████████████████████] 4/4 phases complete — MILESTONE COMPLETE
 
 ## Decisions
 
@@ -112,3 +122,4 @@ Status: Phase 3 done and closed (issues #10, #12); starting Phase 4 (final phase
 | 2026-07-10 | Phase 1 finished | Wrote babel.config.js, drizzle.config.ts, schema (bikes+components), generated the migration, db.ts client, root layout with useMigrations, relocated the spike screen, updated the entry point. Full bundle export (1345 modules) succeeded. Fixed two dependency issues (un-hoisted babel packages, then a drifted lockfile that broke CI's `npm ci`) with explicit devDependencies and a committed `.npmrc`. Closed issue #8. CI green. |
 | 2026-07-10 | Phase 2 finished | Wrote domain/types.ts, bikeRepository.ts, componentRepository.ts with expo-crypto UUIDs. Typecheck/lint/test/export all pass, CI green. Closed issue #9. |
 | 2026-07-10 | Phase 3 finished | Installed TanStack Query + expo-image-picker. Wrote bike hooks, BikeListScreen, AddEditBikeScreen (with a key-based remount to avoid a set-state-in-effect lint error), BikeDetailScreen, and the bikes/ routes. Typecheck/lint/test/export all pass, CI green. Closed issues #10 and #12. |
+| 2026-07-10 | Phase 4 finished — M1 complete | Wrote domain/wear.ts + first unit tests, component hooks, AddEditComponentScreen, Components section on BikeDetailScreen, component routes, nav title polish. Fixed a real @types/jest resolution gap. Typecheck/lint/test/export all pass, CI green. Closed issues #11 and #13. All 6 M1 issues closed; milestone M1 closed. |
