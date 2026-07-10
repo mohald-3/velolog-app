@@ -1,9 +1,12 @@
 import { Stack } from 'expo-router';
 import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
 import { db } from '../data/db';
 import migrations from '../../drizzle/migrations';
+
+const queryClient = new QueryClient();
 
 export default function RootLayout() {
   const { success, error } = useMigrations(db, migrations);
@@ -25,7 +28,11 @@ export default function RootLayout() {
     );
   }
 
-  return <Stack />;
+  return (
+    <QueryClientProvider client={queryClient}>
+      <Stack />
+    </QueryClientProvider>
+  );
 }
 
 const styles = StyleSheet.create({
