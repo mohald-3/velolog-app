@@ -25,15 +25,20 @@ pass locally (see `.claude/commands/verify.md`).
   throttling, not a tracking failure. Log analyzed in `Temp_log_files/spike-track.ndjson`
   (gitignored/local, not committed).
 
+- [x] **Battery result:** ~1.5% used over the 39.4 min walk = ~2.3%/hour — well under the
+  <8-10%/hour exit-criteria target.
+
+**Board updated:** milestone M0 is now 4/7 closed (#1 EAS build, #2 background tracking,
+#3 30+ min recording, #4 battery). Comments added to the remaining 3 with current progress.
+
 **Still open before Spike 0's exit criteria are met:**
-- Battery % before/after a ride (not captured yet)
-- A deliberate force-kill-from-recent-apps test (the walk only showed screen-lock/stopped
+- **#5** A deliberate force-kill-from-recent-apps test (the walk only showed screen-lock/stopped
   survival, not an explicit kill)
-- An open-road route to compare against this residential/office-area one
-- Actually rendering the track on a map (only did stats analysis so far) to help pick
+- **#6** An open-road route to compare against this residential/office-area one
+- **#7** Actually rendering the track on a map (only did stats analysis so far) to help pick
   MapLibre vs react-native-maps
 
 See `.planning/STATE.md` for the full phase breakdown.
 
 ---
-_Last updated: 2026-07-10 (first successful field test analyzed; battery/kill-test/open-road/map-render still open)._
+_Last updated: 2026-07-10 (battery result in, 4/7 M0 issues closed; kill-test/open-road/map-render still open)._

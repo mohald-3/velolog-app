@@ -16,7 +16,8 @@ product code.
 - [x] Background tracking with Android foreground service notification — 39.4 min walk,
       485 points, continuous, screen locked/stopped multiple times without dropping tracking
 - [x] Record a real 30+ min outdoor ride; log raw points — 2026-07-10 walk, see analysis below
-- [ ] Measure battery drain per hour — not captured this run, still open
+- [x] Measure battery drain per hour — ~1.5% over 39.4 min = ~2.3%/hour, well under the
+      <8-10%/hour target
 - [ ] Test app-killed / screen-off / phone-locked scenarios — screen-lock survival looks good
       from the walk (see below), but no deliberate force-kill-from-recent-apps test yet
 - [ ] Evaluate accuracy: urban vs open road — have one route so far (residential/office area,
@@ -57,7 +58,7 @@ product code.
       **This is the current one to field-test with.**
 - [x] Grant foreground location, then background ("Allow all the time")
 - [x] Start tracking, walk 30+ min outdoors (39.4 min, 2026-07-10) — first successful field test
-- [ ] Note battery % before/after, compute %/hour — still open, do on next test
+- [x] Note battery % before/after, compute %/hour — ~1.5%/39.4min = ~2.3%/hour
 - [ ] Mid-ride: explicitly force-kill the app from recent apps, confirm the task keeps logging /
       log survives on reopen (walk showed screen-lock survival via two 30-50s stopped-still gaps,
       but that's not the same as a deliberate kill test)
@@ -73,19 +74,21 @@ zero implausible jumps (>90 km/h), accuracy 3-22m (median 4.6m), speed avg 4.5 /
 line up with the user recalling stopping a couple of times — consistent with the 5m
 `distanceInterval` throttling rather than tracking dying. Point cadence (median 4.1s) matches
 expectation: at ~4.5 km/h, 5m takes ~4s, so the distance throttle — not the 2s time interval —
-is what's actually gating updates at walking speed.
+is what's actually gating updates at walking speed. Battery: ~1.5% used over 39.4 min = ~2.3%/hour
+— comfortably under the <8-10%/hour exit-criteria target, with margin even if a real ride (faster
+movement, more frequent fixes) draws somewhat more.
 
 ## Current Position
 
 ```
 Phase: 2 of 2
-Task:  4 of 6 (build, permissions, and one 30+ min walk done; battery + kill-test + urban/open-road remain)
-Status: First successful field test done — narrower gaps remain (manual)
+Task:  5 of 6 (build, permissions, walk, and battery done; kill-test + urban/open-road remain)
+Status: 4/7 GitHub issues closed — narrower gaps remain (manual)
 ```
 
 ## Progress
 
-[███████████████░░░░░] ~3/4 of Phase 2 complete
+[█████████████████░░░] ~5/6 of Phase 2 complete
 
 ## Decisions
 
@@ -107,3 +110,4 @@ Status: First successful field test done — narrower gaps remain (manual)
 | 2026-07-08 | Install + rebuild | User installed the dev build after enabling "install unknown apps" for their browser. Realized dev-client needs a live Metro connection, wrong fit for an outdoor field test — built `preview` profile instead (standalone APK, no PC needed). Remaining Phase 2 steps still manual. |
 | 2026-07-10 | Crash + fix | Preview build crashed on Start tracking. Connected phone via `adb`, captured `logcat`, root-caused to a missing `RECEIVE_BOOT_COMPLETED` permission (expo-location schedules a persisted JobScheduler job). Fixed in `app.json`, rebuilt `preview` — build `134fc1d4-131c-4c47-bb30-2444ecc5b726`. Waiting on user to reinstall and retry. |
 | 2026-07-10 | First successful field test | User walked 39.4 min with the fixed preview build. 485 points logged, no crashes, no out-of-order timestamps, no implausible jumps, accuracy median 4.6m, speed consistent with walking pace. Two 30-50s gaps matched the user stopping (not a tracking failure) — consistent with the 5m distanceInterval throttle. Battery %, an explicit force-kill test, and an open-road (vs. this residential/office route) comparison are still open before Spike 0's exit criteria are fully met. |
+| 2026-07-10 | Battery result + board update | User reported ~1.5% battery used over the 39.4 min walk (~2.3%/hour, well under the <8-10%/hour target). Closed GitHub issues #1, #2, #3, #4 with evidence in the comments; added progress comments to #5, #6, #7 (still open — kill-test, open-road route, map render). Milestone M0 now 4/7 closed. |
