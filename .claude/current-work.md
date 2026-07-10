@@ -12,11 +12,15 @@ and a full `expo export --platform android` (1345 modules). Along the way: added
 were only hoisted nested), and committed `.npmrc` (`legacy-peer-deps=true`) + a clean lockfile
 regen after CI's `npm ci` first failed on lockfile drift. CI green. Issue #8 closed.
 
-**Phase 2 (next):** Repository layer — `src/domain/types.ts` (Bike, Component), plus
-`BikeRepository`/`ComponentRepository` interfaces + Drizzle-backed implementations (issue #9).
+**Phase 2 (done, 2026-07-10):** Repository layer. `src/domain/types.ts` (Bike, Component,
+New*/*Update variants, zero framework imports). `BikeRepository`/`ComponentRepository`
+interfaces + Drizzle-backed implementations in `src/data/repositories/`. IDs via expo-crypto's
+`randomUUID()`. No unit tests here (CRUD glue, not domain math — those start in M2). CI green,
+issue #9 closed.
 
-**Phase 3:** Bike CRUD (list/add/edit/archive, expo-image-picker photo) + bike detail screen
-with manually-settable starting odometer (issues #10, #12).
+**Phase 3 (next):** Bike CRUD (list/add/edit/archive, expo-image-picker photo) + bike detail
+screen with manually-settable starting odometer (issues #10, #12). Will need TanStack Query
+added as a new dependency for the hooks layer.
 
 **Phase 4:** Component CRUD attached to a bike (issue #11) + empty states/nav polish (issue #13).
 
@@ -40,4 +44,4 @@ See `.planning/STATE.md` for the full plan.
 Full detail archived at `.planning/archive/spike-0-gps-derisk/STATE.md`.
 
 ---
-_Last updated: 2026-07-10 (M1 Phase 1 scaffold done and closed; Spike 0 ride still pending for tomorrow)._
+_Last updated: 2026-07-10 (M1 Phase 2 repository layer done and closed; Spike 0 ride still pending for tomorrow)._

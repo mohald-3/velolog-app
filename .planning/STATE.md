@@ -1,7 +1,7 @@
 # Feature: M1 — Bike Garage (v0.1a)
 
 > Created: 2026-07-10
-> Status: Phase 1 complete — Phase 2 next
+> Status: Phase 2 complete — Phase 3 next
 > Milestone: M1 - Bike Garage (v0.1a)
 
 ## Goal
@@ -12,7 +12,7 @@ establishing the architecture (domain/data/services/features/app) that everythin
 ## Requirements
 
 - [x] Project scaffold: Expo + TypeScript + Drizzle + expo-sqlite, migrations (issue #8)
-- [ ] Repository layer (interfaces now, so a synced implementation can swap in later) (issue #9)
+- [x] Repository layer (interfaces now, so a synced implementation can swap in later) (issue #9)
 - [ ] Bike CRUD (create, edit, archive) with photo (expo-image-picker) (issue #10)
 - [ ] Component CRUD attached to a bike, with installedAtOdometer (issue #11)
 - [ ] Bike detail screen: static odometer (manually settable initial value) (issue #12)
@@ -52,12 +52,17 @@ establishing the architecture (domain/data/services/features/app) that everythin
       lockfile from a clean `node_modules`. Verified `npm ci` itself succeeds afterward.
 - [x] Closed issue #8 with evidence; CI green on the final commit
 
-### Phase 2: Repository layer — small (NEXT)
-- [ ] `src/domain/types.ts`: Bike, Component domain types (scoped to what M1 needs)
-- [ ] `src/data/repositories/bikeRepository.ts`: interface + Drizzle-backed implementation
-- [ ] `src/data/repositories/componentRepository.ts`: interface + Drizzle-backed implementation
-- [ ] Unit tests for anything that's pure logic (most of this phase is data-layer glue, not
-      domain math — real domain-logic unit tests start in M2 with GPS filtering)
+### Phase 2: Repository layer — small (DONE)
+- [x] `src/domain/types.ts`: Bike, Component domain types, New*/*Update variants — zero
+      Drizzle/React/Expo imports
+- [x] `src/data/repositories/bikeRepository.ts`: interface + Drizzle-backed implementation
+      (list/getById/create/update/archive)
+- [x] `src/data/repositories/componentRepository.ts`: interface + Drizzle-backed implementation
+      (listByBike/getById/create/update/retire)
+- [x] IDs via expo-crypto's `randomUUID()`
+- [x] No unit tests added — this phase is CRUD glue against SQLite, not domain math; decided
+      real domain-logic unit tests start in M2 with GPS filtering, per plan
+- [x] Verified typecheck/lint/test/export all pass; closed issue #9, CI green
 
 ### Phase 3: Bike CRUD + detail screen — medium
 - [ ] TanStack Query hooks (`useBikes`, `useBike`, `useCreateBike`, `useUpdateBike`, `useArchiveBike`)
@@ -72,14 +77,14 @@ establishing the architecture (domain/data/services/features/app) that everythin
 ## Current Position
 
 ```
-Phase: 2 of 4
-Task:  0 of 4 (repository layer not started)
-Status: Phase 1 done and closed (issue #8); starting Phase 2
+Phase: 3 of 4
+Task:  0 of 3 (bike CRUD UI not started)
+Status: Phase 2 done and closed (issue #9); starting Phase 3
 ```
 
 ## Progress
 
-[█████░░░░░░░░░░░░░░░░] 1/4 phases complete
+[██████████░░░░░░░░░░] 2/4 phases complete
 
 ## Decisions
 
@@ -96,3 +101,4 @@ Status: Phase 1 done and closed (issue #8); starting Phase 2
 |------|---------|---------------|
 | 2026-07-10 | Planning + Phase 1 start | Archived Spike 0 plan, wrote this M1 plan. Installed expo-router + peers, expo-sqlite, drizzle-orm, drizzle-kit, babel-plugin-inline-import. Confirmed Expo Router's `src/app` auto-detection by reading @expo/cli source directly rather than assuming. Verified drizzle-orm's expo-sqlite driver/migrator API by reading its type declarations. Remaining Phase 1 work: babel/drizzle config, schema, migrations, db client, root layout, relocating the spike screen, and verifying the app actually boots. |
 | 2026-07-10 | Phase 1 finished | Wrote babel.config.js, drizzle.config.ts, schema (bikes+components), generated the migration, db.ts client, root layout with useMigrations, relocated the spike screen, updated the entry point. Full bundle export (1345 modules) succeeded. Fixed two dependency issues (un-hoisted babel packages, then a drifted lockfile that broke CI's `npm ci`) with explicit devDependencies and a committed `.npmrc`. Closed issue #8. CI green. |
+| 2026-07-10 | Phase 2 finished | Wrote domain/types.ts, bikeRepository.ts, componentRepository.ts with expo-crypto UUIDs. Typecheck/lint/test/export all pass, CI green. Closed issue #9. |
