@@ -1,7 +1,7 @@
 # Feature: M1 — Bike Garage (v0.1a)
 
 > Created: 2026-07-10
-> Status: Phase 2 complete — Phase 3 next
+> Status: Phase 3 complete — Phase 4 next
 > Milestone: M1 - Bike Garage (v0.1a)
 
 ## Goal
@@ -13,9 +13,9 @@ establishing the architecture (domain/data/services/features/app) that everythin
 
 - [x] Project scaffold: Expo + TypeScript + Drizzle + expo-sqlite, migrations (issue #8)
 - [x] Repository layer (interfaces now, so a synced implementation can swap in later) (issue #9)
-- [ ] Bike CRUD (create, edit, archive) with photo (expo-image-picker) (issue #10)
+- [x] Bike CRUD (create, edit, archive) with photo (expo-image-picker) (issue #10)
 - [ ] Component CRUD attached to a bike, with installedAtOdometer (issue #11)
-- [ ] Bike detail screen: static odometer (manually settable initial value) (issue #12)
+- [x] Bike detail screen: static odometer (manually settable initial value) (issue #12)
 - [ ] Empty states + basic navigation (expo-router) (issue #13)
 
 (Issues #8-#13 in `mohald-3/velolog-app`, milestone M1.)
@@ -64,10 +64,19 @@ establishing the architecture (domain/data/services/features/app) that everythin
       real domain-logic unit tests start in M2 with GPS filtering, per plan
 - [x] Verified typecheck/lint/test/export all pass; closed issue #9, CI green
 
-### Phase 3: Bike CRUD + detail screen — medium
-- [ ] TanStack Query hooks (`useBikes`, `useBike`, `useCreateBike`, `useUpdateBike`, `useArchiveBike`)
-- [ ] Bike list screen, add/edit screen with expo-image-picker photo, archive flow
-- [ ] Bike detail screen: manually settable starting odometer
+### Phase 3: Bike CRUD + detail screen — medium (DONE)
+- [x] Installed @tanstack/react-query, expo-image-picker; QueryClientProvider wired into root layout
+- [x] TanStack Query hooks (`useBikes`, `useBike`, `useCreateBike`, `useUpdateBike`, `useArchiveBike`)
+      in `src/features/bikes/hooks/useBikes.ts`
+- [x] `BikeListScreen`: empty state + list + FAB to add
+- [x] `AddEditBikeScreen`: shared create/edit form, photo picker, starting-odometer-in-km input
+      (converted to meters at the boundary). Inner `BikeForm` keyed by bike id (or 'new') so
+      initial state comes from a prop at mount, not synced via useEffect — avoids the
+      react-hooks/set-state-in-effect lint rule and matches React's own recommended pattern
+- [x] `BikeDetailScreen`: odometer/year/color/frame/notes, edit + archive (with confirm dialog)
+- [x] Routes: `src/app/index.tsx` (list), `src/app/bikes/{new,[id],[id]/edit}.tsx` — thin
+      wrappers per the architecture rules, screens live in `features/`
+- [x] Verified typecheck/lint/test/export all pass; closed issues #10 and #12, CI green
 
 ### Phase 4: Component CRUD + polish — medium
 - [ ] Component CRUD attached to a bike (type enum, installedAtOdometer)
@@ -77,14 +86,14 @@ establishing the architecture (domain/data/services/features/app) that everythin
 ## Current Position
 
 ```
-Phase: 3 of 4
-Task:  0 of 3 (bike CRUD UI not started)
-Status: Phase 2 done and closed (issue #9); starting Phase 3
+Phase: 4 of 4
+Task:  0 of 3 (component CRUD + polish not started)
+Status: Phase 3 done and closed (issues #10, #12); starting Phase 4 (final phase)
 ```
 
 ## Progress
 
-[██████████░░░░░░░░░░] 2/4 phases complete
+[███████████████░░░░░] 3/4 phases complete
 
 ## Decisions
 
@@ -102,3 +111,4 @@ Status: Phase 2 done and closed (issue #9); starting Phase 3
 | 2026-07-10 | Planning + Phase 1 start | Archived Spike 0 plan, wrote this M1 plan. Installed expo-router + peers, expo-sqlite, drizzle-orm, drizzle-kit, babel-plugin-inline-import. Confirmed Expo Router's `src/app` auto-detection by reading @expo/cli source directly rather than assuming. Verified drizzle-orm's expo-sqlite driver/migrator API by reading its type declarations. Remaining Phase 1 work: babel/drizzle config, schema, migrations, db client, root layout, relocating the spike screen, and verifying the app actually boots. |
 | 2026-07-10 | Phase 1 finished | Wrote babel.config.js, drizzle.config.ts, schema (bikes+components), generated the migration, db.ts client, root layout with useMigrations, relocated the spike screen, updated the entry point. Full bundle export (1345 modules) succeeded. Fixed two dependency issues (un-hoisted babel packages, then a drifted lockfile that broke CI's `npm ci`) with explicit devDependencies and a committed `.npmrc`. Closed issue #8. CI green. |
 | 2026-07-10 | Phase 2 finished | Wrote domain/types.ts, bikeRepository.ts, componentRepository.ts with expo-crypto UUIDs. Typecheck/lint/test/export all pass, CI green. Closed issue #9. |
+| 2026-07-10 | Phase 3 finished | Installed TanStack Query + expo-image-picker. Wrote bike hooks, BikeListScreen, AddEditBikeScreen (with a key-based remount to avoid a set-state-in-effect lint error), BikeDetailScreen, and the bikes/ routes. Typecheck/lint/test/export all pass, CI green. Closed issues #10 and #12. |

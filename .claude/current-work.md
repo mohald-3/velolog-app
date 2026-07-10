@@ -18,11 +18,15 @@ interfaces + Drizzle-backed implementations in `src/data/repositories/`. IDs via
 `randomUUID()`. No unit tests here (CRUD glue, not domain math — those start in M2). CI green,
 issue #9 closed.
 
-**Phase 3 (next):** Bike CRUD (list/add/edit/archive, expo-image-picker photo) + bike detail
-screen with manually-settable starting odometer (issues #10, #12). Will need TanStack Query
-added as a new dependency for the hooks layer.
+**Phase 3 (done, 2026-07-10):** Bike CRUD. Installed @tanstack/react-query + expo-image-picker.
+`useBikes`/`useBike`/`useCreateBike`/`useUpdateBike`/`useArchiveBike` hooks. `BikeListScreen`
+(empty state + FAB), `AddEditBikeScreen` (photo picker, starting odometer in km converted to
+meters — keyed inner form component to avoid a set-state-in-effect lint error), `BikeDetailScreen`
+(edit + archive with confirm). Routes wired under `src/app/bikes/`. CI green, issues #10 and
+#12 closed.
 
-**Phase 4:** Component CRUD attached to a bike (issue #11) + empty states/nav polish (issue #13).
+**Phase 4 (next, final M1 phase):** Component CRUD attached to a bike (issue #11) + empty
+states/nav polish (issue #13).
 
 See `.planning/STATE.md` for the full plan.
 
@@ -44,4 +48,4 @@ See `.planning/STATE.md` for the full plan.
 Full detail archived at `.planning/archive/spike-0-gps-derisk/STATE.md`.
 
 ---
-_Last updated: 2026-07-10 (M1 Phase 2 repository layer done and closed; Spike 0 ride still pending for tomorrow)._
+_Last updated: 2026-07-10 (M1 Phase 3 bike CRUD done and closed; Spike 0 ride still pending for tomorrow)._
