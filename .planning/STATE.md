@@ -39,9 +39,14 @@ product code.
 - [x] typecheck / lint / test all green locally
 
 ### Phase 2: Real-device field test — medium (NEXT, manual)
-- [x] `eas build --profile development --platform android` — build `9462890c-5fe9-43c5-8cb6-e5c445df7be9`
-      finished 2026-07-08. Install: https://expo.dev/accounts/mohald-3/projects/velolog-app/builds/9462890c-5fe9-43c5-8cb6-e5c445df7be9
-      (APK expires 2026-07-21 — rebuild after that if not installed by then)
+- [x] `eas build --profile development --platform android` — build `9462890c-5fe9-43c5-8cb6-e5c445df7be9`,
+      finished 2026-07-08, installed successfully (had to enable "install unknown apps" for the
+      browser used to download it). **Superseded — see below.**
+- [x] `eas build --profile preview --platform android` — build `da6449c5-92be-4af0-b861-cc1de928e9e3`
+      finished 2026-07-08. Install: https://expo.dev/accounts/mohald-3/projects/velolog-app/builds/da6449c5-92be-4af0-b861-cc1de928e9e3
+      Standalone (no Metro/PC needed) — **this is the one to actually field-test with**, since the
+      `development` build needs a live Metro connection and can't survive being killed with no
+      Wi-Fi during an outdoor ride. Same package/signing, so installing it replaces the dev build.
 - [ ] Grant foreground location, then background ("Allow all the time")
 - [ ] Start tracking, lock the phone, ride 30+ min outdoors
 - [ ] Note battery % before/after, compute %/hour
@@ -70,6 +75,7 @@ Status: Waiting on real-device field test (manual)
 | 2026-07-08 | Android package: `com.mohald3.velolog` | User's choice, based on GitHub handle |
 | 2026-07-08 | Location accuracy `High`, 2s/5m interval for the spike | Matches realistic ride-tracking settings rather than max-power `BestForNavigation`, since the point is to test the settings the real app would ship with |
 | 2026-07-08 | Points persisted to an NDJSON file on every task callback, not kept in memory | Directly needed for the "app-killed" test — an in-memory array would be lost across a headless relaunch |
+| 2026-07-08 | Use the `preview` build profile (standalone) for field testing, not `development` | `development` builds need a live Metro connection; an outdoor ride has no Wi-Fi back to the PC, and the whole point of Phase 2 is testing app-killed/no-connectivity survival |
 
 ## Session Log
 
@@ -77,3 +83,4 @@ Status: Waiting on real-device field test (manual)
 |------|---------|---------------|
 | 2026-07-08 | Planning + Phase 1 | Scaffolded Expo TS app, background location task, spike UI, eas.json, linked EAS project. All local checks green. Phase 2 (field test) handed off — needs the user's phone. |
 | 2026-07-08 | Phase 2 build | Ran `eas build --profile development --platform android --non-interactive`. Cloud-generated Android keystore (no local keytool), build finished in ~7 min. APK ready to install; remaining Phase 2 steps (permissions, real ride, battery, kill-test, urban/open-road, map pick) are manual. |
+| 2026-07-08 | Install + rebuild | User installed the dev build after enabling "install unknown apps" for their browser. Realized dev-client needs a live Metro connection, wrong fit for an outdoor field test — built `preview` profile instead (standalone APK, no PC needed). Remaining Phase 2 steps still manual. |

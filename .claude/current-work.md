@@ -11,10 +11,12 @@ Start/Stop/Share-log UI. `eas.json` added, EAS project linked
 pass locally (see `.claude/commands/verify.md`).
 
 **Phase 2 (in progress, manual — needs your phone):**
-- [x] `eas build --profile development --platform android` — build finished 2026-07-08:
-  https://expo.dev/accounts/mohald-3/projects/velolog-app/builds/9462890c-5fe9-43c5-8cb6-e5c445df7be9
-  (APK expires 2026-07-21)
-- Install it on your phone, then run through issues #1–#7 (milestone M0): grant foreground + "Allow all the time" background
+- [x] `development` build installed (had to enable "install unknown apps" for the browser) —
+  then realized it needs a live Metro connection, wrong fit for an outdoor ride. Superseded.
+- [x] `preview` build (standalone, no PC needed) finished 2026-07-08:
+  https://expo.dev/accounts/mohald-3/projects/velolog-app/builds/da6449c5-92be-4af0-b861-cc1de928e9e3
+  — **install this one and use it for the actual field test.**
+- Run through issues #1–#7 (milestone M0): grant foreground + "Allow all the time" background
   location, start tracking, lock the phone, ride 30+ min, check battery drain, kill the app
   mid-ride and confirm the log survives, compare urban vs. open-road accuracy
 - Use "Share log file" in-app to pull `spike-track.ndjson` off the device for analysis
@@ -24,4 +26,4 @@ pass locally (see `.claude/commands/verify.md`).
 See `.planning/STATE.md` for the full phase breakdown.
 
 ---
-_Last updated: 2026-07-08 (session paused — nothing uncommitted, waiting on manual field test)._
+_Last updated: 2026-07-08 (preview build finished; waiting on manual field test)._
