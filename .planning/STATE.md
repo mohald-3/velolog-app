@@ -1,113 +1,93 @@
-# Feature: Spike 0 — GPS de-risk
+# Feature: M1 — Bike Garage (v0.1a)
 
-> Created: 2026-07-08
-> Status: Phase 1 complete — Phase 2 requires a real Android device
-> Milestone: M0 - Spike 0: GPS de-risk
+> Created: 2026-07-10
+> Status: Phase 1 in progress
+> Milestone: M1 - Bike Garage (v0.1a)
 
 ## Goal
 
-Prove background GPS tracking works acceptably on a real Android device before writing any
-product code.
+Add a bike with components, offline, surviving app restart — the first real product code,
+establishing the architecture (domain/data/services/features/app) that everything else builds on.
 
 ## Requirements
 
-- [x] EAS dev build with expo-location + expo-task-manager (build config + code ready; build
-      itself is Phase 2)
-- [x] Background tracking with Android foreground service notification — 39.4 min walk,
-      485 points, continuous, screen locked/stopped multiple times without dropping tracking
-- [x] Record a real 30+ min outdoor ride; log raw points — 2026-07-10 walk, see analysis below
-- [x] Measure battery drain per hour — ~1.5% over 39.4 min = ~2.3%/hour, well under the
-      <8-10%/hour target
-- [ ] Test app-killed / screen-off / phone-locked scenarios — screen-lock survival looks good
-      from the walk (see below), but no deliberate force-kill-from-recent-apps test yet
-- [ ] Evaluate accuracy: urban vs open road — have one route so far (residential/office area,
-      accuracy 3-22m, median 4.6m); still need an open-road comparison
-- [ ] Pick maps library by rendering the recorded track
+- [ ] Project scaffold: Expo + TypeScript + Drizzle + expo-sqlite, migrations (issue #8)
+- [ ] Repository layer (interfaces now, so a synced implementation can swap in later) (issue #9)
+- [ ] Bike CRUD (create, edit, archive) with photo (expo-image-picker) (issue #10)
+- [ ] Component CRUD attached to a bike, with installedAtOdometer (issue #11)
+- [ ] Bike detail screen: static odometer (manually settable initial value) (issue #12)
+- [ ] Empty states + basic navigation (expo-router) (issue #13)
 
-(Issues #1-#7 in the `mohald-3/velolog-app` repo, milestone M0.)
+(Issues #8-#13 in `mohald-3/velolog-app`, milestone M1.)
 
 ## Roadmap
 
-### Phase 1: Scaffold + tracking code — small (DONE)
-- [x] Minimal Expo + TypeScript app at repo root (SDK 57, satisfies "54+")
-- [x] Install expo-location, expo-task-manager, expo-dev-client, expo-file-system, expo-sharing
-- [x] `tasks/locationTask.ts`: TaskManager background task, appends points to
-      `spike-track.ndjson` on every callback (survives app kill — no in-memory-only state)
-- [x] `App.tsx`: permission flow (foreground then background), Start/Stop tracking,
-      live point count + log size, Share log file (via expo-sharing), Clear log
-- [x] `app.json`: android package `com.mohald3.velolog`, location permissions, foreground
-      service + background location plugin config, iOS Info.plist entries (for later)
-- [x] `eas.json`: development/preview/production build profiles
-- [x] EAS project created & linked: `@mohald-3/velolog-app`
-      (id `7d4f16da-d37f-475c-a30f-40a5f9b2c541`)
-- [x] typecheck / lint / test all green locally
+### Phase 1: Project scaffold — medium (IN PROGRESS)
+- [x] Installed expo-router + peer deps (react-native-safe-area-context, react-native-screens,
+      expo-linking, expo-constants) — used `--legacy-peer-deps` since expo-router optionally
+      pulls in web-only UI deps (vaul/@radix-ui) expecting react-dom, which a native-only app
+      doesn't need
+- [x] Installed expo-sqlite, drizzle-orm ^0.45.2, drizzle-kit ^0.31.10, babel-plugin-inline-import
+- [x] Confirmed Expo Router auto-detects `src/app` as the routes root if that directory exists
+      (no config needed — verified in `getRouterDirectory` in @expo/cli's metro/router.js)
+- [ ] `babel.config.js` with `inline-import` plugin for `.sql` (drizzle-kit's expo driver
+      generates a `migrations.js` that imports raw SQL files as strings)
+- [ ] `drizzle.config.ts` (dialect: sqlite, driver: expo, schema: src/data/schema.ts, out: ./drizzle)
+- [ ] `src/data/schema.ts`: bikes + components tables (scoped to M1 — rides/maintenance tables
+      come in M2/M4 when those features are actually built)
+- [ ] Generate initial migration (`npx drizzle-kit generate`)
+- [ ] `src/data/db.ts`: opens the sqlite db, wraps with `drizzle()`
+- [ ] `src/app/_layout.tsx`: root layout, runs `useMigrations`, shows loading/error state
+- [ ] Relocate the Spike 0 screen (currently `App.tsx` at repo root) into the new router
+      structure (e.g. `src/app/dev/gps-spike.tsx`) so it's still reachable — Spike 0 issues
+      #5/#6/#7 are still open, and the phone's existing installed build is unaffected by this
+      (it's already a compiled binary), but a future rebuild should still have it
+- [ ] Update `package.json` "main" / entry to load `expo-router/entry` while still registering
+      the background location task first
+- [ ] Verify: typecheck/lint/test pass, app boots via `expo start`, migrations run once, bikes
+      table exists
 
-### Phase 2: Real-device field test — medium (NEXT, manual)
-- [x] `eas build --profile development --platform android` — build `9462890c-5fe9-43c5-8cb6-e5c445df7be9`,
-      finished 2026-07-08, installed successfully (had to enable "install unknown apps" for the
-      browser used to download it). **Superseded — see below.**
-- [x] `eas build --profile preview --platform android` — build `da6449c5-92be-4af0-b861-cc1de928e9e3`
-      finished 2026-07-08. Standalone (no Metro/PC needed). **Crashed immediately on "Start
-      tracking"** — `adb logcat` showed `IllegalArgumentException: Requested job cannot be
-      persisted without holding android.permission.RECEIVE_BOOT_COMPLETED permission` from
-      expo-location's `LocationTaskConsumer.reportLocationsImmediately` (it schedules a
-      persisted JobScheduler job). **Superseded — see below.**
-- [x] Fixed: added `RECEIVE_BOOT_COMPLETED` to `app.json` android permissions (commit `1fcb3c8`).
-- [x] Rebuilt `preview` — build `134fc1d4-131c-4c47-bb30-2444ecc5b726` finished 2026-07-10.
-      Install: https://expo.dev/accounts/mohald-3/projects/velolog-app/builds/134fc1d4-131c-4c47-bb30-2444ecc5b726
-      **This is the current one to field-test with.**
-- [x] Grant foreground location, then background ("Allow all the time")
-- [x] Start tracking, walk 30+ min outdoors (39.4 min, 2026-07-10) — first successful field test
-- [x] Note battery % before/after, compute %/hour — ~1.5%/39.4min = ~2.3%/hour
-- [ ] Mid-ride: explicitly force-kill the app from recent apps, confirm the task keeps logging /
-      log survives on reopen (walk showed screen-lock survival via two 30-50s stopped-still gaps,
-      but that's not the same as a deliberate kill test)
-- [ ] Try one urban ride and one open-road ride, compare accuracy visually — have one data point
-      so far, need a contrasting route
-- [x] Pulled `spike-track.ndjson` via "Share log file" and analyzed it (see Session Log below) —
-      still want to actually render it on a map, not just stats, before picking MapLibre vs
-      react-native-maps
+### Phase 2: Repository layer — small (NEXT)
+- [ ] `src/domain/types.ts`: Bike, Component domain types (scoped to what M1 needs)
+- [ ] `src/data/repositories/bikeRepository.ts`: interface + Drizzle-backed implementation
+- [ ] `src/data/repositories/componentRepository.ts`: interface + Drizzle-backed implementation
+- [ ] Unit tests for anything that's pure logic (most of this phase is data-layer glue, not
+      domain math — real domain-logic unit tests start in M2 with GPS filtering)
 
-**Walk analysis (2026-07-10, 18:26-19:05):** 485 points, 39.4 min, zero out-of-order timestamps,
-zero implausible jumps (>90 km/h), accuracy 3-22m (median 4.6m), speed avg 4.5 / max 5.8 km/h
-(consistent with walking pace), raw haversine distance 2.61 km. Two gaps >30s (39s, 52s) that
-line up with the user recalling stopping a couple of times — consistent with the 5m
-`distanceInterval` throttling rather than tracking dying. Point cadence (median 4.1s) matches
-expectation: at ~4.5 km/h, 5m takes ~4s, so the distance throttle — not the 2s time interval —
-is what's actually gating updates at walking speed. Battery: ~1.5% used over 39.4 min = ~2.3%/hour
-— comfortably under the <8-10%/hour exit-criteria target, with margin even if a real ride (faster
-movement, more frequent fixes) draws somewhat more.
+### Phase 3: Bike CRUD + detail screen — medium
+- [ ] TanStack Query hooks (`useBikes`, `useBike`, `useCreateBike`, `useUpdateBike`, `useArchiveBike`)
+- [ ] Bike list screen, add/edit screen with expo-image-picker photo, archive flow
+- [ ] Bike detail screen: manually settable starting odometer
+
+### Phase 4: Component CRUD + polish — medium
+- [ ] Component CRUD attached to a bike (type enum, installedAtOdometer)
+- [ ] Empty states across bike list / detail / component list
+- [ ] Navigation polish (tabs vs stack — decide when the screen count is clearer)
 
 ## Current Position
 
 ```
-Phase: 2 of 2
-Task:  5 of 6 (build, permissions, walk, and battery done; kill-test + urban/open-road remain)
-Status: 4/7 GitHub issues closed — narrower gaps remain (manual)
+Phase: 1 of 4
+Task:  3 of 11 (deps installed; babel/drizzle config, schema, migrations, db client,
+                root layout, spike relocation, entry point, verification remain)
+Status: In progress
 ```
 
 ## Progress
 
-[█████████████████░░░] ~5/6 of Phase 2 complete
+[███░░░░░░░░░░░░░░░░░░] Phase 1 partially complete
 
 ## Decisions
 
 | Date | Decision | Rationale |
 |------|----------|-----------|
-| 2026-07-08 | Scaffold at repo root now, not a throwaway branch | M1's "project scaffold" issue extends this in place (adds Drizzle/expo-sqlite, repository layer, feature folders) instead of redoing Expo init |
-| 2026-07-08 | Android package: `com.mohald3.velolog` | User's choice, based on GitHub handle |
-| 2026-07-08 | Location accuracy `High`, 2s/5m interval for the spike | Matches realistic ride-tracking settings rather than max-power `BestForNavigation`, since the point is to test the settings the real app would ship with |
-| 2026-07-08 | Points persisted to an NDJSON file on every task callback, not kept in memory | Directly needed for the "app-killed" test — an in-memory array would be lost across a headless relaunch |
-| 2026-07-08 | Use the `preview` build profile (standalone) for field testing, not `development` | `development` builds need a live Metro connection; an outdoor ride has no Wi-Fi back to the PC, and the whole point of Phase 2 is testing app-killed/no-connectivity survival |
-| 2026-07-10 | Added `RECEIVE_BOOT_COMPLETED` permission | Real-device crash on Start tracking, root-caused via `adb logcat`: expo-location's background task consumer needs it to schedule a persisted JobScheduler job |
+| 2026-07-10 | Scope `src/data/schema.ts` to bikes + components only for M1 | Rides/maintenance tables aren't needed until M2/M4; adding them now would be speculative, against the "don't build for hypothetical future requirements" convention |
+| 2026-07-10 | Used `--legacy-peer-deps` for expo-router install | expo-router optionally depends on web-only UI packages (vaul/@radix-ui) expecting react-dom; this is a native-only, Android-first app per the plan, so that peer conflict is irrelevant noise, not a real problem |
+| 2026-07-10 | Relocate the Spike 0 screen into the router tree instead of deleting it | Spike 0 issues #5/#6/#7 are still open (ride postponed to tomorrow); the already-installed APK on the phone is unaffected by source changes, but a future rebuild should still have the GPS test screen available |
+| 2026-07-10 | Archived Spike 0's `.planning/STATE.md` to `.planning/archive/spike-0-gps-derisk/` | Starting a new active feature plan; our `/plan` workflow assumes one active `STATE.md` at a time |
 
 ## Session Log
 
 | Date | Session | What happened |
 |------|---------|---------------|
-| 2026-07-08 | Planning + Phase 1 | Scaffolded Expo TS app, background location task, spike UI, eas.json, linked EAS project. All local checks green. Phase 2 (field test) handed off — needs the user's phone. |
-| 2026-07-08 | Phase 2 build | Ran `eas build --profile development --platform android --non-interactive`. Cloud-generated Android keystore (no local keytool), build finished in ~7 min. APK ready to install; remaining Phase 2 steps (permissions, real ride, battery, kill-test, urban/open-road, map pick) are manual. |
-| 2026-07-08 | Install + rebuild | User installed the dev build after enabling "install unknown apps" for their browser. Realized dev-client needs a live Metro connection, wrong fit for an outdoor field test — built `preview` profile instead (standalone APK, no PC needed). Remaining Phase 2 steps still manual. |
-| 2026-07-10 | Crash + fix | Preview build crashed on Start tracking. Connected phone via `adb`, captured `logcat`, root-caused to a missing `RECEIVE_BOOT_COMPLETED` permission (expo-location schedules a persisted JobScheduler job). Fixed in `app.json`, rebuilt `preview` — build `134fc1d4-131c-4c47-bb30-2444ecc5b726`. Waiting on user to reinstall and retry. |
-| 2026-07-10 | First successful field test | User walked 39.4 min with the fixed preview build. 485 points logged, no crashes, no out-of-order timestamps, no implausible jumps, accuracy median 4.6m, speed consistent with walking pace. Two 30-50s gaps matched the user stopping (not a tracking failure) — consistent with the 5m distanceInterval throttle. Battery %, an explicit force-kill test, and an open-road (vs. this residential/office route) comparison are still open before Spike 0's exit criteria are fully met. |
-| 2026-07-10 | Battery result + board update | User reported ~1.5% battery used over the 39.4 min walk (~2.3%/hour, well under the <8-10%/hour target). Closed GitHub issues #1, #2, #3, #4 with evidence in the comments; added progress comments to #5, #6, #7 (still open — kill-test, open-road route, map render). Milestone M0 now 4/7 closed. |
+| 2026-07-10 | Planning + Phase 1 start | Archived Spike 0 plan, wrote this M1 plan. Installed expo-router + peers, expo-sqlite, drizzle-orm, drizzle-kit, babel-plugin-inline-import. Confirmed Expo Router's `src/app` auto-detection by reading @expo/cli source directly rather than assuming. Verified drizzle-orm's expo-sqlite driver/migrator API by reading its type declarations. Remaining Phase 1 work: babel/drizzle config, schema, migrations, db client, root layout, relocating the spike screen, and verifying the app actually boots. |

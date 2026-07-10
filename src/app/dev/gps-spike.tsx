@@ -10,9 +10,9 @@ import {
   readLogStatsAsync,
   startTrackingAsync,
   stopTrackingAsync,
-} from './tasks/locationTask';
+} from '../../../tasks/locationTask';
 
-export default function App() {
+export default function GpsSpikeScreen() {
   const [tracking, setTracking] = useState(false);
   const [permissionStatus, setPermissionStatus] = useState('unknown');
   const [stats, setStats] = useState({ pointCount: 0, sizeBytes: 0 });

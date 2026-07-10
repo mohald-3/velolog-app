@@ -3,6 +3,7 @@
     "name": "VeloLog",
     "slug": "velolog-app",
     "version": "1.0.0",
+    "scheme": "velolog",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -47,7 +48,9 @@
           "isAndroidForegroundServiceEnabled": true
         }
       ],
-      "expo-sharing"
+      "expo-sharing",
+      "expo-router",
+      "expo-sqlite"
     ],
     "extra": {
       "eas": {
