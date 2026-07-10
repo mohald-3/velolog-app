@@ -38,7 +38,10 @@ pass locally (see `.claude/commands/verify.md`).
 - **#7** Actually rendering the track on a map (only did stats analysis so far) to help pick
   MapLibre vs react-native-maps
 
+**Postponed to tomorrow** (2026-07-11): the bike ride for #5/#6/#7 — user couldn't go today.
+Picking up another task in the meantime instead of blocking on it.
+
 See `.planning/STATE.md` for the full phase breakdown.
 
 ---
-_Last updated: 2026-07-10 (battery result in, 4/7 M0 issues closed; kill-test/open-road/map-render still open)._
+_Last updated: 2026-07-10 (battery result in, 4/7 M0 issues closed; ride postponed to tomorrow, switching to another task)._
