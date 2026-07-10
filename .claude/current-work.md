@@ -1,47 +1,43 @@
 # Current Work
 
-## Spike 0 — GPS de-risk (M0)
+## M1 — Bike Garage (v0.1a) — ACTIVE
 
-**Phase 1 (done, 2026-07-08):** Minimal Expo TS app scaffolded at repo root — expo-location,
-expo-task-manager, expo-dev-client, expo-file-system, expo-sharing installed. Background
-location task (`tasks/locationTask.ts`) logs points to an NDJSON file on disk (survives app
-kill), foreground service notification configured for Android. `App.tsx` has a bare
-Start/Stop/Share-log UI. `eas.json` added, EAS project linked
-(`@mohald-3/velolog-app`, id `7d4f16da-d37f-475c-a30f-40a5f9b2c541`). Typecheck/lint/test all
-pass locally (see `.claude/commands/verify.md`).
+**Phase 1 (done, 2026-07-10):** Project scaffold. expo-router (auto-detects `src/app`),
+Drizzle ORM + expo-sqlite (dialect sqlite, driver expo), initial migration for `bikes` +
+`components` tables scoped to what M1 needs. Root layout (`src/app/_layout.tsx`) runs
+`useMigrations` with a loading/error state. Relocated the Spike 0 GPS screen into
+`src/app/dev/gps-spike.tsx` (still reachable). Verified via `npm ci`, typecheck, lint, test,
+and a full `expo export --platform android` (1345 modules). Along the way: added
+`babel-preset-expo`/`babel-plugin-inline-import` as explicit top-level devDependencies (they
+were only hoisted nested), and committed `.npmrc` (`legacy-peer-deps=true`) + a clean lockfile
+regen after CI's `npm ci` first failed on lockfile drift. CI green. Issue #8 closed.
 
-**Phase 2 (in progress, manual — needs your phone):**
-- [x] `development` build installed — needs a live Metro connection, wrong fit for an outdoor
-  ride. Superseded.
-- [x] First `preview` build installed — **crashed on Start tracking**. Root-caused via
-  `adb logcat` (phone connected via USB) to a missing `RECEIVE_BOOT_COMPLETED` permission
-  (expo-location schedules a persisted JobScheduler job for the background task). Fixed in
-  `app.json`, commit `1fcb3c8`.
-- [x] Rebuilt `preview` with the fix, finished 2026-07-10:
-  https://expo.dev/accounts/mohald-3/projects/velolog-app/builds/134fc1d4-131c-4c47-bb30-2444ecc5b726
-- [x] **First successful field test, 2026-07-10:** 39.4 min walk, 485 points, no crashes, no
-  out-of-order timestamps, no implausible jumps, accuracy median 4.6m, speed consistent with
-  walking pace. Two 30-50s gaps matched the user stopping — looks like normal distanceInterval
-  throttling, not a tracking failure. Log analyzed in `Temp_log_files/spike-track.ndjson`
-  (gitignored/local, not committed).
+**Phase 2 (next):** Repository layer — `src/domain/types.ts` (Bike, Component), plus
+`BikeRepository`/`ComponentRepository` interfaces + Drizzle-backed implementations (issue #9).
 
-- [x] **Battery result:** ~1.5% used over the 39.4 min walk = ~2.3%/hour — well under the
-  <8-10%/hour exit-criteria target.
+**Phase 3:** Bike CRUD (list/add/edit/archive, expo-image-picker photo) + bike detail screen
+with manually-settable starting odometer (issues #10, #12).
 
-**Board updated:** milestone M0 is now 4/7 closed (#1 EAS build, #2 background tracking,
-#3 30+ min recording, #4 battery). Comments added to the remaining 3 with current progress.
+**Phase 4:** Component CRUD attached to a bike (issue #11) + empty states/nav polish (issue #13).
 
-**Still open before Spike 0's exit criteria are met:**
-- **#5** A deliberate force-kill-from-recent-apps test (the walk only showed screen-lock/stopped
+See `.planning/STATE.md` for the full plan.
+
+---
+
+## Spike 0 — GPS de-risk (M0) — paused, resume 2026-07-11
+
+4/7 issues closed (#1 EAS build, #2 background tracking, #3 30+ min recording, #4 battery
+~2.3%/hour — well under the <8-10%/hour target). First successful field test: 39.4 min walk,
+485 points, no crashes, clean data.
+
+**Still open, postponed to tomorrow (ride needed):**
+- **#5** Deliberate force-kill-from-recent-apps test (the walk only showed screen-lock/stopped
   survival, not an explicit kill)
-- **#6** An open-road route to compare against this residential/office-area one
+- **#6** An open-road route to compare against the residential/office-area one already tested
 - **#7** Actually rendering the track on a map (only did stats analysis so far) to help pick
   MapLibre vs react-native-maps
 
-**Postponed to tomorrow** (2026-07-11): the bike ride for #5/#6/#7 — user couldn't go today.
-Picking up another task in the meantime instead of blocking on it.
-
-See `.planning/STATE.md` for the full phase breakdown.
+Full detail archived at `.planning/archive/spike-0-gps-derisk/STATE.md`.
 
 ---
-_Last updated: 2026-07-10 (battery result in, 4/7 M0 issues closed; ride postponed to tomorrow, switching to another task)._
+_Last updated: 2026-07-10 (M1 Phase 1 scaffold done and closed; Spike 0 ride still pending for tomorrow)._
