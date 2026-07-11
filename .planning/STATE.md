@@ -1,7 +1,7 @@
 # Feature: M3 — Ride History & Statistics (v0.1c)
 
 > Created: 2026-07-11
-> Status: Phase 1 complete — ready to execute Phase 2
+> Status: Phase 2 complete — ready to execute Phase 3
 > Milestone: M3 - Ride History & Statistics (v0.1c) — GitHub milestone, issues #25-#28
 
 ## Goal
@@ -16,7 +16,7 @@ bike-level aggregate stats, and safe deletion — closing the loop on M2's recor
       for the raw track file, since EAS preview/production builds aren't debuggable and there's
       currently no way to get a saved ride's NDJSON off a real device otherwise (found today
       while comparing a kill-recovery test across two phones)
-- [ ] Bike statistics screen: total distance, longest ride, total time, average ride, ride
+- [x] Bike statistics screen: total distance, longest ride, total time, average ride, ride
       count (#27)
 - [ ] Soft-delete ride (deletedAt) with odometer recomputation (#28) — the "rule-status
       recomputation" half of this issue is a no-op for now: no MaintenanceRule domain exists
@@ -40,10 +40,10 @@ currently blocked since there's no way to view or export a saved ride at all.
       live feedback once the first version was working on the emulator
 - [x] This phase directly unblocks today's kill-test comparison
 
-### Phase 2: Bike statistics screen — small/medium
-- [ ] Pure domain function(s) for aggregate stats (total distance, longest ride, total time,
+### Phase 2: Bike statistics screen — small/medium — DONE
+- [x] Pure domain function(s) for aggregate stats (total distance, longest ride, total time,
       average ride, ride count) over a bike's rides, with unit tests
-- [ ] Screen wired via `useRides`, entry point from `BikeDetailScreen`
+- [x] Screen wired via `useRides`, entry point from `BikeDetailScreen`
 
 ### Phase 3: Soft-delete ride — small/medium
 - [ ] `deletedAt` column + migration on `rides`
@@ -57,14 +57,14 @@ currently blocked since there's no way to view or export a saved ride at all.
 ## Current Position
 
 ```
-Phase: 2 of 3
+Phase: 3 of 3
 Task:  0
-Status: Ready to execute Phase 2
+Status: Ready to execute Phase 3
 ```
 
 ## Progress
 
-[███████░░░░░░░░░░░░░] 1/3 phases
+[██████████████░░░░░░] 2/3 phases
 
 ## Decisions
 
@@ -80,3 +80,4 @@ Status: Ready to execute Phase 2
 |------|---------|---------------|
 | 2026-07-11 | Planning | Created plan with 3 phases, driven by a real two-phone field test needing comparison |
 | 2026-07-11 | Phase 1 | Built ride list, ride detail (map/stats/notes/share), fixed an app-wide missing-safe-area bug found during live verification; typecheck/lint clean; committed on `feat/m3-ride-history` |
+| 2026-07-11 | Phase 2 | Added `computeBikeStats` domain function (3 new unit tests) and `BikeStatsScreen`; verified live on emulator against the two known test rides (2 rides, 0.3 km total, 3:31 total time, 0.23 km longest, 0.17 km average — all correct) |
