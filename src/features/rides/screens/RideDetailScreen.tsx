@@ -3,7 +3,7 @@ import { Camera, GeoJSONSource, Layer, Map } from '@maplibre/maplibre-react-nati
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import * as Sharing from 'expo-sharing';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Alert, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { speedKmh } from '../../../domain/gps-filter';
@@ -25,6 +25,7 @@ export default function RideDetailScreen() {
   const [trackGeo, setTrackGeo] = useState<TrackGeo | null>(null);
   const [notes, setNotes] = useState('');
   const [seededForRideId, setSeededForRideId] = useState<string | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   // Seed the editable notes field once per ride, without clobbering in-progress edits on
   // unrelated re-renders. Adjusting state during render (rather than in an effect) is the
@@ -72,6 +73,7 @@ export default function RideDetailScreen() {
   };
 
   const handleDelete = () => {
+    setMenuOpen(false);
     Alert.alert('Delete this ride?', 'This ride will be removed and your odometer recalculated.', [
       { text: 'Cancel', style: 'cancel' },
       {
@@ -95,13 +97,24 @@ export default function RideDetailScreen() {
               <Pressable onPress={handleShare} hitSlop={12} style={styles.headerButton}>
                 <Ionicons name="share-outline" size={22} color="#2f6f4f" />
               </Pressable>
-              <Pressable onPress={handleDelete} hitSlop={12} style={styles.headerButton}>
+              <Pressable onPress={() => setMenuOpen(true)} hitSlop={12} style={styles.headerButton}>
                 <Ionicons name="ellipsis-vertical" size={22} color="#2f6f4f" />
               </Pressable>
             </View>
           ),
         }}
       />
+
+      <Modal visible={menuOpen} transparent animationType="fade" onRequestClose={() => setMenuOpen(false)}>
+        <Pressable style={styles.menuOverlay} onPress={() => setMenuOpen(false)}>
+          <View style={[styles.menu, { top: insets.top + 48 }]}>
+            <Pressable style={styles.menuItem} onPress={handleDelete}>
+              <Ionicons name="trash-outline" size={18} color="#b00020" />
+              <Text style={styles.menuItemText}>Delete ride</Text>
+            </Pressable>
+          </View>
+        </Pressable>
+      </Modal>
 
       <View style={styles.mapContainer}>
         {!trackGeo ? (
@@ -238,5 +251,33 @@ const styles = StyleSheet.create({
   },
   headerButton: {
     marginRight: 16,
+  },
+  menuOverlay: {
+    flex: 1,
+  },
+  menu: {
+    position: 'absolute',
+    right: 12,
+    backgroundColor: '#ffffff',
+    borderRadius: 10,
+    paddingVertical: 4,
+    minWidth: 160,
+    elevation: 4,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+  },
+  menuItemText: {
+    marginLeft: 10,
+    fontSize: 15,
+    color: '#b00020',
+    fontWeight: '600',
   },
 });
