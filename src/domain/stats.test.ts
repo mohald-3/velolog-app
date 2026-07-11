@@ -1,4 +1,4 @@
-import { groupRidesByDay } from './stats';
+import { computeBikeStats, groupRidesByDay } from './stats';
 import type { Ride } from './types';
 
 let seq = 0;
@@ -63,5 +63,47 @@ describe('groupRidesByDay', () => {
 
     expect(groups).toHaveLength(2);
     expect(groups.map((g) => g.dateKey)).toEqual(['2026-07-12', '2026-07-11']);
+  });
+});
+
+describe('computeBikeStats', () => {
+  it('returns zeroed stats for no rides', () => {
+    expect(computeBikeStats([])).toEqual({
+      rideCount: 0,
+      totalDistanceM: 0,
+      totalTimeMs: 0,
+      longestRideM: 0,
+      averageRideM: 0,
+    });
+  });
+
+  it('sums distance and time, and finds the longest and average ride', () => {
+    const short = makeRide(new Date(2026, 6, 11, 8, 0), {
+      distanceM: 1000,
+      endedAt: new Date(2026, 6, 11, 8, 10),
+    });
+    const long = makeRide(new Date(2026, 6, 12, 8, 0), {
+      distanceM: 5000,
+      endedAt: new Date(2026, 6, 12, 8, 30),
+    });
+
+    const stats = computeBikeStats([short, long]);
+
+    expect(stats.rideCount).toBe(2);
+    expect(stats.totalDistanceM).toBe(6000);
+    expect(stats.totalTimeMs).toBe(10 * 60_000 + 30 * 60_000);
+    expect(stats.longestRideM).toBe(5000);
+    expect(stats.averageRideM).toBe(3000);
+  });
+
+  it('handles a single ride', () => {
+    const ride = makeRide(new Date(2026, 6, 11, 8, 0), { distanceM: 2500 });
+
+    const stats = computeBikeStats([ride]);
+
+    expect(stats.rideCount).toBe(1);
+    expect(stats.totalDistanceM).toBe(2500);
+    expect(stats.longestRideM).toBe(2500);
+    expect(stats.averageRideM).toBe(2500);
   });
 });

@@ -1,5 +1,48 @@
 import type { Ride } from './types';
 
+export interface BikeStats {
+  rideCount: number;
+  totalDistanceM: number;
+  totalTimeMs: number;
+  longestRideM: number;
+  averageRideM: number;
+}
+
+const EMPTY_BIKE_STATS: BikeStats = {
+  rideCount: 0,
+  totalDistanceM: 0,
+  totalTimeMs: 0,
+  longestRideM: 0,
+  averageRideM: 0,
+};
+
+/** Aggregate stats for a bike's rides: total distance, total time, longest and average ride. */
+export function computeBikeStats(rides: Ride[]): BikeStats {
+  if (rides.length === 0) {
+    return EMPTY_BIKE_STATS;
+  }
+
+  let totalDistanceM = 0;
+  let totalTimeMs = 0;
+  let longestRideM = 0;
+
+  for (const ride of rides) {
+    totalDistanceM += ride.distanceM;
+    totalTimeMs += ride.endedAt.getTime() - ride.startedAt.getTime();
+    if (ride.distanceM > longestRideM) {
+      longestRideM = ride.distanceM;
+    }
+  }
+
+  return {
+    rideCount: rides.length,
+    totalDistanceM,
+    totalTimeMs,
+    longestRideM,
+    averageRideM: totalDistanceM / rides.length,
+  };
+}
+
 export interface RideDayGroup {
   /** local-date key, e.g. '2026-07-11' */
   dateKey: string;

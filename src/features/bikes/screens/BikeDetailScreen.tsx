@@ -101,6 +101,10 @@ export default function BikeDetailScreen() {
         </Text>
       </Pressable>
 
+      <Pressable style={styles.secondaryButton} onPress={() => router.push(`/bikes/${bike.id}/stats`)}>
+        <Text style={styles.secondaryButtonText}>Statistics</Text>
+      </Pressable>
+
       <Pressable style={styles.secondaryButton} onPress={() => router.push(`/bikes/${bike.id}/edit`)}>
         <Text style={styles.secondaryButtonText}>Edit</Text>
       </Pressable>
