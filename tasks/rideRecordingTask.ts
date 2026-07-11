@@ -18,6 +18,12 @@ export interface ActiveRide {
   trackUri: string;
   startedAt: number;
   status: 'recording' | 'paused';
+  /** True when the current 'paused' status was triggered automatically (rider stopped moving)
+   * rather than by the user tapping Pause. Meaningless while status is 'recording'. Auto-pause
+   * deliberately leaves location updates running (unlike a manual pause) so movement can be
+   * detected again to auto-resume; this flag lets a killed-and-relaunched app know it should
+   * keep tracking rather than treat the pause as a deliberate battery-saving stop. */
+  auto: boolean;
 }
 
 TaskManager.defineTask(RIDE_RECORDING_TASK_NAME, async ({ data, error }) => {
@@ -105,35 +111,47 @@ export async function startRideRecordingAsync(bikeId: string): Promise<ActiveRid
     trackUri: `${RIDES_DIR}${Crypto.randomUUID()}.ndjson`,
     startedAt: Date.now(),
     status: 'recording',
+    auto: false,
   };
   await writeActiveRideAsync(activeRide);
   await startLocationUpdatesIfNeededAsync();
   return activeRide;
 }
 
-/** Stops location updates without discarding the track file/pointer — used for pause, so
- * resume can re-arm updates against the same in-progress ride. */
-export async function pauseRideRecordingAsync(): Promise<void> {
-  const running = await Location.hasStartedLocationUpdatesAsync(RIDE_RECORDING_TASK_NAME).catch(
-    () => false
-  );
-  if (running) {
-    await Location.stopLocationUpdatesAsync(RIDE_RECORDING_TASK_NAME);
+/** Pauses the ride. A manual pause (auto=false, the default) stops location updates to save
+ * battery — the rider deliberately stopped for a break. An auto-pause (auto=true) leaves
+ * location updates running so movement can be detected again to auto-resume. */
+export async function pauseRideRecordingAsync(auto = false): Promise<void> {
+  if (!auto) {
+    const running = await Location.hasStartedLocationUpdatesAsync(RIDE_RECORDING_TASK_NAME).catch(
+      () => false
+    );
+    if (running) {
+      await Location.stopLocationUpdatesAsync(RIDE_RECORDING_TASK_NAME);
+    }
   }
   const active = await readActiveRideAsync();
   if (active) {
-    await writeActiveRideAsync({ ...active, status: 'paused' });
+    await writeActiveRideAsync({ ...active, status: 'paused', auto });
   }
 }
 
-/** Re-arms location updates for the currently-persisted active ride — used both for the
- * explicit "Resume" action and to resume tracking after the app process was killed and
- * relaunched mid-ride. */
+/** Re-arms location updates for the currently-persisted active ride and marks it recording
+ * again — used for the explicit "Resume" action, auto-resume, and rehydrating a ride that was
+ * recording (not paused) when the app was killed. */
 export async function resumeRideRecordingAsync(): Promise<void> {
   const active = await readActiveRideAsync();
   if (active) {
-    await writeActiveRideAsync({ ...active, status: 'recording' });
+    await writeActiveRideAsync({ ...active, status: 'recording', auto: false });
   }
+  await startLocationUpdatesIfNeededAsync();
+}
+
+/** Re-arms location updates without touching the persisted status/auto fields — used only to
+ * rehydrate an auto-paused ride after a kill, in case the OS also killed the foreground
+ * service. The UI stays "paused"; this just guarantees points keep arriving so auto-resume can
+ * still fire once movement resumes. */
+export async function ensureLocationUpdatesRunningAsync(): Promise<void> {
   await startLocationUpdatesIfNeededAsync();
 }
 

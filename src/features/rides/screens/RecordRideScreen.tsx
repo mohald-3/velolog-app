@@ -1,5 +1,5 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 
 import { speedKmh } from '../../../domain/gps-filter';
 import { useRideRecorder } from '../hooks/useRideRecorder';
@@ -15,7 +15,18 @@ function formatDuration(ms: number): string {
 export default function RecordRideScreen() {
   const { id: bikeId } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { state, stats, start, pause, resume, stop, discard } = useRideRecorder(bikeId);
+  const {
+    state,
+    stats,
+    start,
+    pause,
+    resume,
+    stop,
+    discard,
+    autoPauseEnabled,
+    setAutoPauseEnabled,
+    isAutoPaused,
+  } = useRideRecorder(bikeId);
   const createRide = useCreateRide();
 
   const handleStart = async () => {
@@ -79,9 +90,18 @@ export default function RecordRideScreen() {
       </View>
 
       {state.status === 'idle' && (
-        <Pressable style={styles.primaryButton} onPress={handleStart}>
-          <Text style={styles.primaryButtonText}>Start Ride</Text>
-        </Pressable>
+        <>
+          <View style={styles.autoPauseRow}>
+            <View>
+              <Text style={styles.autoPauseLabel}>Auto-pause</Text>
+              <Text style={styles.autoPauseHint}>Pauses automatically when you stop moving</Text>
+            </View>
+            <Switch value={autoPauseEnabled} onValueChange={setAutoPauseEnabled} />
+          </View>
+          <Pressable style={styles.primaryButton} onPress={handleStart}>
+            <Text style={styles.primaryButtonText}>Start Ride</Text>
+          </Pressable>
+        </>
       )}
 
       {state.status === 'recording' && (
@@ -100,6 +120,7 @@ export default function RecordRideScreen() {
 
       {state.status === 'paused' && (
         <>
+          {isAutoPaused && <Text style={styles.autoPausedNotice}>Auto-paused — keep riding to resume</Text>}
           <Pressable style={styles.primaryButton} onPress={resume}>
             <Text style={styles.primaryButtonText}>Resume</Text>
           </Pressable>
@@ -179,5 +200,29 @@ const styles = StyleSheet.create({
   discardButtonText: {
     color: '#b00020',
     fontWeight: '600',
+  },
+  autoPauseRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#f2f2f2',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+  },
+  autoPauseLabel: {
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  autoPauseHint: {
+    fontSize: 12,
+    color: '#888888',
+    marginTop: 2,
+  },
+  autoPausedNotice: {
+    fontSize: 13,
+    color: '#888888',
+    textAlign: 'center',
+    marginBottom: 4,
   },
 });
