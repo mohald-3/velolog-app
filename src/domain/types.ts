@@ -96,3 +96,38 @@ export interface ComponentUpdate {
   notes?: string | null;
   isRetired?: boolean;
 }
+
+/** A ride is only persisted once completed — the in-progress track lives on disk during
+ * recording (see tasks/locationTask.ts) and becomes a Ride row on save. Append-only after
+ * that: everything but `bikeId` and `notes` is fixed, and the GPS track itself is never
+ * edited (see CLAUDE.md domain invariants). */
+export interface Ride {
+  id: string;
+  bikeId: string;
+  startedAt: Date;
+  endedAt: Date;
+  distanceM: number;
+  movingTimeMs: number;
+  pausedTimeMs: number;
+  /** file URI of the recorded NDJSON track log for this ride */
+  trackUri: string;
+  notes: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface NewRide {
+  bikeId: string;
+  startedAt: Date;
+  endedAt: Date;
+  distanceM: number;
+  movingTimeMs: number;
+  pausedTimeMs: number;
+  trackUri: string;
+  notes?: string | null;
+}
+
+export interface RideUpdate {
+  bikeId?: string;
+  notes?: string | null;
+}

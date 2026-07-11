@@ -1,6 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import * as Location from 'expo-location';
 import * as Sharing from 'expo-sharing';
+import { Link } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, Button, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 
@@ -122,6 +123,11 @@ export default function GpsSpikeScreen() {
         </View>
         <View style={styles.buttonRow}>
           <Button title="Clear log" color="#666666" onPress={handleClear} />
+        </View>
+        <View style={styles.buttonRow}>
+          <Link href="/dev/track-map" asChild>
+            <Button title="View recorded track on map" />
+          </Link>
         </View>
 
         <Text style={styles.hint}>
