@@ -48,3 +48,19 @@ export const components = sqliteTable('components', {
   createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
   updatedAt: integer('updated_at', { mode: 'timestamp_ms' }).notNull(),
 });
+
+export const rides = sqliteTable('rides', {
+  id: text('id').primaryKey(),
+  bikeId: text('bike_id')
+    .notNull()
+    .references(() => bikes.id),
+  startedAt: integer('started_at', { mode: 'timestamp_ms' }).notNull(),
+  endedAt: integer('ended_at', { mode: 'timestamp_ms' }).notNull(),
+  distanceM: real('distance_m').notNull(),
+  movingTimeMs: integer('moving_time_ms').notNull(),
+  pausedTimeMs: integer('paused_time_ms').notNull(),
+  trackUri: text('track_uri').notNull(),
+  notes: text('notes'),
+  createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp_ms' }).notNull(),
+});

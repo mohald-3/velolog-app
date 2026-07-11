@@ -2,7 +2,9 @@ import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { ActivityIndicator, Alert, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import type { Component } from '../../../domain/types';
+import { computeOdometerM } from '../../../domain/odometer';
 import { computeComponentWearM } from '../../../domain/wear';
+import { useRides } from '../../rides/hooks/useRides';
 import { useArchiveBike, useBike } from '../hooks/useBikes';
 import { useComponents } from '../hooks/useComponents';
 
@@ -11,6 +13,7 @@ export default function BikeDetailScreen() {
   const router = useRouter();
   const { data: bike, isLoading } = useBike(id);
   const { data: components } = useComponents(id);
+  const { data: rides } = useRides(id);
   const archiveBike = useArchiveBike();
 
   if (isLoading) {
@@ -28,6 +31,8 @@ export default function BikeDetailScreen() {
       </View>
     );
   }
+
+  const currentOdometerM = computeOdometerM(bike, rides ?? []);
 
   const handleArchive = () => {
     Alert.alert('Archive this bike?', `${bike.name} will be hidden from your active garage.`, [
@@ -54,7 +59,7 @@ export default function BikeDetailScreen() {
       )}
 
       <View style={styles.card}>
-        <Row label="Odometer" value={`${(bike.startingOdometerM / 1000).toFixed(1)} km`} />
+        <Row label="Odometer" value={`${(currentOdometerM / 1000).toFixed(1)} km`} />
         {bike.year != null && <Row label="Year" value={String(bike.year)} />}
         {bike.color && <Row label="Color" value={bike.color} />}
         {bike.frameSize && <Row label="Frame size" value={bike.frameSize} />}
@@ -80,12 +85,16 @@ export default function BikeDetailScreen() {
         </Text>
       ) : (
         components.map((component) => (
-          <ComponentRow key={component.id} bikeId={bike.id} component={component} currentOdometerM={bike.startingOdometerM} />
+          <ComponentRow key={component.id} bikeId={bike.id} component={component} currentOdometerM={currentOdometerM} />
         ))
       )}
 
-      <Pressable style={styles.primaryButton} onPress={() => router.push(`/bikes/${bike.id}/edit`)}>
-        <Text style={styles.primaryButtonText}>Edit</Text>
+      <Pressable style={styles.primaryButton} onPress={() => router.push(`/bikes/${bike.id}/record`)}>
+        <Text style={styles.primaryButtonText}>Start a Ride</Text>
+      </Pressable>
+
+      <Pressable style={styles.editButton} onPress={() => router.push(`/bikes/${bike.id}/edit`)}>
+        <Text style={styles.editButtonText}>Edit</Text>
       </Pressable>
       <Pressable style={styles.archiveButton} onPress={handleArchive}>
         <Text style={styles.archiveButtonText}>Archive bike</Text>
@@ -232,6 +241,18 @@ const styles = StyleSheet.create({
   },
   primaryButtonText: {
     color: '#ffffff',
+    fontWeight: '600',
+    fontSize: 16,
+  },
+  editButton: {
+    marginTop: 12,
+    backgroundColor: '#f2f2f2',
+    paddingVertical: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  editButtonText: {
+    color: '#2f6f4f',
     fontWeight: '600',
     fontSize: 16,
   },
