@@ -3,11 +3,19 @@ import { ActivityIndicator, Alert, Image, Pressable, ScrollView, StyleSheet, Tex
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { Component } from '../../../domain/types';
+import { computeDueInfo, worstDueStatus, type DueStatus } from '../../../domain/maintenance';
 import { computeOdometerM } from '../../../domain/odometer';
 import { computeComponentWearM } from '../../../domain/wear';
+import { useMaintenanceRules } from '../../maintenance/hooks/useMaintenanceRules';
 import { useRides } from '../../rides/hooks/useRides';
 import { useArchiveBike, useBike } from '../hooks/useBikes';
 import { useComponents } from '../hooks/useComponents';
+
+const STATUS_COLORS: Record<DueStatus, string> = {
+  OK: '#2f6f4f',
+  DueSoon: '#b26a00',
+  Overdue: '#b00020',
+};
 
 export default function BikeDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -135,6 +143,8 @@ function ComponentRow({
 }) {
   const router = useRouter();
   const wearKm = computeComponentWearM(currentOdometerM, component.installedAtOdometerM) / 1000;
+  const { data: rules } = useMaintenanceRules(component.id);
+  const status = worstDueStatus((rules ?? []).map((rule) => computeDueInfo(rule, currentOdometerM).status));
 
   return (
     <Pressable
@@ -142,7 +152,12 @@ function ComponentRow({
       onPress={() => router.push(`/bikes/${bikeId}/components/${component.id}/edit`)}
     >
       <View>
-        <Text style={styles.componentName}>{component.name}</Text>
+        <View style={styles.componentNameRow}>
+          <Text style={styles.componentName}>{component.name}</Text>
+          {status && status !== 'OK' && (
+            <View style={[styles.statusDot, { backgroundColor: STATUS_COLORS[status] }]} />
+          )}
+        </View>
         <Text style={styles.componentType}>{component.type}</Text>
       </View>
       <Text style={styles.componentWear}>{wearKm.toFixed(0)} km</Text>
@@ -230,9 +245,19 @@ const styles = StyleSheet.create({
     padding: 12,
     marginTop: 8,
   },
+  componentNameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   componentName: {
     fontSize: 15,
     fontWeight: '600',
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginLeft: 6,
   },
   componentType: {
     fontSize: 12,

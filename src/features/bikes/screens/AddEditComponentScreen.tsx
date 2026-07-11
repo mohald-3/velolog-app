@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { Component, ComponentType } from '../../../domain/types';
 import { componentTypeValues } from '../../../data/schema';
+import { useMaintenanceRules } from '../../maintenance/hooks/useMaintenanceRules';
 import { useBike } from '../hooks/useBikes';
 import {
   useComponent,
@@ -60,6 +61,7 @@ function ComponentForm({
   initialComponent: Component | null;
 }) {
   const router = useRouter();
+  const { data: rules } = useMaintenanceRules(initialComponent?.id);
   const insets = useSafeAreaInsets();
   const isEditing = Boolean(initialComponent);
   const createComponent = useCreateComponent();
@@ -177,6 +179,17 @@ function ComponentForm({
         </Text>
       </Pressable>
 
+      {isEditing && initialComponent && (
+        <Pressable
+          style={styles.secondaryButton}
+          onPress={() => router.push(`/bikes/${bikeId}/components/${initialComponent.id}/rules`)}
+        >
+          <Text style={styles.secondaryButtonText}>
+            Maintenance Rules{rules && rules.length > 0 ? ` (${rules.length})` : ''}
+          </Text>
+        </Pressable>
+      )}
+
       {isEditing && (
         <Pressable style={styles.retireButton} onPress={handleRetire}>
           <Text style={styles.retireButtonText}>Retire component</Text>
@@ -270,6 +283,18 @@ const styles = StyleSheet.create({
   },
   primaryButtonText: {
     color: '#ffffff',
+    fontWeight: '600',
+    fontSize: 16,
+  },
+  secondaryButton: {
+    marginTop: 12,
+    backgroundColor: '#f2f2f2',
+    paddingVertical: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  secondaryButtonText: {
+    color: '#2f6f4f',
     fontWeight: '600',
     fontSize: 16,
   },

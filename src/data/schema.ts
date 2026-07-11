@@ -49,6 +49,20 @@ export const components = sqliteTable('components', {
   updatedAt: integer('updated_at', { mode: 'timestamp_ms' }).notNull(),
 });
 
+export const maintenanceRules = sqliteTable('maintenance_rules', {
+  id: text('id').primaryKey(),
+  componentId: text('component_id')
+    .notNull()
+    .references(() => components.id),
+  action: text('action').notNull(),
+  intervalM: integer('interval_m').notNull(),
+  lastPerformedAtOdometerM: integer('last_performed_at_odometer_m').notNull(),
+  notes: text('notes'),
+  isArchived: integer('is_archived', { mode: 'boolean' }).notNull().default(false),
+  createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp_ms' }).notNull(),
+});
+
 export const rides = sqliteTable('rides', {
   id: text('id').primaryKey(),
   bikeId: text('bike_id')
