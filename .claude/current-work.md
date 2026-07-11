@@ -2,18 +2,18 @@
 
 ## M2 — Ride Recording (v0.1b) — COMPLETE (2026-07-11)
 
-All 5 phases done. 10/11 issues closed (#14-#20, #22-#24); milestone not yet closed since
-**#21** (GPS filter optional auto-pause toggle) remains open — only the pure classifier
-primitive was built, never wired in as an actual toggle. GPS filtering pipeline, recording
+All 5 phases done, all 11 issues closed (#14-#24) — **#21** (GPS filter optional auto-pause
+toggle) was closed same-day as a quick follow-up after the initial 5 phases (the toggle needed
+both a slow-segment check and a staleness fallback for genuine dead-stops, since a real stop
+produces no GPS points at all with `distanceInterval: 5`). GPS filtering pipeline, recording
 state machine, foreground recording screen with live stats, background continuation +
 crash/kill recovery (verified live: force-stopped the app mid-recording, confirmed correct
 rehydration), and the save flow (persists rides, fixed the bike detail screen to show the
 derived odometer/wear instead of the raw starting value). Full summary archived at
-`.planning/archive/m2-ride-recording/SUMMARY.md`.
+`.planning/archive/m2-ride-recording/SUMMARY.md`. PR: #39.
 
-No active feature plan right now. Next up: either a small follow-up to close #21, or start
-M3 — Ride History & Statistics (v0.1c): ride list, ride detail with the recorded track on the
-map, bike statistics screen, soft-delete.
+No active feature plan right now. Next up: M3 — Ride History & Statistics (v0.1c): ride list,
+ride detail with the recorded track on the map, bike statistics screen, soft-delete.
 
 ---
 
@@ -42,4 +42,4 @@ points, no crashes, clean data.
 Full detail archived at `.planning/archive/spike-0-gps-derisk/STATE.md`.
 
 ---
-_Last updated: 2026-07-11 (M2 complete and archived; Spike 0's two real-device items still pending)._
+_Last updated: 2026-07-11 (M2 complete incl. #21 follow-up, all 11 issues closed; Spike 0's two real-device items still pending)._

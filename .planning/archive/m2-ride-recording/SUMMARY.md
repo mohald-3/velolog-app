@@ -25,8 +25,10 @@ of the bike's raw starting value.
 - `tasks/rideRecordingTask.ts` — background-capable location task, per-ride NDJSON persistence,
   `active-ride.json` pointer for crash recovery
 - `BikeDetailScreen` — "Start a Ride" entry point; odometer/wear now derived from actual rides
-- Issue: #14, #15, #16, #17, #18, #19, #20, #22, #23, #24
-- PR: (see `gh pr list`)
+- Follow-up: wired the "Auto-pause" toggle (`shouldAutoPause` + staleness fallback for genuine
+  dead-stops, `auto` flag on the persisted `ActiveRide` pointer, auto-resume) — see Deviations
+- Issue: #14, #15, #16, #17, #18, #19, #20, #21, #22, #23, #24
+- PR: https://github.com/mohald-3/velolog-app/pull/39
 
 ## Key Decisions
 
@@ -39,15 +41,36 @@ of the bike's raw starting value.
 
 ## Deviations From Plan
 
-- Issue **#21** (GPS filter optional auto-pause toggle) is **not closed**. Only the pure
-  classifier primitive (`shouldAutoPause`) was built and unit-tested; it was never wired into
-  `useRideRecorder`/`RecordRideScreen` as an actual toggle that auto-transitions the recording
-  state machine to Paused. Left open — a small follow-up, not a re-plan.
+- Issue **#21** (GPS filter optional auto-pause toggle) was initially left open at the end of
+  Phase 1-5 execution — only the pure classifier primitive (`shouldAutoPause`) had been built,
+  not the actual toggle. Closed immediately after as a quick same-session follow-up (see below).
 - Otherwise executed as planned across all 5 phases.
+
+## Auto-pause follow-up (same day)
+
+Wired `shouldAutoPause` into an actual "Auto-pause" toggle on the recording screen. Turned out
+to need two signals, not one: a slow-but-still-moving segment, and a genuine dead stop — which
+produces *no new GPS points at all* since `distanceInterval: 5` filters out updates below 5m of
+movement, so a real stop looks identical to "GPS momentarily quiet" without a staleness fallback
+(no new point for 8s while recording). Auto-pause deliberately leaves location updates running
+(unlike manual pause, which stops them to save battery) so movement can be detected again to
+auto-resume; `ActiveRide` gained an `auto` flag for this, persisted so a killed-and-relaunched
+auto-paused ride still knows to keep tracking.
+
+Found and fixed a real bug during manual testing: the first point after an auto-resume forms a
+segment spanning the entire paused gap (tiny distance over minutes), which read as near-zero
+speed and immediately re-triggered auto-pause. Segments spanning an implausibly large gap are
+now ignored for auto-pause purposes (`MAX_SEGMENT_GAP_MS`).
+
+Verified live on the emulator: auto-pause via a slow segment, auto-pause via staleness (dead
+stop — confirmed no track file writes happened at all), auto-resume, manual pause/resume
+unaffected, and Stop still saves correctly. Also needed a full emulator restart mid-session
+after location delivery silently broke from accumulated test-session state (many force-stops
+in one long session) — confirmed via `dumpsys location` that the OS-level mock GPS was updating
+correctly but the app wasn't receiving it; a clean emulator boot resolved it. Not an app bug.
 
 ## What's Next
 
-- Wire up issue #21 (auto-pause toggle) as a small standalone follow-up.
 - M3 — Ride History & Statistics (v0.1c): ride list, ride detail with the recorded track
   rendered on the MapLibre map (Spike 0 already proved this works), bike statistics screen,
   soft-delete.
