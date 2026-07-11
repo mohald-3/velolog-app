@@ -1,11 +1,13 @@
 import { Link, useRouter } from 'expo-router';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { Bike } from '../../../domain/types';
 import { useBikes } from '../hooks/useBikes';
 
 export default function BikeListScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { data: bikes, isLoading } = useBikes();
 
   if (isLoading) {
@@ -36,10 +38,13 @@ export default function BikeListScreen() {
       <FlatList
         data={bikes}
         keyExtractor={(bike) => bike.id}
-        contentContainerStyle={styles.list}
+        contentContainerStyle={[styles.list, { paddingBottom: 16 + insets.bottom }]}
         renderItem={({ item }) => <BikeRow bike={item} />}
       />
-      <Pressable style={styles.fab} onPress={() => router.push('/bikes/new')}>
+      <Pressable
+        style={[styles.fab, { bottom: 20 + insets.bottom }]}
+        onPress={() => router.push('/bikes/new')}
+      >
         <Text style={styles.fabText}>+</Text>
       </Pressable>
     </View>

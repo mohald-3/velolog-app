@@ -12,6 +12,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { Bike } from '../../../domain/types';
 import { useBike, useCreateBike, useUpdateBike } from '../hooks/useBikes';
@@ -36,6 +37,7 @@ export default function AddEditBikeScreen() {
 
 function BikeForm({ bikeId, initialBike }: { bikeId?: string; initialBike: Bike | null }) {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const isEditing = Boolean(bikeId);
   const createBike = useCreateBike();
   const updateBike = useUpdateBike();
@@ -109,7 +111,7 @@ function BikeForm({ bikeId, initialBike }: { bikeId?: string; initialBike: Bike 
   const saving = createBike.isPending || updateBike.isPending;
 
   return (
-    <ScrollView contentContainerStyle={styles.content}>
+    <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 20 + insets.bottom }]}>
       <Pressable style={styles.photoPicker} onPress={pickPhoto}>
         {photoUri ? (
           <Image source={{ uri: photoUri }} style={styles.photo} />

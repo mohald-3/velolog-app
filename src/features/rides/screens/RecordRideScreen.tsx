@@ -2,15 +2,9 @@ import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { Alert, Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 
 import { speedKmh } from '../../../domain/gps-filter';
+import { formatDuration } from '../format';
 import { useRideRecorder } from '../hooks/useRideRecorder';
 import { useCreateRide } from '../hooks/useRides';
-
-function formatDuration(ms: number): string {
-  const totalSeconds = Math.floor(ms / 1000);
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
-  return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-}
 
 export default function RecordRideScreen() {
   const { id: bikeId } = useLocalSearchParams<{ id: string }>();

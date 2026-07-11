@@ -1,5 +1,6 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { ActivityIndicator, Alert, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { Component } from '../../../domain/types';
 import { computeOdometerM } from '../../../domain/odometer';
@@ -11,6 +12,7 @@ import { useComponents } from '../hooks/useComponents';
 export default function BikeDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { data: bike, isLoading } = useBike(id);
   const { data: components } = useComponents(id);
   const { data: rides } = useRides(id);
@@ -49,7 +51,7 @@ export default function BikeDetailScreen() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.content}>
+    <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 20 + insets.bottom }]}>
       <Stack.Screen options={{ title: bike.name }} />
       {bike.photoUri && <Image source={{ uri: bike.photoUri }} style={styles.photo} />}
 
@@ -93,8 +95,18 @@ export default function BikeDetailScreen() {
         <Text style={styles.primaryButtonText}>Start a Ride</Text>
       </Pressable>
 
-      <Pressable style={styles.editButton} onPress={() => router.push(`/bikes/${bike.id}/edit`)}>
-        <Text style={styles.editButtonText}>Edit</Text>
+      <Pressable style={styles.secondaryButton} onPress={() => router.push(`/bikes/${bike.id}/rides`)}>
+        <Text style={styles.secondaryButtonText}>
+          View Rides{rides && rides.length > 0 ? ` (${rides.length})` : ''}
+        </Text>
+      </Pressable>
+
+      <Pressable style={styles.secondaryButton} onPress={() => router.push(`/bikes/${bike.id}/stats`)}>
+        <Text style={styles.secondaryButtonText}>Statistics</Text>
+      </Pressable>
+
+      <Pressable style={styles.secondaryButton} onPress={() => router.push(`/bikes/${bike.id}/edit`)}>
+        <Text style={styles.secondaryButtonText}>Edit</Text>
       </Pressable>
       <Pressable style={styles.archiveButton} onPress={handleArchive}>
         <Text style={styles.archiveButtonText}>Archive bike</Text>
@@ -244,14 +256,14 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontSize: 16,
   },
-  editButton: {
+  secondaryButton: {
     marginTop: 12,
     backgroundColor: '#f2f2f2',
     paddingVertical: 14,
     borderRadius: 8,
     alignItems: 'center',
   },
-  editButtonText: {
+  secondaryButtonText: {
     color: '#2f6f4f',
     fontWeight: '600',
     fontSize: 16,
