@@ -7,6 +7,7 @@ import { computeOdometerM } from '../../../domain/odometer';
 import type { MaintenanceRule } from '../../../domain/types';
 import { useBike } from '../../bikes/hooks/useBikes';
 import { useRides } from '../../rides/hooks/useRides';
+import { useMarkRuleAsDone } from '../hooks/useMaintenanceRecords';
 import {
   useArchiveMaintenanceRule,
   useCreateMaintenanceRule,
@@ -76,6 +77,7 @@ function RuleForm({
   const createRule = useCreateMaintenanceRule();
   const updateRule = useUpdateMaintenanceRule();
   const archiveRule = useArchiveMaintenanceRule();
+  const markAsDone = useMarkRuleAsDone();
 
   const [action, setAction] = useState(initialRule?.action ?? '');
   const [intervalKm, setIntervalKm] = useState(initialRule ? String(initialRule.intervalM / 1000) : '');
@@ -117,6 +119,24 @@ function RuleForm({
     router.back();
   };
 
+  const handleMarkAsDone = () => {
+    if (!initialRule) return;
+    Alert.alert(
+      'Mark as done?',
+      `"${initialRule.action}" will be logged as performed today at ${(currentOdometerM / 1000).toFixed(1)} km, and the interval resets from here.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Mark as done',
+          onPress: async () => {
+            await markAsDone.mutateAsync({ rule: initialRule, currentOdometerM });
+            router.back();
+          },
+        },
+      ]
+    );
+  };
+
   const handleArchive = () => {
     if (!initialRule) return;
     Alert.alert('Remove this rule?', `"${initialRule.action}" will stop being tracked.`, [
@@ -136,6 +156,18 @@ function RuleForm({
 
   return (
     <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 20 + insets.bottom }]}>
+      {isEditing && (
+        <Pressable
+          style={styles.markDoneButton}
+          onPress={handleMarkAsDone}
+          disabled={markAsDone.isPending}
+        >
+          <Text style={styles.markDoneButtonText}>
+            {markAsDone.isPending ? 'Saving...' : 'Mark as done'}
+          </Text>
+        </Pressable>
+      )}
+
       {!isEditing && (
         <>
           <Text style={styles.label}>Preset</Text>
@@ -219,6 +251,18 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 20,
+  },
+  markDoneButton: {
+    marginBottom: 20,
+    backgroundColor: '#2f6f4f',
+    paddingVertical: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  markDoneButtonText: {
+    color: '#ffffff',
+    fontWeight: '600',
+    fontSize: 16,
   },
   chipRow: {
     flexDirection: 'row',

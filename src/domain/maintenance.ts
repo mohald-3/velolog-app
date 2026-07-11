@@ -45,3 +45,9 @@ export function worstDueStatus(statuses: DueStatus[]): DueStatus | null {
   }
   return statuses.reduce((worst, status) => (STATUS_SEVERITY[status] > STATUS_SEVERITY[worst] ? status : worst));
 }
+
+/** A notification should only fire when a rule crosses into a more urgent status (e.g. OK ->
+ * DueSoon, or DueSoon -> Overdue), not on every recompute where the status hasn't worsened. */
+export function shouldNotifyOnStatusChange(previousStatus: DueStatus, newStatus: DueStatus): boolean {
+  return STATUS_SEVERITY[newStatus] > STATUS_SEVERITY[previousStatus];
+}

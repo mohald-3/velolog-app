@@ -128,6 +128,31 @@ export interface MaintenanceRuleUpdate {
   isArchived?: boolean;
 }
 
+/** An append-only log entry recording that a maintenance action was actually performed.
+ * Creating one for a rule also resets that rule's lastPerformedAtOdometerM ("mark as done"). */
+export interface MaintenanceRecord {
+  id: string;
+  componentId: string;
+  ruleId: string | null;
+  action: string;
+  performedAtOdometerM: number;
+  performedDate: Date;
+  cost: number | null;
+  notes: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface NewMaintenanceRecord {
+  componentId: string;
+  ruleId?: string | null;
+  action: string;
+  performedAtOdometerM: number;
+  performedDate: Date;
+  cost?: number | null;
+  notes?: string | null;
+}
+
 /** A ride is only persisted once completed — the in-progress track lives on disk during
  * recording (see tasks/locationTask.ts) and becomes a Ride row on save. Append-only after
  * that: everything but `bikeId` and `notes` is fixed, and the GPS track itself is never

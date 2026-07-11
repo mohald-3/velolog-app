@@ -1,4 +1,4 @@
-import { computeDueInfo, worstDueStatus } from './maintenance';
+import { computeDueInfo, shouldNotifyOnStatusChange, worstDueStatus } from './maintenance';
 
 describe('computeDueInfo', () => {
   it('is OK when well under the interval', () => {
@@ -67,5 +67,30 @@ describe('worstDueStatus', () => {
 
   it('returns OK when everything is OK', () => {
     expect(worstDueStatus(['OK', 'OK'])).toBe('OK');
+  });
+});
+
+describe('shouldNotifyOnStatusChange', () => {
+  it('notifies when crossing from OK to DueSoon', () => {
+    expect(shouldNotifyOnStatusChange('OK', 'DueSoon')).toBe(true);
+  });
+
+  it('notifies when crossing from OK straight to Overdue', () => {
+    expect(shouldNotifyOnStatusChange('OK', 'Overdue')).toBe(true);
+  });
+
+  it('notifies when crossing from DueSoon to Overdue', () => {
+    expect(shouldNotifyOnStatusChange('DueSoon', 'Overdue')).toBe(true);
+  });
+
+  it('does not notify when status is unchanged', () => {
+    expect(shouldNotifyOnStatusChange('OK', 'OK')).toBe(false);
+    expect(shouldNotifyOnStatusChange('DueSoon', 'DueSoon')).toBe(false);
+    expect(shouldNotifyOnStatusChange('Overdue', 'Overdue')).toBe(false);
+  });
+
+  it('does not notify when status improves', () => {
+    expect(shouldNotifyOnStatusChange('Overdue', 'DueSoon')).toBe(false);
+    expect(shouldNotifyOnStatusChange('DueSoon', 'OK')).toBe(false);
   });
 });
