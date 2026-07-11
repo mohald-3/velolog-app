@@ -1,6 +1,7 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { Component, ComponentType } from '../../../domain/types';
 import { componentTypeValues } from '../../../data/schema';
@@ -59,6 +60,7 @@ function ComponentForm({
   initialComponent: Component | null;
 }) {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const isEditing = Boolean(initialComponent);
   const createComponent = useCreateComponent();
   const updateComponent = useUpdateComponent();
@@ -135,7 +137,7 @@ function ComponentForm({
   const saving = createComponent.isPending || updateComponent.isPending;
 
   return (
-    <ScrollView contentContainerStyle={styles.content}>
+    <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 20 + insets.bottom }]}>
       <Text style={styles.label}>Type</Text>
       <View style={styles.chipRow}>
         {componentTypeValues.map((value) => (
