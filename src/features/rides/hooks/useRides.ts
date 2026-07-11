@@ -42,3 +42,14 @@ export function useUpdateRide() {
     },
   });
 }
+
+export function useDeleteRide() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id }: { id: string; bikeId: string }) => rideRepository.softDelete(id),
+    onSuccess: (_result, { id, bikeId }) => {
+      queryClient.invalidateQueries({ queryKey: ridesKey(bikeId) });
+      queryClient.invalidateQueries({ queryKey: rideKey(id) });
+    },
+  });
+}

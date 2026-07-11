@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Camera, GeoJSONSource, Layer, Map } from '@maplibre/maplibre-react-native';
-import { Stack, useLocalSearchParams } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import * as Sharing from 'expo-sharing';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
@@ -9,15 +9,17 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { speedKmh } from '../../../domain/gps-filter';
 import { readTrackPointsAsync } from '../../../../tasks/rideRecordingTask';
 import { formatDuration } from '../format';
-import { useRide, useUpdateRide } from '../hooks/useRides';
+import { useDeleteRide, useRide, useUpdateRide } from '../hooks/useRides';
 import { buildTrackGeo, type TrackGeo } from '../trackGeo';
 
 const MAP_STYLE_URL = 'https://tiles.openfreemap.org/styles/liberty';
 
 export default function RideDetailScreen() {
   const { rideId } = useLocalSearchParams<{ id: string; rideId: string }>();
+  const router = useRouter();
   const { data: ride, isLoading } = useRide(rideId);
   const updateRide = useUpdateRide();
+  const deleteRide = useDeleteRide();
   const insets = useSafeAreaInsets();
 
   const [trackGeo, setTrackGeo] = useState<TrackGeo | null>(null);
@@ -69,15 +71,34 @@ export default function RideDetailScreen() {
     updateRide.mutate({ id: ride.id, changes: { notes: notes.trim() || null } });
   };
 
+  const handleDelete = () => {
+    Alert.alert('Delete this ride?', 'This ride will be removed and your odometer recalculated.', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete',
+        style: 'destructive',
+        onPress: async () => {
+          await deleteRide.mutateAsync({ id: ride.id, bikeId: ride.bikeId });
+          router.back();
+        },
+      },
+    ]);
+  };
+
   return (
     <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 20 + insets.bottom }]}>
       <Stack.Screen
         options={{
           title: ride.startedAt.toLocaleDateString(),
           headerRight: () => (
-            <Pressable onPress={handleShare} hitSlop={12} style={styles.headerShareButton}>
-              <Ionicons name="share-outline" size={22} color="#2f6f4f" />
-            </Pressable>
+            <View style={styles.headerActions}>
+              <Pressable onPress={handleShare} hitSlop={12} style={styles.headerButton}>
+                <Ionicons name="share-outline" size={22} color="#2f6f4f" />
+              </Pressable>
+              <Pressable onPress={handleDelete} hitSlop={12} style={styles.headerButton}>
+                <Ionicons name="ellipsis-vertical" size={22} color="#2f6f4f" />
+              </Pressable>
+            </View>
           ),
         }}
       />
@@ -211,7 +232,11 @@ const styles = StyleSheet.create({
     color: '#2f6f4f',
     fontWeight: '600',
   },
-  headerShareButton: {
-    marginRight: 12,
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  headerButton: {
+    marginRight: 16,
   },
 });

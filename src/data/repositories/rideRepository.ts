@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { and, eq, isNull } from 'drizzle-orm';
 import * as Crypto from 'expo-crypto';
 
 import type { NewRide, Ride, RideUpdate } from '../../domain/types';
@@ -6,18 +6,24 @@ import { db } from '../db';
 import { rides } from '../schema';
 
 export interface RideRepository {
-  list(options?: { bikeId?: string }): Promise<Ride[]>;
+  list(options?: { bikeId?: string; includeDeleted?: boolean }): Promise<Ride[]>;
   getById(id: string): Promise<Ride | null>;
   create(input: NewRide): Promise<Ride>;
   update(id: string, changes: RideUpdate): Promise<Ride>;
+  softDelete(id: string): Promise<void>;
 }
 
 export const rideRepository: RideRepository = {
   async list(options) {
-    if (options?.bikeId) {
-      return db.select().from(rides).where(eq(rides.bikeId, options.bikeId));
+    const includeDeleted = options?.includeDeleted ?? false;
+    const conditions = [
+      ...(options?.bikeId ? [eq(rides.bikeId, options.bikeId)] : []),
+      ...(includeDeleted ? [] : [isNull(rides.deletedAt)]),
+    ];
+    if (conditions.length === 0) {
+      return db.select().from(rides);
     }
-    return db.select().from(rides);
+    return db.select().from(rides).where(and(...conditions));
   },
 
   async getById(id) {
@@ -56,5 +62,16 @@ export const rideRepository: RideRepository = {
       throw new Error(`Ride not found: ${id}`);
     }
     return updated;
+  },
+
+  async softDelete(id) {
+    const [updated] = await db
+      .update(rides)
+      .set({ deletedAt: new Date(), updatedAt: new Date() })
+      .where(eq(rides.id, id))
+      .returning();
+    if (!updated) {
+      throw new Error(`Ride not found: ${id}`);
+    }
   },
 };

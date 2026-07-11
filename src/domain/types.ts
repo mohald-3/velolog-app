@@ -112,6 +112,7 @@ export interface Ride {
   /** file URI of the recorded NDJSON track log for this ride */
   trackUri: string;
   notes: string | null;
+  deletedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }

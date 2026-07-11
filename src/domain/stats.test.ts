@@ -15,6 +15,7 @@ function makeRide(startedAt: Date, overrides: Partial<Ride> = {}): Ride {
     pausedTimeMs: 0,
     trackUri: `file:///rides/ride-${seq}.ndjson`,
     notes: null,
+    deletedAt: null,
     createdAt: startedAt,
     updatedAt: startedAt,
     ...overrides,

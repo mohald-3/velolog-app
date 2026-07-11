@@ -61,6 +61,7 @@ export const rides = sqliteTable('rides', {
   pausedTimeMs: integer('paused_time_ms').notNull(),
   trackUri: text('track_uri').notNull(),
   notes: text('notes'),
+  deletedAt: integer('deleted_at', { mode: 'timestamp_ms' }),
   createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
   updatedAt: integer('updated_at', { mode: 'timestamp_ms' }).notNull(),
 });
