@@ -1,7 +1,7 @@
 # Feature: M3 — Ride History & Statistics (v0.1c)
 
 > Created: 2026-07-11
-> Status: Phase 2 complete — ready to execute Phase 3
+> Status: Complete — all 3 phases done, ready for PR
 > Milestone: M3 - Ride History & Statistics (v0.1c) — GitHub milestone, issues #25-#28
 
 ## Goal
@@ -18,7 +18,7 @@ bike-level aggregate stats, and safe deletion — closing the loop on M2's recor
       while comparing a kill-recovery test across two phones)
 - [x] Bike statistics screen: total distance, longest ride, total time, average ride, ride
       count (#27)
-- [ ] Soft-delete ride (deletedAt) with odometer recomputation (#28) — the "rule-status
+- [x] Soft-delete ride (deletedAt) with odometer recomputation (#28) — the "rule-status
       recomputation" half of this issue is a no-op for now: no MaintenanceRule domain exists
       yet (that's M4, not started). Odometer recompute is automatic since it's already derived
       from non-deleted rides; deleting one just needs to exclude it from that sum.
@@ -45,26 +45,28 @@ currently blocked since there's no way to view or export a saved ride at all.
       average ride, ride count) over a bike's rides, with unit tests
 - [x] Screen wired via `useRides`, entry point from `BikeDetailScreen`
 
-### Phase 3: Soft-delete ride — small/medium
-- [ ] `deletedAt` column + migration on `rides`
-- [ ] `rideRepository` queries exclude soft-deleted rides by default (mirrors
+### Phase 3: Soft-delete ride — small/medium — DONE
+- [x] `deletedAt` column + migration on `rides`
+- [x] `rideRepository` queries exclude soft-deleted rides by default (mirrors
       `bikeRepository`'s `isArchived` pattern)
-- [ ] Delete action wired from ride list/detail, with confirm dialog (matches
-      `BikeDetailScreen`'s archive-bike confirm pattern)
-- [ ] Odometer/wear recompute automatically once the deleted ride is excluded from
-      `computeOdometerM`'s sum — no new domain code needed, just the repository filter
+- [x] Delete action wired from ride detail, behind a header overflow ("⋮") menu with a confirm
+      dialog (matches `BikeDetailScreen`'s archive-bike confirm pattern)
+- [x] Odometer/wear recompute automatically once the deleted ride is excluded from
+      `computeOdometerM`'s sum — no new domain code needed, just the repository filter;
+      verified live (deleting the 0.23km ride dropped the bike's odometer from 0.3km to 0.1km
+      and ride count from 2 to 1)
 
 ## Current Position
 
 ```
-Phase: 3 of 3
-Task:  0
-Status: Ready to execute Phase 3
+Phase: 3 of 3 — complete
+Task:  n/a
+Status: All phases done, ready for PR
 ```
 
 ## Progress
 
-[██████████████░░░░░░] 2/3 phases
+[████████████████████] 3/3 phases
 
 ## Decisions
 
@@ -81,3 +83,4 @@ Status: Ready to execute Phase 3
 | 2026-07-11 | Planning | Created plan with 3 phases, driven by a real two-phone field test needing comparison |
 | 2026-07-11 | Phase 1 | Built ride list, ride detail (map/stats/notes/share), fixed an app-wide missing-safe-area bug found during live verification; typecheck/lint clean; committed on `feat/m3-ride-history` |
 | 2026-07-11 | Phase 2 | Added `computeBikeStats` domain function (3 new unit tests) and `BikeStatsScreen`; verified live on emulator against the two known test rides (2 rides, 0.3 km total, 3:31 total time, 0.23 km longest, 0.17 km average — all correct) |
+| 2026-07-11 | Phase 3 | Added `deletedAt` column/migration, `rideRepository.softDelete`, and a delete action on ride detail; verified live end-to-end (deleting a ride correctly dropped the bike's odometer and ride count). Also moved ride detail's page actions (share, delete) fully into the header per user feedback: first a header icon for share, then a header overflow ("⋮") menu — implemented as an anchored `Modal` popover — for delete, after a follow-up correction that the overflow icon must open a real dropdown rather than jump straight to the confirm dialog |
