@@ -1,5 +1,22 @@
 # Current Work
 
+## M3 — Ride History & Statistics (v0.1c) — COMPLETE (2026-07-11)
+
+All 3 phases done, all 4 issues closed (#25-#28), milestone closed. Ride list grouped by day,
+ride detail with MapLibre track polyline + full stats + editable notes, bike statistics screen,
+soft-delete with automatic odometer recomputation. Also fixed an app-wide bug found during live
+verification: no `SafeAreaProvider` anywhere, so bottom-of-screen content rendered underneath
+the Android edge-to-edge nav bar and was untappable — fixed across 6 screens. Ride detail's page
+actions (share, delete) ended up entirely in the header (share icon + "⋮" overflow dropdown) per
+live user feedback. Full summary archived at `.planning/archive/m3-ride-history/SUMMARY.md`.
+PR: #40.
+
+No active feature plan right now. Next up: M4 — Maintenance (v0.2): `MaintenanceRule` CRUD with
+sensible presets, due-status computation, local notifications, mark-as-done flow, maintenance
+log, component replacement.
+
+---
+
 ## M2 — Ride Recording (v0.1b) — COMPLETE (2026-07-11)
 
 All 5 phases done, all 11 issues closed (#14-#24) — **#21** (GPS filter optional auto-pause
@@ -42,4 +59,4 @@ points, no crashes, clean data.
 Full detail archived at `.planning/archive/spike-0-gps-derisk/STATE.md`.
 
 ---
-_Last updated: 2026-07-11 (M2 complete incl. #21 follow-up, all 11 issues closed; Spike 0's two real-device items still pending)._
+_Last updated: 2026-07-11 (M3 complete, all 4 issues closed, milestone closed; Spike 0's two real-device items still pending)._
