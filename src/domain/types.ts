@@ -121,6 +121,7 @@ export interface NewMaintenanceRule {
 }
 
 export interface MaintenanceRuleUpdate {
+  componentId?: string;
   action?: string;
   intervalM?: number;
   lastPerformedAtOdometerM?: number;
