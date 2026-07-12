@@ -1,12 +1,15 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { computeOdometerM } from '../../../domain/odometer';
-import type { MaintenanceRule } from '../../../domain/types';
+import type { MaintenanceRule, UnitSystem } from '../../../domain/types';
+import { distanceUnitLabel, distanceUnitToMeters, formatDistance, metersToDistanceUnit } from '../../../domain/units';
 import { useBike } from '../../bikes/hooks/useBikes';
 import { useRides } from '../../rides/hooks/useRides';
+import { useSettings } from '../../settings/hooks/useSettings';
 import { useMarkRuleAsDone } from '../hooks/useMaintenanceRecords';
 import {
   useArchiveMaintenanceRule,
@@ -16,13 +19,19 @@ import {
 } from '../hooks/useMaintenanceRules';
 
 const PRESETS = [
-  { label: 'Lube chain', action: 'Lubricate chain', intervalKm: 200 },
-  { label: 'Replace chain', action: 'Replace chain', intervalKm: 3000 },
-  { label: 'Check brake pads', action: 'Check brake pads', intervalKm: 1000 },
-  { label: 'Custom', action: '', intervalKm: null },
+  { label: 'Lube chain', labelKey: 'addEditRule.presetLubeChain', action: 'Lubricate chain', intervalKm: 200 },
+  { label: 'Replace chain', labelKey: 'addEditRule.presetReplaceChain', action: 'Replace chain', intervalKm: 3000 },
+  {
+    label: 'Check brake pads',
+    labelKey: 'addEditRule.presetCheckBrakePads',
+    action: 'Check brake pads',
+    intervalKm: 1000,
+  },
+  { label: 'Custom', labelKey: 'addEditRule.presetCustom', action: '', intervalKm: null },
 ] as const;
 
 export default function AddEditRuleScreen() {
+  const { t } = useTranslation();
   const { id: bikeId, componentId, ruleId } = useLocalSearchParams<{
     id: string;
     componentId: string;
@@ -33,8 +42,9 @@ export default function AddEditRuleScreen() {
   const { data: bike, isLoading: isLoadingBike } = useBike(bikeId);
   const { data: rides, isLoading: isLoadingRides } = useRides(bikeId);
   const { data: existingRule, isLoading: isLoadingRule } = useMaintenanceRule(ruleId);
+  const { data: settings, isLoading: isLoadingSettings } = useSettings();
 
-  if (isLoadingBike || isLoadingRides || (isEditing && isLoadingRule)) {
+  if (isLoadingBike || isLoadingRides || (isEditing && isLoadingRule) || isLoadingSettings || !settings) {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" />
@@ -45,7 +55,7 @@ export default function AddEditRuleScreen() {
   if (!bike) {
     return (
       <View style={styles.center}>
-        <Text style={styles.notFound}>Bike not found.</Text>
+        <Text style={styles.notFound}>{t('common.bikeNotFound')}</Text>
       </View>
     );
   }
@@ -58,6 +68,7 @@ export default function AddEditRuleScreen() {
       componentId={componentId}
       currentOdometerM={currentOdometerM}
       initialRule={existingRule ?? null}
+      unitSystem={settings.unitSystem}
     />
   );
 }
@@ -66,11 +77,14 @@ function RuleForm({
   componentId,
   currentOdometerM,
   initialRule,
+  unitSystem,
 }: {
   componentId: string;
   currentOdometerM: number;
   initialRule: MaintenanceRule | null;
+  unitSystem: UnitSystem;
 }) {
+  const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const isEditing = Boolean(initialRule);
@@ -80,15 +94,17 @@ function RuleForm({
   const markAsDone = useMarkRuleAsDone();
 
   const [action, setAction] = useState(initialRule?.action ?? '');
-  const [intervalKm, setIntervalKm] = useState(initialRule ? String(initialRule.intervalM / 1000) : '');
+  const [intervalKm, setIntervalKm] = useState(
+    initialRule ? String(metersToDistanceUnit(initialRule.intervalM, unitSystem)) : ''
+  );
   const [lastPerformedAtOdometerKm, setLastPerformedAtOdometerKm] = useState(
-    String((initialRule?.lastPerformedAtOdometerM ?? currentOdometerM) / 1000)
+    String(metersToDistanceUnit(initialRule?.lastPerformedAtOdometerM ?? currentOdometerM, unitSystem))
   );
   const [notes, setNotes] = useState(initialRule?.notes ?? '');
 
   const handleSubmit = async () => {
     if (!action.trim()) {
-      Alert.alert('Action required', 'Give the rule an action, e.g. "Lubricate chain".');
+      Alert.alert(t('addEditRule.actionRequiredTitle'), t('addEditRule.actionRequiredMessage'));
       return;
     }
 
@@ -96,18 +112,21 @@ function RuleForm({
     const parsedLastPerformedKm = lastPerformedAtOdometerKm.trim() ? Number(lastPerformedAtOdometerKm) : NaN;
 
     if (Number.isNaN(parsedIntervalKm) || parsedIntervalKm <= 0) {
-      Alert.alert('Invalid interval', 'Interval must be a positive number of km.');
+      Alert.alert(
+        t('addEditRule.invalidIntervalTitle'),
+        t('addEditRule.invalidIntervalMessage', { unit: distanceUnitLabel(unitSystem) })
+      );
       return;
     }
     if (Number.isNaN(parsedLastPerformedKm)) {
-      Alert.alert('Invalid odometer', 'Last performed odometer must be a number.');
+      Alert.alert(t('addEditRule.invalidOdometerTitle'), t('addEditRule.invalidOdometerMessage'));
       return;
     }
 
     const values = {
       action: action.trim(),
-      intervalM: Math.round(parsedIntervalKm * 1000),
-      lastPerformedAtOdometerM: Math.round(parsedLastPerformedKm * 1000),
+      intervalM: Math.round(distanceUnitToMeters(parsedIntervalKm, unitSystem)),
+      lastPerformedAtOdometerM: Math.round(distanceUnitToMeters(parsedLastPerformedKm, unitSystem)),
       notes: notes.trim() || null,
     };
 
@@ -122,12 +141,15 @@ function RuleForm({
   const handleMarkAsDone = () => {
     if (!initialRule) return;
     Alert.alert(
-      'Mark as done?',
-      `"${initialRule.action}" will be logged as performed today at ${(currentOdometerM / 1000).toFixed(1)} km, and the interval resets from here.`,
+      t('addEditRule.markAsDoneConfirmTitle'),
+      t('addEditRule.markAsDoneConfirmMessage', {
+        action: initialRule.action,
+        odometer: formatDistance(currentOdometerM, unitSystem, 1),
+      }),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: 'Mark as done',
+          text: t('addEditRule.markAsDone'),
           onPress: async () => {
             await markAsDone.mutateAsync({ rule: initialRule, currentOdometerM });
             router.back();
@@ -139,17 +161,21 @@ function RuleForm({
 
   const handleArchive = () => {
     if (!initialRule) return;
-    Alert.alert('Remove this rule?', `"${initialRule.action}" will stop being tracked.`, [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Remove',
-        style: 'destructive',
-        onPress: async () => {
-          await archiveRule.mutateAsync({ id: initialRule.id, componentId });
-          router.back();
+    Alert.alert(
+      t('addEditRule.removeConfirmTitle'),
+      t('addEditRule.removeConfirmMessage', { action: initialRule.action }),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('addEditRule.removeRule'),
+          style: 'destructive',
+          onPress: async () => {
+            await archiveRule.mutateAsync({ id: initialRule.id, componentId });
+            router.back();
+          },
         },
-      },
-    ]);
+      ]
+    );
   };
 
   const saving = createRule.isPending || updateRule.isPending;
@@ -163,14 +189,14 @@ function RuleForm({
           disabled={markAsDone.isPending}
         >
           <Text style={styles.markDoneButtonText}>
-            {markAsDone.isPending ? 'Saving...' : 'Mark as done'}
+            {markAsDone.isPending ? t('common.saving') : t('addEditRule.markAsDone')}
           </Text>
         </Pressable>
       )}
 
       {!isEditing && (
         <>
-          <Text style={styles.label}>Preset</Text>
+          <Text style={styles.label}>{t('addEditRule.presetLabel')}</Text>
           <View style={styles.chipRow}>
             {PRESETS.map((preset) => (
               <Pressable
@@ -178,40 +204,47 @@ function RuleForm({
                 style={styles.chip}
                 onPress={() => {
                   setAction(preset.action);
-                  if (preset.intervalKm != null) setIntervalKm(String(preset.intervalKm));
+                  if (preset.intervalKm != null) {
+                    setIntervalKm(String(metersToDistanceUnit(preset.intervalKm * 1000, unitSystem)));
+                  }
                 }}
               >
-                <Text style={styles.chipText}>{preset.label}</Text>
+                <Text style={styles.chipText}>{t(preset.labelKey)}</Text>
               </Pressable>
             ))}
           </View>
         </>
       )}
 
-      <Field label="Action" value={action} onChangeText={setAction} placeholder="e.g. Lubricate chain" />
       <Field
-        label="Interval (km)"
+        label={t('addEditRule.actionLabel')}
+        value={action}
+        onChangeText={setAction}
+        placeholder={t('addEditRule.actionPlaceholder')}
+      />
+      <Field
+        label={t('addEditRule.intervalLabel', { unit: distanceUnitLabel(unitSystem) })}
         value={intervalKm}
         onChangeText={setIntervalKm}
         keyboardType="decimal-pad"
       />
       <Field
-        label="Last performed at odometer (km)"
+        label={t('addEditRule.lastPerformedLabel', { unit: distanceUnitLabel(unitSystem) })}
         value={lastPerformedAtOdometerKm}
         onChangeText={setLastPerformedAtOdometerKm}
         keyboardType="decimal-pad"
       />
-      <Field label="Notes (optional)" value={notes} onChangeText={setNotes} />
+      <Field label={t('common.notesOptional')} value={notes} onChangeText={setNotes} />
 
       <Pressable style={styles.primaryButton} onPress={handleSubmit} disabled={saving}>
         <Text style={styles.primaryButtonText}>
-          {saving ? 'Saving...' : isEditing ? 'Save changes' : 'Add rule'}
+          {saving ? t('common.saving') : isEditing ? t('common.saveChanges') : t('addEditRule.addRule')}
         </Text>
       </Pressable>
 
       {isEditing && (
         <Pressable style={styles.archiveButton} onPress={handleArchive}>
-          <Text style={styles.archiveButtonText}>Remove rule</Text>
+          <Text style={styles.archiveButtonText}>{t('addEditRule.removeRule')}</Text>
         </Pressable>
       )}
     </ScrollView>

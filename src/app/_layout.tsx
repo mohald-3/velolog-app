@@ -6,8 +6,20 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { db } from '../data/db';
 import migrations from '../../drizzle/migrations';
+import i18n from '../i18n';
+import { useSettings } from '../features/settings/hooks/useSettings';
 
 const queryClient = new QueryClient();
+
+function LocaleSync() {
+  const { data: settings } = useSettings();
+
+  if (settings && i18n.language !== settings.locale) {
+    i18n.changeLanguage(settings.locale);
+  }
+
+  return null;
+}
 
 export default function RootLayout() {
   const { success, error } = useMigrations(db, migrations);
@@ -32,6 +44,7 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
+        <LocaleSync />
         <Stack />
       </QueryClientProvider>
     </SafeAreaProvider>

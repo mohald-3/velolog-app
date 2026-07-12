@@ -1,12 +1,16 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { Alert, Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 
 import { speedKmh } from '../../../domain/gps-filter';
+import { formatDistance, formatSpeed } from '../../../domain/units';
+import { useSettings } from '../../settings/hooks/useSettings';
 import { formatDuration } from '../format';
 import { useRideRecorder } from '../hooks/useRideRecorder';
 import { useCreateRide } from '../hooks/useRides';
 
 export default function RecordRideScreen() {
+  const { t } = useTranslation();
   const { id: bikeId } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const {
@@ -22,16 +26,15 @@ export default function RecordRideScreen() {
     isAutoPaused,
   } = useRideRecorder(bikeId);
   const createRide = useCreateRide();
+  const { data: settings } = useSettings();
+  const unitSystem = settings?.unitSystem ?? 'metric';
 
   const handleStart = async () => {
     const result = await start();
     if (result === 'foreground-denied') {
-      Alert.alert('Location permission needed', 'Allow location access to record a ride.');
+      Alert.alert(t('recordRide.locationPermissionTitle'), t('recordRide.locationPermissionMessage'));
     } else if (result === 'background-denied') {
-      Alert.alert(
-        'Background location needed',
-        'Pick "Allow all the time" so tracking continues if you lock your phone mid-ride.'
-      );
+      Alert.alert(t('recordRide.backgroundPermissionTitle'), t('recordRide.backgroundPermissionMessage'));
     }
   };
 
@@ -50,19 +53,21 @@ export default function RecordRideScreen() {
     });
 
     Alert.alert(
-      'Ride complete',
-      `Distance: ${(summary.distanceM / 1000).toFixed(2)} km\n` +
-        `Duration: ${formatDuration(summary.endedAt - summary.startedAt)}\n` +
-        `Avg speed: ${speedKmh(summary.distanceM, summary.movingTimeMs).toFixed(1)} km/h`,
-      [{ text: 'OK', onPress: () => router.back() }]
+      t('recordRide.rideCompleteTitle'),
+      t('recordRide.rideCompleteMessage', {
+        distance: formatDistance(summary.distanceM, unitSystem, 2),
+        duration: formatDuration(summary.endedAt - summary.startedAt),
+        speed: formatSpeed(speedKmh(summary.distanceM, summary.movingTimeMs), unitSystem),
+      }),
+      [{ text: t('common.ok'), onPress: () => router.back() }]
     );
   };
 
   const handleDiscard = () => {
-    Alert.alert('Discard this ride?', 'The recorded track will not be saved.', [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert(t('recordRide.discardConfirmTitle'), t('recordRide.discardConfirmMessage'), [
+      { text: t('common.cancel'), style: 'cancel' },
       {
-        text: 'Discard',
+        text: t('recordRide.discard'),
         style: 'destructive',
         onPress: async () => {
           await discard();
@@ -74,26 +79,26 @@ export default function RecordRideScreen() {
 
   return (
     <View style={styles.container}>
-      <Stack.Screen options={{ title: 'Record Ride' }} />
+      <Stack.Screen options={{ title: t('recordRide.headerTitle') }} />
 
       <View style={styles.card}>
-        <Stat label="Distance" value={`${(stats.distanceM / 1000).toFixed(2)} km`} />
-        <Stat label="Duration" value={formatDuration(stats.durationMs)} />
-        <Stat label="Current speed" value={`${stats.currentSpeedKmh.toFixed(1)} km/h`} />
-        <Stat label="Avg speed" value={`${stats.avgSpeedKmh.toFixed(1)} km/h`} />
+        <Stat label={t('recordRide.distanceLabel')} value={formatDistance(stats.distanceM, unitSystem, 2)} />
+        <Stat label={t('recordRide.durationLabel')} value={formatDuration(stats.durationMs)} />
+        <Stat label={t('recordRide.currentSpeedLabel')} value={formatSpeed(stats.currentSpeedKmh, unitSystem)} />
+        <Stat label={t('recordRide.avgSpeedLabel')} value={formatSpeed(stats.avgSpeedKmh, unitSystem)} />
       </View>
 
       {state.status === 'idle' && (
         <>
           <View style={styles.autoPauseRow}>
             <View>
-              <Text style={styles.autoPauseLabel}>Auto-pause</Text>
-              <Text style={styles.autoPauseHint}>Pauses automatically when you stop moving</Text>
+              <Text style={styles.autoPauseLabel}>{t('recordRide.autoPauseLabel')}</Text>
+              <Text style={styles.autoPauseHint}>{t('recordRide.autoPauseHint')}</Text>
             </View>
             <Switch value={autoPauseEnabled} onValueChange={setAutoPauseEnabled} />
           </View>
           <Pressable style={styles.primaryButton} onPress={handleStart}>
-            <Text style={styles.primaryButtonText}>Start Ride</Text>
+            <Text style={styles.primaryButtonText}>{t('recordRide.startRide')}</Text>
           </Pressable>
         </>
       )}
@@ -101,28 +106,28 @@ export default function RecordRideScreen() {
       {state.status === 'recording' && (
         <>
           <Pressable style={styles.primaryButton} onPress={pause}>
-            <Text style={styles.primaryButtonText}>Pause</Text>
+            <Text style={styles.primaryButtonText}>{t('recordRide.pause')}</Text>
           </Pressable>
           <Pressable style={styles.stopButton} onPress={handleStop}>
-            <Text style={styles.stopButtonText}>Stop</Text>
+            <Text style={styles.stopButtonText}>{t('recordRide.stop')}</Text>
           </Pressable>
           <Pressable style={styles.discardButton} onPress={handleDiscard}>
-            <Text style={styles.discardButtonText}>Discard</Text>
+            <Text style={styles.discardButtonText}>{t('recordRide.discard')}</Text>
           </Pressable>
         </>
       )}
 
       {state.status === 'paused' && (
         <>
-          {isAutoPaused && <Text style={styles.autoPausedNotice}>Auto-paused — keep riding to resume</Text>}
+          {isAutoPaused && <Text style={styles.autoPausedNotice}>{t('recordRide.autoPausedNotice')}</Text>}
           <Pressable style={styles.primaryButton} onPress={resume}>
-            <Text style={styles.primaryButtonText}>Resume</Text>
+            <Text style={styles.primaryButtonText}>{t('recordRide.resume')}</Text>
           </Pressable>
           <Pressable style={styles.stopButton} onPress={handleStop}>
-            <Text style={styles.stopButtonText}>Stop</Text>
+            <Text style={styles.stopButtonText}>{t('recordRide.stop')}</Text>
           </Pressable>
           <Pressable style={styles.discardButton} onPress={handleDiscard}>
-            <Text style={styles.discardButtonText}>Discard</Text>
+            <Text style={styles.discardButtonText}>{t('recordRide.discard')}</Text>
           </Pressable>
         </>
       )}

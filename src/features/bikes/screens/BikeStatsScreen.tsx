@@ -1,19 +1,24 @@
 import { Stack, useLocalSearchParams } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { computeBikeStats } from '../../../domain/stats';
+import { formatDistance } from '../../../domain/units';
+import { useSettings } from '../../settings/hooks/useSettings';
 import { formatDuration } from '../../rides/format';
 import { useRides } from '../../rides/hooks/useRides';
 import { useBike } from '../hooks/useBikes';
 
 export default function BikeStatsScreen() {
+  const { t } = useTranslation();
   const { id: bikeId } = useLocalSearchParams<{ id: string }>();
   const insets = useSafeAreaInsets();
   const { data: bike, isLoading: isLoadingBike } = useBike(bikeId);
   const { data: rides, isLoading: isLoadingRides } = useRides(bikeId);
+  const { data: settings, isLoading: isLoadingSettings } = useSettings();
 
-  if (isLoadingBike || isLoadingRides) {
+  if (isLoadingBike || isLoadingRides || isLoadingSettings || !settings) {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" />
@@ -22,20 +27,23 @@ export default function BikeStatsScreen() {
   }
 
   const stats = computeBikeStats(rides ?? []);
+  const unitSystem = settings.unitSystem;
 
   return (
     <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 20 + insets.bottom }]}>
-      <Stack.Screen options={{ title: bike ? `${bike.name} — Stats` : 'Stats' }} />
+      <Stack.Screen
+        options={{ title: bike ? t('bikeStats.headerTitle', { name: bike.name }) : t('bikeStats.headerTitleFallback') }}
+      />
 
       {stats.rideCount === 0 ? (
-        <Text style={styles.emptyText}>No rides recorded yet.</Text>
+        <Text style={styles.emptyText}>{t('bikeStats.emptyText')}</Text>
       ) : (
         <View style={styles.card}>
-          <Stat label="Total rides" value={String(stats.rideCount)} />
-          <Stat label="Total distance" value={`${(stats.totalDistanceM / 1000).toFixed(1)} km`} />
-          <Stat label="Total time" value={formatDuration(stats.totalTimeMs)} />
-          <Stat label="Longest ride" value={`${(stats.longestRideM / 1000).toFixed(2)} km`} />
-          <Stat label="Average ride" value={`${(stats.averageRideM / 1000).toFixed(2)} km`} />
+          <Stat label={t('bikeStats.totalRides')} value={String(stats.rideCount)} />
+          <Stat label={t('bikeStats.totalDistance')} value={formatDistance(stats.totalDistanceM, unitSystem)} />
+          <Stat label={t('bikeStats.totalTime')} value={formatDuration(stats.totalTimeMs)} />
+          <Stat label={t('bikeStats.longestRide')} value={formatDistance(stats.longestRideM, unitSystem, 2)} />
+          <Stat label={t('bikeStats.averageRide')} value={formatDistance(stats.averageRideM, unitSystem, 2)} />
         </View>
       )}
     </ScrollView>

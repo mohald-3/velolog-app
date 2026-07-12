@@ -3,11 +3,15 @@ import { Camera, GeoJSONSource, Layer, Map } from '@maplibre/maplibre-react-nati
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import * as Sharing from 'expo-sharing';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Alert, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { speedKmh } from '../../../domain/gps-filter';
+import { formatDistance, formatSpeed } from '../../../domain/units';
 import { readTrackPointsAsync } from '../../../../tasks/rideRecordingTask';
+import i18n from '../../../i18n';
+import { useSettings } from '../../settings/hooks/useSettings';
 import { formatDuration } from '../format';
 import { useDeleteRide, useRide, useUpdateRide } from '../hooks/useRides';
 import { buildTrackGeo, type TrackGeo } from '../trackGeo';
@@ -15,9 +19,11 @@ import { buildTrackGeo, type TrackGeo } from '../trackGeo';
 const MAP_STYLE_URL = 'https://tiles.openfreemap.org/styles/liberty';
 
 export default function RideDetailScreen() {
+  const { t } = useTranslation();
   const { rideId } = useLocalSearchParams<{ id: string; rideId: string }>();
   const router = useRouter();
   const { data: ride, isLoading } = useRide(rideId);
+  const { data: settings, isLoading: isLoadingSettings } = useSettings();
   const updateRide = useUpdateRide();
   const deleteRide = useDeleteRide();
   const insets = useSafeAreaInsets();
@@ -48,7 +54,7 @@ export default function RideDetailScreen() {
     };
   }, [ride]);
 
-  if (isLoading || !ride) {
+  if (isLoading || isLoadingSettings || !ride || !settings) {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" />
@@ -56,13 +62,14 @@ export default function RideDetailScreen() {
     );
   }
 
+  const unitSystem = settings.unitSystem;
   const durationMs = ride.endedAt.getTime() - ride.startedAt.getTime();
   const avgSpeedKmh = speedKmh(ride.distanceM, ride.movingTimeMs);
 
   const handleShare = async () => {
     const available = await Sharing.isAvailableAsync();
     if (!available) {
-      Alert.alert('Sharing unavailable', `Track file is at: ${ride.trackUri}`);
+      Alert.alert(t('rideDetail.sharingUnavailableTitle'), t('rideDetail.sharingUnavailableMessage', { uri: ride.trackUri }));
       return;
     }
     await Sharing.shareAsync(ride.trackUri);
@@ -74,10 +81,10 @@ export default function RideDetailScreen() {
 
   const handleDelete = () => {
     setMenuOpen(false);
-    Alert.alert('Delete this ride?', 'This ride will be removed and your odometer recalculated.', [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert(t('rideDetail.deleteConfirmTitle'), t('rideDetail.deleteConfirmMessage'), [
+      { text: t('common.cancel'), style: 'cancel' },
       {
-        text: 'Delete',
+        text: t('common.delete'),
         style: 'destructive',
         onPress: async () => {
           await deleteRide.mutateAsync({ id: ride.id, bikeId: ride.bikeId, distanceM: ride.distanceM });
@@ -91,7 +98,7 @@ export default function RideDetailScreen() {
     <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 20 + insets.bottom }]}>
       <Stack.Screen
         options={{
-          title: ride.startedAt.toLocaleDateString(),
+          title: ride.startedAt.toLocaleDateString(i18n.language),
           headerRight: () => (
             <View style={styles.headerActions}>
               <Pressable onPress={handleShare} hitSlop={12} style={styles.headerButton}>
@@ -110,7 +117,7 @@ export default function RideDetailScreen() {
           <View style={[styles.menu, { top: insets.top + 48 }]}>
             <Pressable style={styles.menuItem} onPress={handleDelete}>
               <Ionicons name="trash-outline" size={18} color="#b00020" />
-              <Text style={styles.menuItemText}>Delete ride</Text>
+              <Text style={styles.menuItemText}>{t('rideDetail.deleteRide')}</Text>
             </Pressable>
           </View>
         </Pressable>
@@ -136,30 +143,30 @@ export default function RideDetailScreen() {
         ) : (
           <View style={styles.mapPlaceholder}>
             <Text style={styles.mapPlaceholderText}>
-              {trackGeo.status === 'empty' ? 'No track recorded for this ride.' : 'Not enough points to draw a track.'}
+              {trackGeo.status === 'empty' ? t('rideDetail.noTrack') : t('rideDetail.notEnoughPoints')}
             </Text>
           </View>
         )}
       </View>
 
       <View style={styles.card}>
-        <Stat label="Distance" value={`${(ride.distanceM / 1000).toFixed(2)} km`} />
-        <Stat label="Duration" value={formatDuration(durationMs)} />
-        <Stat label="Avg speed" value={`${avgSpeedKmh.toFixed(1)} km/h`} />
-        <Stat label="Moving time" value={formatDuration(ride.movingTimeMs)} />
-        <Stat label="Paused time" value={formatDuration(ride.pausedTimeMs)} />
+        <Stat label={t('rideDetail.distanceLabel')} value={formatDistance(ride.distanceM, unitSystem, 2)} />
+        <Stat label={t('rideDetail.durationLabel')} value={formatDuration(durationMs)} />
+        <Stat label={t('rideDetail.avgSpeedLabel')} value={formatSpeed(avgSpeedKmh, unitSystem)} />
+        <Stat label={t('rideDetail.movingTimeLabel')} value={formatDuration(ride.movingTimeMs)} />
+        <Stat label={t('rideDetail.pausedTimeLabel')} value={formatDuration(ride.pausedTimeMs)} />
       </View>
 
-      <Text style={styles.label}>Notes</Text>
+      <Text style={styles.label}>{t('common.notesLabel')}</Text>
       <TextInput
         style={styles.notesInput}
         multiline
-        placeholder="Add a note about this ride..."
+        placeholder={t('rideDetail.notesPlaceholder')}
         value={notes}
         onChangeText={setNotes}
       />
       <Pressable style={styles.saveButton} onPress={handleSaveNotes}>
-        <Text style={styles.saveButtonText}>Save notes</Text>
+        <Text style={styles.saveButtonText}>{t('rideDetail.saveNotes')}</Text>
       </Pressable>
     </ScrollView>
   );

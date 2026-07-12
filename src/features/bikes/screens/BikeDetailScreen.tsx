@@ -1,13 +1,16 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Alert, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import type { Component } from '../../../domain/types';
+import type { Component, UnitSystem } from '../../../domain/types';
 import { computeDueInfo, worstDueStatus, type DueStatus } from '../../../domain/maintenance';
 import { computeOdometerM } from '../../../domain/odometer';
+import { formatDistance } from '../../../domain/units';
 import { computeComponentWearM } from '../../../domain/wear';
 import { useMaintenanceRules } from '../../maintenance/hooks/useMaintenanceRules';
 import { useRides } from '../../rides/hooks/useRides';
+import { useSettings } from '../../settings/hooks/useSettings';
 import { useArchiveBike, useBike } from '../hooks/useBikes';
 import { useComponents } from '../hooks/useComponents';
 
@@ -18,15 +21,17 @@ const STATUS_COLORS: Record<DueStatus, string> = {
 };
 
 export default function BikeDetailScreen() {
+  const { t } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { data: bike, isLoading } = useBike(id);
   const { data: components } = useComponents(id);
   const { data: rides } = useRides(id);
+  const { data: settings, isLoading: isLoadingSettings } = useSettings();
   const archiveBike = useArchiveBike();
 
-  if (isLoading) {
+  if (isLoading || isLoadingSettings || !settings) {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" />
@@ -37,18 +42,19 @@ export default function BikeDetailScreen() {
   if (!bike) {
     return (
       <View style={styles.center}>
-        <Text style={styles.notFound}>Bike not found.</Text>
+        <Text style={styles.notFound}>{t('common.bikeNotFound')}</Text>
       </View>
     );
   }
 
+  const unitSystem = settings.unitSystem;
   const currentOdometerM = computeOdometerM(bike, rides ?? []);
 
   const handleArchive = () => {
-    Alert.alert('Archive this bike?', `${bike.name} will be hidden from your active garage.`, [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert(t('bikeDetail.archiveConfirmTitle'), t('bikeDetail.archiveConfirmMessage', { name: bike.name }), [
+      { text: t('common.cancel'), style: 'cancel' },
       {
-        text: 'Archive',
+        text: t('bikeDetail.archiveBike'),
         style: 'destructive',
         onPress: async () => {
           await archiveBike.mutateAsync(bike.id);
@@ -69,55 +75,60 @@ export default function BikeDetailScreen() {
       )}
 
       <View style={styles.card}>
-        <Row label="Odometer" value={`${(currentOdometerM / 1000).toFixed(1)} km`} />
-        {bike.year != null && <Row label="Year" value={String(bike.year)} />}
-        {bike.color && <Row label="Color" value={bike.color} />}
-        {bike.frameSize && <Row label="Frame size" value={bike.frameSize} />}
+        <Row label={t('bikeDetail.odometerLabel')} value={formatDistance(currentOdometerM, unitSystem)} />
+        {bike.year != null && <Row label={t('bikeDetail.yearLabel')} value={String(bike.year)} />}
+        {bike.color && <Row label={t('bikeDetail.colorLabel')} value={bike.color} />}
+        {bike.frameSize && <Row label={t('bikeDetail.frameSizeLabel')} value={bike.frameSize} />}
       </View>
 
       {bike.notes && (
         <View style={styles.card}>
-          <Text style={styles.label}>Notes</Text>
+          <Text style={styles.label}>{t('bikeDetail.notes')}</Text>
           <Text style={styles.notes}>{bike.notes}</Text>
         </View>
       )}
 
       <View style={styles.componentsHeader}>
-        <Text style={styles.sectionTitle}>Components</Text>
+        <Text style={styles.sectionTitle}>{t('bikeDetail.components')}</Text>
         <Pressable onPress={() => router.push(`/bikes/${bike.id}/components/new`)}>
-          <Text style={styles.addComponentLink}>+ Add</Text>
+          <Text style={styles.addComponentLink}>{t('bikeDetail.addComponent')}</Text>
         </Pressable>
       </View>
 
       {!components || components.length === 0 ? (
-        <Text style={styles.emptyComponents}>
-          No components yet — add your chain, tires, or brake pads to start tracking wear.
-        </Text>
+        <Text style={styles.emptyComponents}>{t('bikeDetail.emptyComponents')}</Text>
       ) : (
         components.map((component) => (
-          <ComponentRow key={component.id} bikeId={bike.id} component={component} currentOdometerM={currentOdometerM} />
+          <ComponentRow
+            key={component.id}
+            bikeId={bike.id}
+            component={component}
+            currentOdometerM={currentOdometerM}
+            unitSystem={unitSystem}
+          />
         ))
       )}
 
       <Pressable style={styles.primaryButton} onPress={() => router.push(`/bikes/${bike.id}/record`)}>
-        <Text style={styles.primaryButtonText}>Start a Ride</Text>
+        <Text style={styles.primaryButtonText}>{t('bikeDetail.startRide')}</Text>
       </Pressable>
 
       <Pressable style={styles.secondaryButton} onPress={() => router.push(`/bikes/${bike.id}/rides`)}>
         <Text style={styles.secondaryButtonText}>
-          View Rides{rides && rides.length > 0 ? ` (${rides.length})` : ''}
+          {t('bikeDetail.viewRides')}
+          {rides && rides.length > 0 ? ` (${rides.length})` : ''}
         </Text>
       </Pressable>
 
       <Pressable style={styles.secondaryButton} onPress={() => router.push(`/bikes/${bike.id}/stats`)}>
-        <Text style={styles.secondaryButtonText}>Statistics</Text>
+        <Text style={styles.secondaryButtonText}>{t('bikeDetail.statistics')}</Text>
       </Pressable>
 
       <Pressable style={styles.secondaryButton} onPress={() => router.push(`/bikes/${bike.id}/edit`)}>
-        <Text style={styles.secondaryButtonText}>Edit</Text>
+        <Text style={styles.secondaryButtonText}>{t('bikeDetail.edit')}</Text>
       </Pressable>
       <Pressable style={styles.archiveButton} onPress={handleArchive}>
-        <Text style={styles.archiveButtonText}>Archive bike</Text>
+        <Text style={styles.archiveButtonText}>{t('bikeDetail.archiveBike')}</Text>
       </Pressable>
     </ScrollView>
   );
@@ -136,13 +147,15 @@ function ComponentRow({
   bikeId,
   component,
   currentOdometerM,
+  unitSystem,
 }: {
   bikeId: string;
   component: Component;
   currentOdometerM: number;
+  unitSystem: UnitSystem;
 }) {
   const router = useRouter();
-  const wearKm = computeComponentWearM(currentOdometerM, component.installedAtOdometerM) / 1000;
+  const wearLabel = formatDistance(computeComponentWearM(currentOdometerM, component.installedAtOdometerM), unitSystem, 0);
   const { data: rules } = useMaintenanceRules(component.id);
   const status = worstDueStatus((rules ?? []).map((rule) => computeDueInfo(rule, currentOdometerM).status));
 
@@ -160,7 +173,7 @@ function ComponentRow({
         </View>
         <Text style={styles.componentType}>{component.type}</Text>
       </View>
-      <Text style={styles.componentWear}>{wearKm.toFixed(0)} km</Text>
+      <Text style={styles.componentWear}>{wearLabel}</Text>
     </Pressable>
   );
 }

@@ -1,4 +1,6 @@
-import { Link, useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { Link, Stack, useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -6,13 +8,29 @@ import type { Bike } from '../../../domain/types';
 import { useBikes } from '../hooks/useBikes';
 
 export default function BikeListScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { data: bikes, isLoading } = useBikes();
 
+  const headerOptions = {
+    title: t('bikeList.headerTitle'),
+    headerRight: () => (
+      <View style={styles.headerActions}>
+        <Pressable onPress={() => router.push('/journey')} hitSlop={12} style={styles.headerButton}>
+          <Ionicons name="stats-chart-outline" size={22} color="#2f6f4f" />
+        </Pressable>
+        <Pressable onPress={() => router.push('/settings')} hitSlop={12}>
+          <Ionicons name="settings-outline" size={22} color="#2f6f4f" />
+        </Pressable>
+      </View>
+    ),
+  };
+
   if (isLoading) {
     return (
       <View style={styles.center}>
+        <Stack.Screen options={headerOptions} />
         <ActivityIndicator size="large" />
       </View>
     );
@@ -21,13 +39,14 @@ export default function BikeListScreen() {
   if (!bikes || bikes.length === 0) {
     return (
       <View style={styles.center}>
-        <Text style={styles.emptyTitle}>No bikes yet</Text>
-        <Text style={styles.emptySubtitle}>Add your first bike to start tracking it.</Text>
+        <Stack.Screen options={headerOptions} />
+        <Text style={styles.emptyTitle}>{t('bikeList.emptyTitle')}</Text>
+        <Text style={styles.emptySubtitle}>{t('bikeList.emptySubtitle')}</Text>
         <Pressable style={styles.primaryButton} onPress={() => router.push('/bikes/new')}>
-          <Text style={styles.primaryButtonText}>Add a bike</Text>
+          <Text style={styles.primaryButtonText}>{t('bikeList.addBike')}</Text>
         </Pressable>
         <Link href="/dev/gps-spike" style={styles.devLink}>
-          GPS spike test screen
+          {t('bikeList.devLink')}
         </Link>
       </View>
     );
@@ -35,6 +54,7 @@ export default function BikeListScreen() {
 
   return (
     <View style={styles.container}>
+      <Stack.Screen options={headerOptions} />
       <FlatList
         data={bikes}
         keyExtractor={(bike) => bike.id}
@@ -66,6 +86,13 @@ function BikeRow({ bike }: { bike: Bike }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  headerButton: {
+    marginRight: 16,
   },
   center: {
     flex: 1,

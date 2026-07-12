@@ -6,6 +6,7 @@ import m0001 from './0001_mighty_night_nurse.sql';
 import m0002 from './0002_unknown_iron_man.sql';
 import m0003 from './0003_unusual_hellcat.sql';
 import m0004 from './0004_left_whiplash.sql';
+import m0005 from './0005_add_app_settings.sql';
 
   export default {
     journal,
@@ -14,7 +15,8 @@ import m0004 from './0004_left_whiplash.sql';
 m0001,
 m0002,
 m0003,
-m0004
+m0004,
+m0005
     }
   }
   

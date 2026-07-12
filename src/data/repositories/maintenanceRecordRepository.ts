@@ -7,6 +7,7 @@ import { maintenanceRecords } from '../schema';
 
 export interface MaintenanceRecordRepository {
   listByComponent(componentId: string): Promise<MaintenanceRecord[]>;
+  listAll(): Promise<MaintenanceRecord[]>;
   create(input: NewMaintenanceRecord): Promise<MaintenanceRecord>;
 }
 
@@ -17,6 +18,10 @@ export const maintenanceRecordRepository: MaintenanceRecordRepository = {
       .from(maintenanceRecords)
       .where(eq(maintenanceRecords.componentId, componentId))
       .orderBy(desc(maintenanceRecords.performedDate));
+  },
+
+  async listAll() {
+    return db.select().from(maintenanceRecords);
   },
 
   async create(input) {
