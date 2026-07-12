@@ -47,26 +47,69 @@ export function filterByAccuracy(
 
 export const DEFAULT_MAX_SPEED_KMH = 90;
 
+/** How many consecutive mutually-plausible rejected points it takes to conclude the track's
+ * anchor — not the incoming stream — is the outlier (see stale-start recovery below). */
+const REANCHOR_MIN_RUN = 3;
+/** Stale-start recovery only applies while the kept track is at most this long. A stale cached
+ * fix produces a handful of leading points at most; once a track this long has been accepted,
+ * the anchor is considered validated and a burst of implausible points is treated as the
+ * glitch, never the truth. */
+const MAX_STALE_PREFIX_POINTS = 5;
+
 /** Drops points that imply an impossible speed from the last *kept* point (not the last raw
  * point) — a single bad fix shouldn't poison every point after it. Points at or before the
- * previous kept point's timestamp (out-of-order or duplicate) are dropped outright. */
+ * previous kept point's timestamp (out-of-order or duplicate) are dropped outright.
+ *
+ * Stale-start recovery: the first fix after a cold GPS start is often the OS's cached
+ * last-known location, potentially kilometers from where the ride actually starts. Anchoring
+ * on it blindly would make every genuine point look like an implausible jump and record the
+ * whole ride as zero distance (issue #45). So while the kept track is still just a short
+ * leading prefix, a longer run of consecutive points that are mutually plausible — but
+ * implausible against that prefix — wins: the prefix is discarded and the track re-anchors on
+ * the run. */
 export function filterImplausibleJumps(
   points: RawGpsPoint[],
   maxSpeedKmh = DEFAULT_MAX_SPEED_KMH
 ): RawGpsPoint[] {
   if (points.length === 0) return [];
 
-  const kept: RawGpsPoint[] = [points[0]];
+  const plausibleStep = (from: RawGpsPoint, to: RawGpsPoint): boolean => {
+    const dtMs = to.ts - from.ts;
+    if (dtMs <= 0) return false;
+    return speedKmh(haversineDistanceM(from, to), dtMs) <= maxSpeedKmh;
+  };
+
+  let kept: RawGpsPoint[] = [points[0]];
+  let rejectedRun: RawGpsPoint[] = [];
+
   for (let i = 1; i < points.length; i++) {
-    const prev = kept[kept.length - 1];
     const curr = points[i];
-    const dtMs = curr.ts - prev.ts;
-    if (dtMs <= 0) continue;
+    const prev = kept[kept.length - 1];
+    if (curr.ts - prev.ts <= 0) continue;
 
-    const distM = haversineDistanceM(prev, curr);
-    if (speedKmh(distM, dtMs) > maxSpeedKmh) continue;
+    if (plausibleStep(prev, curr)) {
+      kept.push(curr);
+      rejectedRun = [];
+      continue;
+    }
 
-    kept.push(curr);
+    // Implausible against the kept track — extend or restart the rejected run depending on
+    // whether it's plausible against the run's own last point.
+    const runPrev = rejectedRun[rejectedRun.length - 1];
+    if (runPrev && plausibleStep(runPrev, curr)) {
+      rejectedRun.push(curr);
+    } else {
+      rejectedRun = [curr];
+    }
+
+    if (
+      kept.length <= MAX_STALE_PREFIX_POINTS &&
+      rejectedRun.length >= REANCHOR_MIN_RUN &&
+      rejectedRun.length > kept.length
+    ) {
+      kept = rejectedRun;
+      rejectedRun = [];
+    }
   }
   return kept;
 }
