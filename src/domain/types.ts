@@ -97,6 +97,63 @@ export interface ComponentUpdate {
   isRetired?: boolean;
 }
 
+/** A recurring service action on a component (e.g. "Lubricate" every 200 km). Due-status is
+ * always *derived* from the bike's odometer vs. lastPerformedAtOdometerM + intervalM — never a
+ * separately stored/mutated counter (see domain/maintenance.ts). */
+export interface MaintenanceRule {
+  id: string;
+  componentId: string;
+  action: string;
+  intervalM: number;
+  lastPerformedAtOdometerM: number;
+  notes: string | null;
+  isArchived: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface NewMaintenanceRule {
+  componentId: string;
+  action: string;
+  intervalM: number;
+  lastPerformedAtOdometerM: number;
+  notes?: string | null;
+}
+
+export interface MaintenanceRuleUpdate {
+  componentId?: string;
+  action?: string;
+  intervalM?: number;
+  lastPerformedAtOdometerM?: number;
+  notes?: string | null;
+  isArchived?: boolean;
+}
+
+/** An append-only log entry recording that a maintenance action was actually performed.
+ * Creating one for a rule also resets that rule's lastPerformedAtOdometerM ("mark as done"). */
+export interface MaintenanceRecord {
+  id: string;
+  componentId: string;
+  ruleId: string | null;
+  action: string;
+  performedAtOdometerM: number;
+  performedDate: Date;
+  cost: number | null;
+  notes: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface NewMaintenanceRecord {
+  componentId: string;
+  ruleId?: string | null;
+  action: string;
+  performedAtOdometerM: number;
+  performedDate: Date;
+  cost?: number | null;
+  notes?: string | null;
+}
+
 /** A ride is only persisted once completed — the in-progress track lives on disk during
  * recording (see tasks/locationTask.ts) and becomes a Ride row on save. Append-only after
  * that: everything but `bikeId` and `notes` is fixed, and the GPS track itself is never

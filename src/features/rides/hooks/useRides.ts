@@ -1,10 +1,28 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import type { NewRide, RideUpdate } from '../../../domain/types';
+import { bikeRepository } from '../../../data/repositories/bikeRepository';
 import { rideRepository } from '../../../data/repositories/rideRepository';
+import { computeOdometerM } from '../../../domain/odometer';
+import type { NewRide, RideUpdate } from '../../../domain/types';
+import { checkMaintenanceNotifications } from '../../../services/notifications';
 
 const ridesKey = (bikeId: string) => ['bikes', bikeId, 'rides'] as const;
 const rideKey = (id: string) => ['rides', id] as const;
+
+/** Notifies on any maintenance rule that crossed into a more urgent due-status as a result of
+ * this bike's odometer changing by `distanceDeltaM` (positive for a new ride, negative for a
+ * deleted one). */
+async function notifyOnOdometerChange(bikeId: string, distanceDeltaM: number): Promise<void> {
+  const [bike, rides] = await Promise.all([
+    bikeRepository.getById(bikeId),
+    rideRepository.list({ bikeId }),
+  ]);
+  if (!bike) return;
+
+  const newOdometerM = computeOdometerM(bike, rides);
+  const previousOdometerM = newOdometerM - distanceDeltaM;
+  await checkMaintenanceNotifications(bikeId, previousOdometerM, newOdometerM);
+}
 
 export function useRides(bikeId: string | undefined) {
   return useQuery({
@@ -28,6 +46,7 @@ export function useCreateRide() {
     mutationFn: (input: NewRide) => rideRepository.create(input),
     onSuccess: (created) => {
       queryClient.invalidateQueries({ queryKey: ridesKey(created.bikeId) });
+      void notifyOnOdometerChange(created.bikeId, created.distanceM);
     },
   });
 }
@@ -46,10 +65,11 @@ export function useUpdateRide() {
 export function useDeleteRide() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id }: { id: string; bikeId: string }) => rideRepository.softDelete(id),
-    onSuccess: (_result, { id, bikeId }) => {
+    mutationFn: ({ id }: { id: string; bikeId: string; distanceM: number }) => rideRepository.softDelete(id),
+    onSuccess: (_result, { id, bikeId, distanceM }) => {
       queryClient.invalidateQueries({ queryKey: ridesKey(bikeId) });
       queryClient.invalidateQueries({ queryKey: rideKey(id) });
+      void notifyOnOdometerChange(bikeId, -distanceM);
     },
   });
 }

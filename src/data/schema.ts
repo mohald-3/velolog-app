@@ -49,6 +49,35 @@ export const components = sqliteTable('components', {
   updatedAt: integer('updated_at', { mode: 'timestamp_ms' }).notNull(),
 });
 
+export const maintenanceRules = sqliteTable('maintenance_rules', {
+  id: text('id').primaryKey(),
+  componentId: text('component_id')
+    .notNull()
+    .references(() => components.id),
+  action: text('action').notNull(),
+  intervalM: integer('interval_m').notNull(),
+  lastPerformedAtOdometerM: integer('last_performed_at_odometer_m').notNull(),
+  notes: text('notes'),
+  isArchived: integer('is_archived', { mode: 'boolean' }).notNull().default(false),
+  createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp_ms' }).notNull(),
+});
+
+export const maintenanceRecords = sqliteTable('maintenance_records', {
+  id: text('id').primaryKey(),
+  componentId: text('component_id')
+    .notNull()
+    .references(() => components.id),
+  ruleId: text('rule_id').references(() => maintenanceRules.id),
+  action: text('action').notNull(),
+  performedAtOdometerM: integer('performed_at_odometer_m').notNull(),
+  performedDate: integer('performed_date', { mode: 'timestamp_ms' }).notNull(),
+  cost: real('cost'),
+  notes: text('notes'),
+  createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp_ms' }).notNull(),
+});
+
 export const rides = sqliteTable('rides', {
   id: text('id').primaryKey(),
   bikeId: text('bike_id')

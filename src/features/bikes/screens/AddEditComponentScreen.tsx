@@ -5,11 +5,15 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { Component, ComponentType } from '../../../domain/types';
 import { componentTypeValues } from '../../../data/schema';
+import { computeOdometerM } from '../../../domain/odometer';
+import { useMaintenanceRules } from '../../maintenance/hooks/useMaintenanceRules';
+import { useRides } from '../../rides/hooks/useRides';
 import { useBike } from '../hooks/useBikes';
 import {
   useComponent,
   useCreateComponent,
   useRetireComponent,
+  useReplaceComponent,
   useUpdateComponent,
 } from '../hooks/useComponents';
 
@@ -22,9 +26,10 @@ export default function AddEditComponentScreen() {
   const isEditing = Boolean(componentId);
 
   const { data: bike, isLoading: isLoadingBike } = useBike(bikeId);
+  const { data: rides, isLoading: isLoadingRides } = useRides(bikeId);
   const { data: existingComponent, isLoading: isLoadingComponent } = useComponent(componentId);
 
-  if (isLoadingBike || (isEditing && isLoadingComponent)) {
+  if (isLoadingBike || isLoadingRides || (isEditing && isLoadingComponent)) {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" />
@@ -44,7 +49,7 @@ export default function AddEditComponentScreen() {
     <ComponentForm
       key={existingComponent?.id ?? 'new'}
       bikeId={bikeId}
-      currentOdometerM={bike.startingOdometerM}
+      currentOdometerM={computeOdometerM(bike, rides ?? [])}
       initialComponent={existingComponent ?? null}
     />
   );
@@ -60,11 +65,13 @@ function ComponentForm({
   initialComponent: Component | null;
 }) {
   const router = useRouter();
+  const { data: rules } = useMaintenanceRules(initialComponent?.id);
   const insets = useSafeAreaInsets();
   const isEditing = Boolean(initialComponent);
   const createComponent = useCreateComponent();
   const updateComponent = useUpdateComponent();
   const retireComponent = useRetireComponent();
+  const replaceComponent = useReplaceComponent();
 
   const [type, setType] = useState<ComponentType>(initialComponent?.type ?? 'Chain');
   const [name, setName] = useState(initialComponent?.name ?? '');
@@ -117,6 +124,24 @@ function ComponentForm({
       await createComponent.mutateAsync({ bikeId, ...values });
     }
     router.back();
+  };
+
+  const handleReplace = () => {
+    if (!initialComponent) return;
+    Alert.alert(
+      'Replace this component?',
+      `${initialComponent.name} will be retired and a new ${initialComponent.type} installed at ${(currentOdometerM / 1000).toFixed(1)} km. Active maintenance rules move to the new component with their counter reset.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Replace',
+          onPress: async () => {
+            await replaceComponent.mutateAsync({ oldComponent: initialComponent, currentOdometerM });
+            router.back();
+          },
+        },
+      ]
+    );
   };
 
   const handleRetire = () => {
@@ -176,6 +201,34 @@ function ComponentForm({
           {saving ? 'Saving...' : isEditing ? 'Save changes' : 'Add component'}
         </Text>
       </Pressable>
+
+      {isEditing && initialComponent && (
+        <Pressable
+          style={styles.secondaryButton}
+          onPress={() => router.push(`/bikes/${bikeId}/components/${initialComponent.id}/rules`)}
+        >
+          <Text style={styles.secondaryButtonText}>
+            Maintenance Rules{rules && rules.length > 0 ? ` (${rules.length})` : ''}
+          </Text>
+        </Pressable>
+      )}
+
+      {isEditing && initialComponent && (
+        <Pressable
+          style={styles.secondaryButton}
+          onPress={() => router.push(`/bikes/${bikeId}/components/${initialComponent.id}/log`)}
+        >
+          <Text style={styles.secondaryButtonText}>Maintenance Log</Text>
+        </Pressable>
+      )}
+
+      {isEditing && (
+        <Pressable style={styles.secondaryButton} onPress={handleReplace} disabled={replaceComponent.isPending}>
+          <Text style={styles.secondaryButtonText}>
+            {replaceComponent.isPending ? 'Replacing...' : 'Replace component'}
+          </Text>
+        </Pressable>
+      )}
 
       {isEditing && (
         <Pressable style={styles.retireButton} onPress={handleRetire}>
@@ -270,6 +323,18 @@ const styles = StyleSheet.create({
   },
   primaryButtonText: {
     color: '#ffffff',
+    fontWeight: '600',
+    fontSize: 16,
+  },
+  secondaryButton: {
+    marginTop: 12,
+    backgroundColor: '#f2f2f2',
+    paddingVertical: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  secondaryButtonText: {
+    color: '#2f6f4f',
     fontWeight: '600',
     fontSize: 16,
   },

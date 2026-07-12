@@ -80,7 +80,7 @@ export default function RideDetailScreen() {
         text: 'Delete',
         style: 'destructive',
         onPress: async () => {
-          await deleteRide.mutateAsync({ id: ride.id, bikeId: ride.bikeId });
+          await deleteRide.mutateAsync({ id: ride.id, bikeId: ride.bikeId, distanceM: ride.distanceM });
           router.back();
         },
       },
