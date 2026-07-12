@@ -1,5 +1,26 @@
 # Current Work
 
+## M4 — Maintenance (v0.2) — COMPLETE (2026-07-12)
+
+All 3 phases done, all 6 issues closed (#29-#34), milestone closed. `MaintenanceRule` domain
+(due-status derivation, never a stored counter) with CRUD and sensible presets, local
+notifications via `expo-notifications` when a rule crosses into DueSoon/Overdue, "Mark as done"
+flow creating a `MaintenanceRecord` and resetting the rule's counter, per-component maintenance
+log, and a component replacement flow (retire old, install new at current odometer, migrate
+active rules with their counter reset). Also fixed a latent bug: `AddEditComponentScreen` was
+using the bike's starting odometer baseline instead of the actual ride-derived current odometer.
+Fully verified live end-to-end, including the milestone's signature exit criteria: recorded a
+real ride via mocked GPS that pushed a rule into DueSoon and confirmed the actual Android
+notification fired. Survived a severe emulator slowdown mid-session (fixed by fully restarting
+the AVD; all data was intact since SQLite persists independent of the emulator process). Full
+summary archived at `.planning/archive/m4-maintenance/SUMMARY.md`. PR: #41.
+
+No active feature plan right now. Next up: M5 — Polish & "Your Journey" (v0.2): journey stats
+screen (distance equivalence, cost per km, CO₂ saved, calories), onboarding for first bike, units
+setting + Swedish/English i18n, app icon/splash/dark mode pass.
+
+---
+
 ## M3 — Ride History & Statistics (v0.1c) — COMPLETE (2026-07-11)
 
 All 3 phases done, all 4 issues closed (#25-#28), milestone closed. Ride list grouped by day,
@@ -59,4 +80,4 @@ points, no crashes, clean data.
 Full detail archived at `.planning/archive/spike-0-gps-derisk/STATE.md`.
 
 ---
-_Last updated: 2026-07-11 (M3 complete, all 4 issues closed, milestone closed; Spike 0's two real-device items still pending)._
+_Last updated: 2026-07-12 (M4 complete, all 6 issues closed, milestone closed; Spike 0's two real-device items still pending)._
