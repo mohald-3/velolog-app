@@ -1,7 +1,7 @@
 # Feature: M4 — Maintenance (v0.2)
 
 > Created: 2026-07-11
-> Status: Phase 2 complete — ready to execute Phase 3
+> Status: Complete — all 3 phases done, ready for PR
 > Milestone: M4 - Maintenance (v0.2) — GitHub milestone, issues #29-#34
 
 ## Goal
@@ -21,8 +21,8 @@ exit criteria's full loop (ride past threshold → notification fires → mark d
 - [x] Local notification via `expo-notifications` when a rule crosses into `DueSoon`/`Overdue` (#31)
 - [x] `MaintenanceRecord` entity + "mark as done" flow: creates a record, resets the rule's
       `lastPerformedAtOdometerM` (#32)
-- [ ] Maintenance log view per component: history + cost (#33)
-- [ ] Component replacement flow: retire old component, install new one at current odometer (#34)
+- [x] Maintenance log view per component: history + cost (#33)
+- [x] Component replacement flow: retire old component, install new one at current odometer (#34)
 
 **Baked-in defaults** (documented as Decisions below, adjustable later):
 - `DueSoon` when remaining distance ≤ 10% of `intervalKm` (min 20 km floor so short intervals
@@ -61,25 +61,29 @@ exit criteria's full loop (ride past threshold → notification fires → mark d
       `lastPerformedAtOdometerM` to the bike's current odometer, confirm dialog shows the exact
       value it'll log at
 
-### Phase 3: Maintenance log + component replacement — small/medium
-- [ ] Maintenance log screen per component: list of `MaintenanceRecord`s (date, odometer, cost,
-      notes), reachable from the component's row/detail
-- [ ] Component replacement flow: retire old component (`isRetired = true`), create a new
+### Phase 3: Maintenance log + component replacement — small/medium — DONE
+- [x] Maintenance log screen per component: list of `MaintenanceRecord`s (date, odometer, cost,
+      notes), reachable from the component's edit screen
+- [x] Component replacement flow: retire old component (`isRetired = true`), create a new
       component of the same type at the bike's current odometer as its `installedAtOdometerM`
-      (fresh wear baseline) — decide during execution whether existing `MaintenanceRule`s move to
-      the new component or need to be recreated
+      (fresh wear baseline). Decided: active `MaintenanceRule`s move to the new component with
+      their `lastPerformedAtOdometerM` reset to the new install odometer — a replaced part's own
+      service history doesn't apply to the new one
+- [x] Fixed a latent bug found while wiring this: `AddEditComponentScreen` used
+      `bike.startingOdometerM` instead of the ride-derived current odometer, a leftover from
+      before M2 added ride tracking
 
 ## Current Position
 
 ```
-Phase: 3 of 3
-Task:  0
-Status: Ready to execute Phase 3
+Phase: 3 of 3 — complete
+Task:  n/a
+Status: All phases done, ready for PR
 ```
 
 ## Progress
 
-[██████████████░░░░░░] 2/3 phases
+[████████████████████] 3/3 phases
 
 ## Decisions
 
@@ -95,3 +99,4 @@ Status: Ready to execute Phase 3
 | 2026-07-11 | Planning | Created plan with 3 phases; requirements and two default judgment calls confirmed with user before roadmap was written |
 | 2026-07-11 | Phase 1 | Built `computeDueInfo`/`worstDueStatus` domain functions (12 unit tests), `maintenanceRuleRepository`, and the maintenance feature folder (rule list with badges, add/edit with presets). Verified live on emulator: created a "Lubricate chain" rule via the preset chip, confirmed correct "Due in 200 km · OK" math, confirmed the BikeDetailScreen status dot is correctly suppressed for OK status. Typecheck/lint/tests (61 total) all clean; committed on `feat/m4-maintenance` |
 | 2026-07-12 | Phase 2 | Installed `expo-notifications`, required a native rebuild (`npx expo run:android`, ~1m17s) since it's the first native (non-pure-JS) module added this session — fixed a missing `JAVA_HOME` by pointing at Android Studio's bundled JBR. Built `shouldNotifyOnStatusChange` (5 unit tests), the notifications service, `maintenanceRecordRepository`, and the mark-as-done flow. **Fully verified live end-to-end**: recorded a real short ride via mocked GPS (`adb emu geo fix`, ~120m) against a rule tuned so this exact ride would cross OK→DueSoon; confirmed the real Android notification fired ("Maintenance due soon — Lubricate chain is due soon."), confirmed the orange DueSoon dot appeared on `BikeDetailScreen`, then used Mark as done and confirmed the rule reset to OK, a `MaintenanceRecord` was persisted correctly (verified via direct DB query), and no duplicate notification fired. Typecheck/lint/tests (66 total) all clean; committed on `feat/m4-maintenance` |
+| 2026-07-12 | Phase 3 | Built `MaintenanceLogScreen` and `useReplaceComponent`; found and fixed a latent bug (`AddEditComponentScreen` used `bike.startingOdometerM` instead of the derived current odometer). Hit a severe emulator slowdown mid-verification (every adb command took minutes; a bundle-download protocol error persisted even after a full Metro restart) — resolved by killing and restarting the Pixel_8 AVD entirely, after which everything was instant again and all app data was intact (SQLite persists on the emulator's disk independent of the emulator process). Verified live end-to-end: the log screen correctly showed Phase 2's mark-as-done record, and replacing the Chain component correctly retired the old one, created a new one at the right odometer, and moved the rule with its counter reset (confirmed via direct DB query). Typecheck/lint/tests (66 total) all clean; committed on `feat/m4-maintenance` |
