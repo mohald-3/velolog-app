@@ -57,11 +57,18 @@ Done so far:
   centralized in `src/features/queryKeys.ts` + journey-invalidation gap fixed, global mutation
   error alert (MutationCache.onError, opt-out via meta.suppressErrorAlert)
 
+- Live emulator verification passed (2026-07-13): record → stop → save through the new
+  append/finalize path (odometer 0.2→0.4 km, pointer cleared after save, due-status dot +
+  translated "Due soon" badge, translated type chips, primitives render correctly). Discard
+  flow also verified.
+- Found during verification: **#45** — a stale first GPS fix suppresses the whole ride's
+  distance (jump filter anchors on the first point unconditionally). D6/D7 minor UI warts
+  added to #43.
+
 Next:
-1. Merge PR #44, then PR the C-batch branch on top
-2. Emulator pass before merging: record→stop→save a ride (new append path), replace component,
-   mark rule as done, one form screen per type (visual parity after primitives conversion)
-3. UX/UI pass after the code is settled (includes D3 BikeDetail header actions; D1/D2/D4/D5
+1. Merge PR #44 (A+B), then PR the C-batch branch on top
+2. Fix #45 (stale-first-fix GPS bug) — domain-pure, needs solid unit tests
+3. UX/UI pass after the code is settled (includes D3 BikeDetail header actions; D1/D2/D4-D7
    from #43 still open)
 
 ## After that
