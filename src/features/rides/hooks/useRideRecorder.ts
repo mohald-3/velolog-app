@@ -20,7 +20,7 @@ import {
   resumeRideRecordingAsync,
   startRideRecordingAsync,
   stopRideRecordingAsync,
-} from '../../../../tasks/rideRecordingTask';
+} from '../../../services/rideRecordingTask';
 
 export interface LiveRideStats {
   distanceM: number;

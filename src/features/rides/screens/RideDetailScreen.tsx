@@ -9,7 +9,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { speedKmh } from '../../../domain/gps-filter';
 import { formatDistance, formatSpeed } from '../../../domain/units';
-import { readTrackPointsAsync } from '../../../../tasks/rideRecordingTask';
+import { readTrackPointsAsync } from '../../../services/rideRecordingTask';
 import i18n from '../../../i18n';
 import { useSettings } from '../../settings/hooks/useSettings';
 import { type ThemeColors } from '../../../theme/colors';

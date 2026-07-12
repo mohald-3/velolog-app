@@ -3,6 +3,7 @@ import * as Notifications from 'expo-notifications';
 import { componentRepository } from '../data/repositories/componentRepository';
 import { maintenanceRuleRepository } from '../data/repositories/maintenanceRuleRepository';
 import { computeDueInfo, shouldNotifyOnStatusChange, type DueStatus } from '../domain/maintenance';
+import i18n from '../i18n';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -28,21 +29,16 @@ async function ensurePermissionAsync(): Promise<boolean> {
   return status === 'granted';
 }
 
-const STATUS_LABEL: Record<DueStatus, string> = {
-  OK: 'OK',
-  DueSoon: 'due soon',
-  Overdue: 'overdue',
-};
-
 async function notifyMaintenanceDue(action: string, status: DueStatus): Promise<void> {
   const granted = await ensurePermissionAsync();
   if (!granted) {
     return;
   }
+  const overdue = status === 'Overdue';
   await Notifications.scheduleNotificationAsync({
     content: {
-      title: status === 'Overdue' ? 'Maintenance overdue' : 'Maintenance due soon',
-      body: `${action} is ${STATUS_LABEL[status]}.`,
+      title: i18n.t(overdue ? 'notifications.overdueTitle' : 'notifications.dueSoonTitle'),
+      body: i18n.t(overdue ? 'notifications.overdueBody' : 'notifications.dueSoonBody', { action }),
     },
     trigger: null,
   });

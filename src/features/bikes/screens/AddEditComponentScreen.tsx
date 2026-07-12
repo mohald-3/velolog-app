@@ -4,10 +4,9 @@ import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import type { Component, ComponentType, UnitSystem } from '../../../domain/types';
+import { componentTypeValues, type Component, type ComponentType, type UnitSystem } from '../../../domain/types';
 import type { ThemeColors } from '../../../theme/colors';
 import { useTheme } from '../../../theme/useTheme';
-import { componentTypeValues } from '../../../data/schema';
 import { computeOdometerM } from '../../../domain/odometer';
 import { distanceUnitLabel, distanceUnitToMeters, formatDistance, metersToDistanceUnit } from '../../../domain/units';
 import { useMaintenanceRules } from '../../maintenance/hooks/useMaintenanceRules';
@@ -150,7 +149,7 @@ function ComponentForm({
       t('addEditComponent.replaceConfirmTitle'),
       t('addEditComponent.replaceConfirmMessage', {
         name: initialComponent.name,
-        type: initialComponent.type,
+        type: t(`componentType.${initialComponent.type}`),
         odometer: formatDistance(currentOdometerM, unitSystem, 1),
       }),
       [
@@ -197,7 +196,9 @@ function ComponentForm({
             style={[styles.chip, type === value && styles.chipSelected]}
             onPress={() => setType(value)}
           >
-            <Text style={[styles.chipText, type === value && styles.chipTextSelected]}>{value}</Text>
+            <Text style={[styles.chipText, type === value && styles.chipTextSelected]}>
+              {t(`componentType.${value}`)}
+            </Text>
           </Pressable>
         ))}
       </View>

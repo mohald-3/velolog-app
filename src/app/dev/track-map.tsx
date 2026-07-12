@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import { Camera, GeoJSONSource, Layer, Map, type LngLatBounds } from '@maplibre/maplibre-react-native';
 
-import { TRACK_LOG_URI } from '../../../tasks/locationTask';
+import { TRACK_LOG_URI } from '../../services/locationTask';
 
 export const options = { title: 'Recorded Track' };
 

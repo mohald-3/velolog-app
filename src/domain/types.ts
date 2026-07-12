@@ -1,11 +1,14 @@
-export type ComponentType =
-  | 'Chain'
-  | 'Cassette'
-  | 'BrakePadsFront'
-  | 'BrakePadsRear'
-  | 'TireFront'
-  | 'TireRear'
-  | 'Custom';
+export const componentTypeValues = [
+  'Chain',
+  'Cassette',
+  'BrakePadsFront',
+  'BrakePadsRear',
+  'TireFront',
+  'TireRear',
+  'Custom',
+] as const;
+
+export type ComponentType = (typeof componentTypeValues)[number];
 
 export interface Bike {
   id: string;

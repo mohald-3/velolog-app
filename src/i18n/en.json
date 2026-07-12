@@ -213,5 +213,25 @@
       "stockholmParis": "Stockholm → Paris",
       "aroundTheEquator": "Around the Earth's equator"
     }
+  },
+  "notifications": {
+    "dueSoonTitle": "Maintenance due soon",
+    "overdueTitle": "Maintenance overdue",
+    "dueSoonBody": "{{action}} is due soon.",
+    "overdueBody": "{{action}} is overdue."
+  },
+  "componentType": {
+    "Chain": "Chain",
+    "Cassette": "Cassette",
+    "BrakePadsFront": "Brake pads (front)",
+    "BrakePadsRear": "Brake pads (rear)",
+    "TireFront": "Tire (front)",
+    "TireRear": "Tire (rear)",
+    "Custom": "Custom"
+  },
+  "dueStatus": {
+    "OK": "OK",
+    "DueSoon": "Due soon",
+    "Overdue": "Overdue"
   }
 }

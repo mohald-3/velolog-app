@@ -1,5 +1,7 @@
 import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core';
 
+import { componentTypeValues } from '../domain/types';
+
 export const bikes = sqliteTable('bikes', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
@@ -22,16 +24,6 @@ export const bikes = sqliteTable('bikes', {
   createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
   updatedAt: integer('updated_at', { mode: 'timestamp_ms' }).notNull(),
 });
-
-export const componentTypeValues = [
-  'Chain',
-  'Cassette',
-  'BrakePadsFront',
-  'BrakePadsRear',
-  'TireFront',
-  'TireRear',
-  'Custom',
-] as const;
 
 export const components = sqliteTable('components', {
   id: text('id').primaryKey(),

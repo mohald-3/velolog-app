@@ -46,9 +46,12 @@ Done so far:
   transactional replace-component and mark-as-done, corrupt-JSON guards on recovery paths,
   double-tap-Stop guard
 
+- B-batch fixed on the same branch: notifications + component-type/due-status labels now
+  translated (197 i18n keys, full parity), `componentTypeValues` moved to `domain/types.ts`,
+  `tasks/` moved to `src/services/` per the CLAUDE.md tree
+
 Next:
-1. Issue #43 B-batch: i18n for notifications + enum labels, move `componentTypeValues` to
-   domain, move `tasks/` under `src/services/`
+1. PR the `fix/code-review-correctness` branch (A+B batches, issue #43)
 2. Issue #43 C-batch: extract shared UI primitives into `src/components/` (Field ×3, Stat ×4,
    buttons ×6...), centralize query keys, shared mutation-error feedback
 3. UX/UI pass after the code is settled (includes D3 BikeDetail header actions)

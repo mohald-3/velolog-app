@@ -4,7 +4,7 @@ import * as FileSystem from 'expo-file-system/legacy';
 import * as Location from 'expo-location';
 import * as TaskManager from 'expo-task-manager';
 
-import type { RawGpsPoint } from '../src/domain/gps-filter';
+import type { RawGpsPoint } from '../domain/gps-filter';
 
 export const RIDE_RECORDING_TASK_NAME = 'velolog-ride-recording-task';
 
