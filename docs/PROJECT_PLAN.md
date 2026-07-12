@@ -3,7 +3,7 @@
 **Working name:** VeloLog (placeholder — rename freely)
 **Owner:** Mohanned
 **Date:** 2026-07-07
-**Status:** Planning
+**Status:** v0.2 complete (Spike 0 through M5 shipped); M6 (v0.3) not yet started
 
 ---
 
@@ -137,13 +137,13 @@ Rules (these go verbatim into CLAUDE.md):
 **Goal:** prove background tracking works acceptably on a real Android device.
 **Timebox:** ~1 week of evenings.
 
-- [ ] EAS dev build with expo-location + expo-task-manager
-- [ ] Background tracking with Android foreground service notification
-- [ ] Record a real 30+ min outdoor ride; log raw points
-- [ ] Measure battery drain per hour
-- [ ] Test app-killed / screen-off / phone-locked scenarios
-- [ ] Evaluate accuracy: urban vs open road
-- [ ] Pick maps library by rendering the recorded track
+- [x] EAS dev build with expo-location + expo-task-manager
+- [x] Background tracking with Android foreground service notification
+- [x] Record a real 30+ min outdoor ride; log raw points
+- [x] Measure battery drain per hour — ~2.3%/hour, well under target
+- [ ] Test app-killed / screen-off / phone-locked scenarios — screen-lock survival looks good; deliberate force-kill test still open (needs a real outdoor ride)
+- [ ] Evaluate accuracy: urban vs open road — one route measured so far; contrasting open-road route still open
+- [x] Pick maps library by rendering the recorded track — MapLibre
 
 **Exit criteria:** a real ride recorded start-to-finish with screen off, < ~8–10% battery/hour, track visually sane on a map. If this fails, the whole plan is re-evaluated — that is the point of doing it first.
 
@@ -153,12 +153,12 @@ Rules (these go verbatim into CLAUDE.md):
 
 ### M1 — Bike Garage (v0.1a)
 
-- [ ] Project scaffold: Expo + TypeScript + Drizzle + expo-sqlite, migrations
-- [ ] Repository layer (interfaces now, so a synced implementation can swap in later)
-- [ ] Bike CRUD (create, edit, archive) with photo (expo-image-picker)
-- [ ] Component CRUD attached to a bike, with installedAtOdometer
-- [ ] Bike detail screen: static odometer (manually settable initial value — people have existing bikes with existing km)
-- [ ] Empty states + basic navigation (expo-router)
+- [x] Project scaffold: Expo + TypeScript + Drizzle + expo-sqlite, migrations
+- [x] Repository layer (interfaces now, so a synced implementation can swap in later)
+- [x] Bike CRUD (create, edit, archive) with photo (expo-image-picker)
+- [x] Component CRUD attached to a bike, with installedAtOdometer
+- [x] Bike detail screen: static odometer (manually settable initial value — people have existing bikes with existing km)
+- [x] Empty states + basic navigation (expo-router)
 
 **Exit criteria:** add Trek FX 2 with a chain and two tires, set starting odometer to e.g. 400 km, survive app restart.
 
@@ -166,18 +166,18 @@ Rules (these go verbatim into CLAUDE.md):
 
 ### M2 — Ride Recording (v0.1b) — the heart
 
-- [ ] Recording state machine: Idle → Recording → Paused → Recording → Completed/Discarded
-- [ ] Foreground recording with live stats (distance, duration, current/avg speed)
-- [ ] Background continuation (from Spike 0 learnings)
-- [ ] **GPS filtering pipeline:**
-  - drop points with accuracy worse than threshold (~25 m)
-  - drop implausible jumps (speed cap ~90 km/h between points)
-  - haversine distance accumulation over filtered points
-  - moving-time detection (speed < ~2 km/h = paused for movingS)
-  - optional auto-pause toggle
-- [ ] Crash/kill recovery: persist points incrementally so a killed app can resume or salvage the ride
-- [ ] Save ride → odometer update → component wear updates (invariant #1 and #2)
-- [ ] Discard ride flow
+- [x] Recording state machine: Idle → Recording → Paused → Recording → Completed/Discarded
+- [x] Foreground recording with live stats (distance, duration, current/avg speed)
+- [x] Background continuation (from Spike 0 learnings)
+- [x] **GPS filtering pipeline:**
+  - [x] drop points with accuracy worse than threshold (~25 m)
+  - [x] drop implausible jumps (speed cap ~90 km/h between points)
+  - [x] haversine distance accumulation over filtered points
+  - [x] moving-time detection (speed < ~2 km/h = paused for movingS)
+  - [x] optional auto-pause toggle
+- [x] Crash/kill recovery: persist points incrementally so a killed app can resume or salvage the ride
+- [x] Save ride → odometer update → component wear updates (invariant #1 and #2)
+- [x] Discard ride flow
 
 **Exit criteria:** three real outdoor rides recorded with believable stats (max speed sane, distance within ~2% of a reference app), odometer correct afterwards.
 
@@ -187,10 +187,10 @@ Rules (these go verbatim into CLAUDE.md):
 
 ### M3 — Ride History & Statistics (v0.1c)
 
-- [ ] Ride list grouped by day (distance, duration, avg speed)
-- [ ] Ride detail: map with track polyline, full stats, notes field
-- [ ] Bike statistics screen: total distance, longest ride, total time, average ride, ride count
-- [ ] Soft-delete ride (deletedAt) with odometer + rule-status recomputation
+- [x] Ride list grouped by day (distance, duration, avg speed)
+- [x] Ride detail: map with track polyline, full stats, notes field
+- [x] Bike statistics screen: total distance, longest ride, total time, average ride, ride count
+- [x] Soft-delete ride (deletedAt) with odometer + rule-status recomputation
 
 **Exit criteria:** the six MVP actions all work: add bike → start → ride → stop → see stats → odometer updated.
 
@@ -198,12 +198,12 @@ Rules (these go verbatim into CLAUDE.md):
 
 ### M4 — Maintenance (v0.2) — the differentiator
 
-- [ ] MaintenanceRule CRUD with sensible presets (chain lube 200 km, chain replace 3,000 km, brake pad check 1,000 km…)
-- [ ] Due-status computation after every completed ride
-- [ ] Local notification when a rule crosses into DueSoon/Overdue
-- [ ] "Mark as done" → MaintenanceRecord created, rule counter reset
-- [ ] Maintenance log view per component (history + cost)
-- [ ] Component replacement flow (retire old, install new at current odometer)
+- [x] MaintenanceRule CRUD with sensible presets (chain lube 200 km, chain replace 3,000 km, brake pad check 1,000 km…)
+- [x] Due-status computation after every completed ride
+- [x] Local notification when a rule crosses into DueSoon/Overdue
+- [x] "Mark as done" → MaintenanceRecord created, rule counter reset
+- [x] Maintenance log view per component (history + cost)
+- [x] Component replacement flow (retire old, install new at current odometer)
 
 **Exit criteria:** ride past a chain-lube threshold → notification fires → mark done → status resets. Full loop.
 
@@ -211,10 +211,10 @@ Rules (these go verbatim into CLAUDE.md):
 
 ### M5 — Polish & "Your Journey" (v0.2)
 
-- [ ] Journey stats screen: total distance with real-world equivalence ("Stockholm → Copenhagen ✓"), cost per km (purchase + maintenance costs / km), CO₂ saved vs car, calories estimate
-- [ ] Onboarding for first bike
-- [ ] Units setting (km/mi), Swedish + English i18n (long-standing interest — cheap to add early, painful late)
-- [ ] App icon, splash, dark mode pass
+- [x] Journey stats screen: total distance with real-world equivalence ("Stockholm → Copenhagen ✓"), cost per km (purchase + maintenance costs / km), CO₂ saved vs car, calories estimate
+- [x] Onboarding for first bike
+- [x] Units setting (km/mi), Swedish + English i18n (long-standing interest — cheap to add early, painful late)
+- [x] App icon, splash, dark mode pass
 
 **Exit criteria:** would not be embarrassed to show a recruiter or put on Google Play internal testing.
 
@@ -277,6 +277,8 @@ Deliberately unplanned in detail now. The mobile repository interfaces from M1 a
 
 ## 10. Immediate next steps
 
-1. ~~Open decisions~~ Both resolved: MapLibre + OpenFreeMap (fallback react-native-maps), soft-delete for rides. Platform: **Android-first**; iOS deferred until after M3. Spike 0 must pass on the actual phone used for riding (watch for OEM battery killers).
-2. Create repo + GitHub Project board, import milestones as issues
-3. **Start Spike 0** — nothing else matters until background GPS is proven
+1. ~~Open decisions~~ Both resolved: MapLibre + OpenFreeMap (fallback react-native-maps), soft-delete for rides. Platform: **Android-first**; iOS deferred until after M3.
+2. ~~Create repo + GitHub Project board, import milestones as issues~~ Done.
+3. ~~Start Spike 0~~ Done — background GPS proven (~2.3%/hour battery). Two real-device items remain open: deliberate force-kill test, and an open-road (vs. residential) accuracy comparison — both need an actual outdoor ride.
+4. ~~M1–M5 (v0.1a through v0.2)~~ All shipped — see `.planning/archive/*/SUMMARY.md` per milestone.
+5. **Next up:** M6 (v0.3 candidates — pick 2–3: GPX export/import, distance charts, elevation gain, weather snapshot, ride photos), and/or closing out Spike 0's two open real-device items.
