@@ -2,21 +2,18 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import type { Component, ComponentUpdate, NewComponent } from '../../../domain/types';
 import { componentRepository } from '../../../data/repositories/componentRepository';
-
-const componentsKey = (bikeId: string) => ['bikes', bikeId, 'components'] as const;
-const componentKey = (id: string) => ['components', id] as const;
-const rulesKey = (componentId: string) => ['components', componentId, 'maintenanceRules'] as const;
+import { queryKeys } from '../../queryKeys';
 
 export function useComponents(bikeId: string) {
   return useQuery({
-    queryKey: componentsKey(bikeId),
+    queryKey: queryKeys.components(bikeId),
     queryFn: () => componentRepository.listByBike(bikeId),
   });
 }
 
 export function useComponent(id: string | undefined) {
   return useQuery({
-    queryKey: componentKey(id ?? ''),
+    queryKey: queryKeys.component(id ?? ''),
     queryFn: () => componentRepository.getById(id as string),
     enabled: Boolean(id),
   });
@@ -27,7 +24,7 @@ export function useCreateComponent() {
   return useMutation({
     mutationFn: (input: NewComponent) => componentRepository.create(input),
     onSuccess: (created) => {
-      queryClient.invalidateQueries({ queryKey: componentsKey(created.bikeId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.components(created.bikeId) });
     },
   });
 }
@@ -38,8 +35,8 @@ export function useUpdateComponent() {
     mutationFn: ({ id, changes }: { id: string; changes: ComponentUpdate }) =>
       componentRepository.update(id, changes),
     onSuccess: (updated) => {
-      queryClient.invalidateQueries({ queryKey: componentsKey(updated.bikeId) });
-      queryClient.invalidateQueries({ queryKey: componentKey(updated.id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.components(updated.bikeId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.component(updated.id) });
     },
   });
 }
@@ -50,8 +47,8 @@ export function useRetireComponent() {
     mutationFn: (component: { id: string; bikeId: string }) =>
       componentRepository.retire(component.id),
     onSuccess: (_result, component) => {
-      queryClient.invalidateQueries({ queryKey: componentsKey(component.bikeId) });
-      queryClient.invalidateQueries({ queryKey: componentKey(component.id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.components(component.bikeId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.component(component.id) });
     },
   });
 }
@@ -74,10 +71,10 @@ export function useReplaceComponent() {
       newComponent: await componentRepository.replace(oldComponent, currentOdometerM),
     }),
     onSuccess: ({ oldComponent, newComponent }) => {
-      queryClient.invalidateQueries({ queryKey: componentsKey(oldComponent.bikeId) });
-      queryClient.invalidateQueries({ queryKey: componentKey(oldComponent.id) });
-      queryClient.invalidateQueries({ queryKey: rulesKey(oldComponent.id) });
-      queryClient.invalidateQueries({ queryKey: rulesKey(newComponent.id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.components(oldComponent.bikeId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.component(oldComponent.id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.maintenanceRules(oldComponent.id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.maintenanceRules(newComponent.id) });
     },
   });
 }

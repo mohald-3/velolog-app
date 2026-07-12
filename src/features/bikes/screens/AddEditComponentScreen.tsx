@@ -1,9 +1,10 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Button, Chip, FormField, LoadingState } from '../../../components';
 import { componentTypeValues, type Component, type ComponentType, type UnitSystem } from '../../../domain/types';
 import type { ThemeColors } from '../../../theme/colors';
 import { useTheme } from '../../../theme/useTheme';
@@ -38,11 +39,7 @@ export default function AddEditComponentScreen() {
   const styles = useMemo(() => createStyles(colors), [colors]);
 
   if (isLoadingBike || isLoadingRides || (isEditing && isLoadingComponent) || isLoadingSettings || !settings) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" />
-      </View>
-    );
+    return <LoadingState />;
   }
 
   if (!bike) {
@@ -102,7 +99,7 @@ function ComponentForm({
   );
   const [notes, setNotes] = useState(initialComponent?.notes ?? '');
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     if (!name.trim()) {
       Alert.alert(t('addEditComponent.nameRequiredTitle'), t('addEditComponent.nameRequiredMessage'));
       return;
@@ -136,11 +133,10 @@ function ComponentForm({
     };
 
     if (isEditing && initialComponent) {
-      await updateComponent.mutateAsync({ id: initialComponent.id, changes: values });
+      updateComponent.mutate({ id: initialComponent.id, changes: values }, { onSuccess: () => router.back() });
     } else {
-      await createComponent.mutateAsync({ bikeId, ...values });
+      createComponent.mutate({ bikeId, ...values }, { onSuccess: () => router.back() });
     }
-    router.back();
   };
 
   const handleReplace = () => {
@@ -156,10 +152,11 @@ function ComponentForm({
         { text: t('common.cancel'), style: 'cancel' },
         {
           text: t('addEditComponent.replaceComponent'),
-          onPress: async () => {
-            await replaceComponent.mutateAsync({ oldComponent: initialComponent, currentOdometerM });
-            router.back();
-          },
+          onPress: () =>
+            replaceComponent.mutate(
+              { oldComponent: initialComponent, currentOdometerM },
+              { onSuccess: () => router.back() }
+            ),
         },
       ]
     );
@@ -175,10 +172,8 @@ function ComponentForm({
         {
           text: t('addEditComponent.retireComponent'),
           style: 'destructive',
-          onPress: async () => {
-            await retireComponent.mutateAsync({ id: initialComponent.id, bikeId });
-            router.back();
-          },
+          onPress: () =>
+            retireComponent.mutate({ id: initialComponent.id, bikeId }, { onSuccess: () => router.back() }),
         },
       ]
     );
@@ -191,110 +186,84 @@ function ComponentForm({
       <Text style={styles.label}>{t('addEditComponent.typeLabel')}</Text>
       <View style={styles.chipRow}>
         {componentTypeValues.map((value) => (
-          <Pressable
+          <Chip
             key={value}
-            style={[styles.chip, type === value && styles.chipSelected]}
+            label={t(`componentType.${value}`)}
+            selected={type === value}
             onPress={() => setType(value)}
-          >
-            <Text style={[styles.chipText, type === value && styles.chipTextSelected]}>
-              {t(`componentType.${value}`)}
-            </Text>
-          </Pressable>
+          />
         ))}
       </View>
 
-      <Field
+      <FormField
         label={t('addEditComponent.nameLabel')}
         value={name}
         onChangeText={setName}
         placeholder={t('addEditComponent.namePlaceholder')}
-        styles={styles}
       />
-      <Field
+      <FormField
         label={t('addEditComponent.installedAtOdometerLabel', { unit: distanceUnitLabel(unitSystem) })}
         value={installedAtOdometerDisplay}
         onChangeText={setInstalledAtOdometerDisplay}
         keyboardType="decimal-pad"
-        styles={styles}
       />
-      <Field
+      <FormField
         label={t('addEditComponent.installedDateLabel')}
         value={installedDate}
         onChangeText={setInstalledDate}
-        styles={styles}
       />
-      <Field
+      <FormField
         label={t('addEditComponent.expectedLifetimeLabel', { unit: distanceUnitLabel(unitSystem) })}
         value={expectedLifetimeDisplay}
         onChangeText={setExpectedLifetimeDisplay}
         keyboardType="decimal-pad"
-        styles={styles}
       />
-      <Field label={t('common.notesOptional')} value={notes} onChangeText={setNotes} styles={styles} />
+      <FormField label={t('common.notesOptional')} value={notes} onChangeText={setNotes} />
 
-      <Pressable style={styles.primaryButton} onPress={handleSubmit} disabled={saving}>
-        <Text style={styles.primaryButtonText}>
-          {saving ? t('common.saving') : isEditing ? t('common.saveChanges') : t('addEditComponent.addComponent')}
-        </Text>
-      </Pressable>
+      <Button
+        title={saving ? t('common.saving') : isEditing ? t('common.saveChanges') : t('addEditComponent.addComponent')}
+        onPress={handleSubmit}
+        disabled={saving}
+        style={styles.submitButton}
+      />
 
       {isEditing && initialComponent && (
-        <Pressable
-          style={styles.secondaryButton}
+        <Button
+          title={`${t('addEditComponent.maintenanceRules')}${rules && rules.length > 0 ? ` (${rules.length})` : ''}`}
           onPress={() => router.push(`/bikes/${bikeId}/components/${initialComponent.id}/rules`)}
-        >
-          <Text style={styles.secondaryButtonText}>
-            {t('addEditComponent.maintenanceRules')}
-            {rules && rules.length > 0 ? ` (${rules.length})` : ''}
-          </Text>
-        </Pressable>
+          variant="secondary"
+          style={styles.stackedButton}
+        />
       )}
 
       {isEditing && initialComponent && (
-        <Pressable
-          style={styles.secondaryButton}
+        <Button
+          title={t('addEditComponent.maintenanceLog')}
           onPress={() => router.push(`/bikes/${bikeId}/components/${initialComponent.id}/log`)}
-        >
-          <Text style={styles.secondaryButtonText}>{t('addEditComponent.maintenanceLog')}</Text>
-        </Pressable>
+          variant="secondary"
+          style={styles.stackedButton}
+        />
       )}
 
       {isEditing && (
-        <Pressable style={styles.secondaryButton} onPress={handleReplace} disabled={replaceComponent.isPending}>
-          <Text style={styles.secondaryButtonText}>
-            {replaceComponent.isPending ? t('addEditComponent.replacing') : t('addEditComponent.replaceComponent')}
-          </Text>
-        </Pressable>
+        <Button
+          title={replaceComponent.isPending ? t('addEditComponent.replacing') : t('addEditComponent.replaceComponent')}
+          onPress={handleReplace}
+          disabled={replaceComponent.isPending}
+          variant="secondary"
+          style={styles.stackedButton}
+        />
       )}
 
       {isEditing && (
-        <Pressable style={styles.retireButton} onPress={handleRetire}>
-          <Text style={styles.retireButtonText}>{t('addEditComponent.retireComponent')}</Text>
-        </Pressable>
+        <Button
+          title={t('addEditComponent.retireComponent')}
+          onPress={handleRetire}
+          variant="ghostDanger"
+          style={styles.stackedButton}
+        />
       )}
     </ScrollView>
-  );
-}
-
-function Field(props: {
-  label: string;
-  value: string;
-  onChangeText: (text: string) => void;
-  placeholder?: string;
-  keyboardType?: 'default' | 'decimal-pad';
-  styles: ReturnType<typeof createStyles>;
-}) {
-  return (
-    <View style={props.styles.field}>
-      <Text style={props.styles.label}>{props.label}</Text>
-      <TextInput
-        style={props.styles.input}
-        value={props.value}
-        onChangeText={props.onChangeText}
-        placeholder={props.placeholder}
-        keyboardType={props.keyboardType ?? 'default'}
-      />
-    </View>
   );
 }
 
@@ -319,76 +288,16 @@ function createStyles(colors: ThemeColors) {
       flexWrap: 'wrap',
       marginBottom: 16,
     },
-    chip: {
-      borderWidth: 1,
-      borderColor: colors.surfaceBorder,
-      borderRadius: 16,
-      paddingHorizontal: 12,
-      paddingVertical: 6,
-      marginRight: 8,
-      marginBottom: 8,
-    },
-    chipSelected: {
-      backgroundColor: colors.primary,
-      borderColor: colors.primary,
-    },
-    chipText: {
-      fontSize: 13,
-      color: colors.chipText,
-    },
-    chipTextSelected: {
-      color: colors.onPrimary,
-    },
-    field: {
-      marginBottom: 16,
-    },
     label: {
       fontSize: 12,
       color: colors.textMuted,
       marginBottom: 4,
     },
-    input: {
-      borderWidth: 1,
-      borderColor: colors.surfaceBorder,
-      borderRadius: 8,
-      paddingHorizontal: 12,
-      paddingVertical: 10,
-      fontSize: 15,
-      color: colors.text,
-    },
-    primaryButton: {
+    submitButton: {
       marginTop: 8,
-      backgroundColor: colors.primary,
-      paddingVertical: 14,
-      borderRadius: 8,
-      alignItems: 'center',
     },
-    primaryButtonText: {
-      color: colors.onPrimary,
-      fontWeight: '600',
-      fontSize: 16,
-    },
-    secondaryButton: {
+    stackedButton: {
       marginTop: 12,
-      backgroundColor: colors.surface,
-      paddingVertical: 14,
-      borderRadius: 8,
-      alignItems: 'center',
-    },
-    secondaryButtonText: {
-      color: colors.primary,
-      fontWeight: '600',
-      fontSize: 16,
-    },
-    retireButton: {
-      marginTop: 12,
-      paddingVertical: 14,
-      borderRadius: 8,
-      alignItems: 'center',
-    },
-    retireButtonText: {
-      color: colors.danger,
-      fontWeight: '600',
     },
   });
 }

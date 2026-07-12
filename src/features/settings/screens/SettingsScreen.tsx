@@ -1,9 +1,10 @@
 import { Stack } from 'expo-router';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { LoadingState } from '../../../components';
 import type { Locale, ThemeMode, UnitSystem } from '../../../domain/types';
 import type { ThemeColors } from '../../../theme/colors';
 import { useTheme } from '../../../theme/useTheme';
@@ -18,11 +19,7 @@ export default function SettingsScreen() {
   const updateSettings = useUpdateSettings();
 
   if (isLoading || !settings) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" />
-      </View>
-    );
+    return <LoadingState />;
   }
 
   return (
@@ -101,12 +98,6 @@ function OptionRow({
 
 function createStyles(colors: ThemeColors) {
   return StyleSheet.create({
-    center: {
-      flex: 1,
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: colors.background,
-    },
     content: {
       flex: 1,
       padding: 20,

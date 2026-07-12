@@ -50,11 +50,19 @@ Done so far:
   translated (197 i18n keys, full parity), `componentTypeValues` moved to `domain/types.ts`,
   `tasks/` moved to `src/services/` per the CLAUDE.md tree
 
+- A+B PR opened: #44 (`fix/code-review-correctness`)
+- C-batch done on `refactor/code-review-maintainability` (branched off the A+B branch):
+  `src/components/` primitives (Button/FormField/StatRow/Card/Chip/LoadingState) with all 14
+  screens converted (3 reference screens by hand, rest via parallel agents), query keys
+  centralized in `src/features/queryKeys.ts` + journey-invalidation gap fixed, global mutation
+  error alert (MutationCache.onError, opt-out via meta.suppressErrorAlert)
+
 Next:
-1. PR the `fix/code-review-correctness` branch (A+B batches, issue #43)
-2. Issue #43 C-batch: extract shared UI primitives into `src/components/` (Field ×3, Stat ×4,
-   buttons ×6...), centralize query keys, shared mutation-error feedback
-3. UX/UI pass after the code is settled (includes D3 BikeDetail header actions)
+1. Merge PR #44, then PR the C-batch branch on top
+2. Emulator pass before merging: record→stop→save a ride (new append path), replace component,
+   mark rule as done, one form screen per type (visual parity after primitives conversion)
+3. UX/UI pass after the code is settled (includes D3 BikeDetail header actions; D1/D2/D4/D5
+   from #43 still open)
 
 ## After that
 

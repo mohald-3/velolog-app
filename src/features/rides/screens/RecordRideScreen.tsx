@@ -1,8 +1,9 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, Pressable, StyleSheet, Switch, Text, View } from 'react-native';
+import { Alert, StyleSheet, Switch, Text, View } from 'react-native';
 
+import { Button, Card, StatRow } from '../../../components';
 import { speedKmh } from '../../../domain/gps-filter';
 import { formatDistance, formatSpeed } from '../../../domain/units';
 import type { ThemeColors } from '../../../theme/colors';
@@ -103,12 +104,12 @@ export default function RecordRideScreen() {
     <View style={styles.container}>
       <Stack.Screen options={{ title: t('recordRide.headerTitle') }} />
 
-      <View style={styles.card}>
-        <Stat label={t('recordRide.distanceLabel')} value={formatDistance(stats.distanceM, unitSystem, 2)} styles={styles} />
-        <Stat label={t('recordRide.durationLabel')} value={formatDuration(stats.durationMs)} styles={styles} />
-        <Stat label={t('recordRide.currentSpeedLabel')} value={formatSpeed(stats.currentSpeedKmh, unitSystem)} styles={styles} />
-        <Stat label={t('recordRide.avgSpeedLabel')} value={formatSpeed(stats.avgSpeedKmh, unitSystem)} styles={styles} />
-      </View>
+      <Card style={styles.card}>
+        <StatRow size="lg" label={t('recordRide.distanceLabel')} value={formatDistance(stats.distanceM, unitSystem, 2)} />
+        <StatRow size="lg" label={t('recordRide.durationLabel')} value={formatDuration(stats.durationMs)} />
+        <StatRow size="lg" label={t('recordRide.currentSpeedLabel')} value={formatSpeed(stats.currentSpeedKmh, unitSystem)} />
+        <StatRow size="lg" label={t('recordRide.avgSpeedLabel')} value={formatSpeed(stats.avgSpeedKmh, unitSystem)} />
+      </Card>
 
       {state.status === 'idle' && (
         <>
@@ -119,61 +120,50 @@ export default function RecordRideScreen() {
             </View>
             <Switch value={autoPauseEnabled} onValueChange={setAutoPauseEnabled} />
           </View>
-          <Pressable style={styles.primaryButton} onPress={handleStart}>
-            <Text style={styles.primaryButtonText}>{t('recordRide.startRide')}</Text>
-          </Pressable>
+          <Button title={t('recordRide.startRide')} onPress={handleStart} style={styles.button} />
         </>
       )}
 
       {state.status === 'recording' && (
         <>
-          <Pressable style={styles.primaryButton} onPress={pause} disabled={createRide.isPending}>
-            <Text style={styles.primaryButtonText}>{t('recordRide.pause')}</Text>
-          </Pressable>
-          <Pressable style={styles.stopButton} onPress={handleStop} disabled={createRide.isPending}>
-            <Text style={styles.stopButtonText}>
-              {createRide.isPending ? t('common.saving') : t('recordRide.stop')}
-            </Text>
-          </Pressable>
-          <Pressable style={styles.discardButton} onPress={handleDiscard} disabled={createRide.isPending}>
-            <Text style={styles.discardButtonText}>{t('recordRide.discard')}</Text>
-          </Pressable>
+          <Button title={t('recordRide.pause')} onPress={pause} disabled={createRide.isPending} style={styles.button} />
+          <Button
+            title={createRide.isPending ? t('common.saving') : t('recordRide.stop')}
+            onPress={handleStop}
+            variant="danger"
+            disabled={createRide.isPending}
+            style={styles.button}
+          />
+          <Button
+            title={t('recordRide.discard')}
+            onPress={handleDiscard}
+            variant="ghostDanger"
+            disabled={createRide.isPending}
+            style={styles.button}
+          />
         </>
       )}
 
       {state.status === 'paused' && (
         <>
           {isAutoPaused && <Text style={styles.autoPausedNotice}>{t('recordRide.autoPausedNotice')}</Text>}
-          <Pressable style={styles.primaryButton} onPress={resume} disabled={createRide.isPending}>
-            <Text style={styles.primaryButtonText}>{t('recordRide.resume')}</Text>
-          </Pressable>
-          <Pressable style={styles.stopButton} onPress={handleStop} disabled={createRide.isPending}>
-            <Text style={styles.stopButtonText}>
-              {createRide.isPending ? t('common.saving') : t('recordRide.stop')}
-            </Text>
-          </Pressable>
-          <Pressable style={styles.discardButton} onPress={handleDiscard} disabled={createRide.isPending}>
-            <Text style={styles.discardButtonText}>{t('recordRide.discard')}</Text>
-          </Pressable>
+          <Button title={t('recordRide.resume')} onPress={resume} disabled={createRide.isPending} style={styles.button} />
+          <Button
+            title={createRide.isPending ? t('common.saving') : t('recordRide.stop')}
+            onPress={handleStop}
+            variant="danger"
+            disabled={createRide.isPending}
+            style={styles.button}
+          />
+          <Button
+            title={t('recordRide.discard')}
+            onPress={handleDiscard}
+            variant="ghostDanger"
+            disabled={createRide.isPending}
+            style={styles.button}
+          />
         </>
       )}
-    </View>
-  );
-}
-
-function Stat({
-  label,
-  value,
-  styles,
-}: {
-  label: string;
-  value: string;
-  styles: ReturnType<typeof createStyles>;
-}) {
-  return (
-    <View style={styles.stat}>
-      <Text style={styles.statLabel}>{label}</Text>
-      <Text style={styles.statValue}>{value}</Text>
     </View>
   );
 }
@@ -186,56 +176,10 @@ function createStyles(colors: ThemeColors) {
       backgroundColor: colors.background,
     },
     card: {
-      backgroundColor: colors.surface,
-      borderRadius: 12,
-      padding: 16,
       marginBottom: 24,
     },
-    stat: {
-      marginTop: 8,
-    },
-    statLabel: {
-      fontSize: 12,
-      color: colors.textMuted,
-    },
-    statValue: {
-      fontSize: 22,
-      fontWeight: '700',
-      color: colors.text,
-    },
-    primaryButton: {
-      backgroundColor: colors.primary,
-      paddingVertical: 14,
-      borderRadius: 8,
-      alignItems: 'center',
+    button: {
       marginTop: 12,
-    },
-    primaryButtonText: {
-      color: colors.onPrimary,
-      fontWeight: '600',
-      fontSize: 16,
-    },
-    stopButton: {
-      backgroundColor: colors.danger,
-      paddingVertical: 14,
-      borderRadius: 8,
-      alignItems: 'center',
-      marginTop: 12,
-    },
-    stopButtonText: {
-      color: colors.onPrimary,
-      fontWeight: '600',
-      fontSize: 16,
-    },
-    discardButton: {
-      paddingVertical: 14,
-      borderRadius: 8,
-      alignItems: 'center',
-      marginTop: 12,
-    },
-    discardButtonText: {
-      color: colors.danger,
-      fontWeight: '600',
     },
     autoPauseRow: {
       flexDirection: 'row',

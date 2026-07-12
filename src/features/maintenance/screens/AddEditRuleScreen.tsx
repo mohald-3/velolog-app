@@ -1,9 +1,10 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Button, Chip, FormField, LoadingState } from '../../../components';
 import { computeOdometerM } from '../../../domain/odometer';
 import type { MaintenanceRule, UnitSystem } from '../../../domain/types';
 import { distanceUnitLabel, distanceUnitToMeters, formatDistance, metersToDistanceUnit } from '../../../domain/units';
@@ -49,11 +50,7 @@ export default function AddEditRuleScreen() {
   const { data: settings, isLoading: isLoadingSettings } = useSettings();
 
   if (isLoadingBike || isLoadingRides || (isEditing && isLoadingRule) || isLoadingSettings || !settings) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" />
-      </View>
-    );
+    return <LoadingState />;
   }
 
   if (!bike) {
@@ -100,48 +97,47 @@ function RuleForm({
   const markAsDone = useMarkRuleAsDone();
 
   const [action, setAction] = useState(initialRule?.action ?? '');
-  const [intervalKm, setIntervalKm] = useState(
+  const [intervalDisplay, setIntervalDisplay] = useState(
     initialRule ? String(metersToDistanceUnit(initialRule.intervalM, unitSystem)) : ''
   );
-  const [lastPerformedAtOdometerKm, setLastPerformedAtOdometerKm] = useState(
+  const [lastPerformedDisplay, setLastPerformedDisplay] = useState(
     String(metersToDistanceUnit(initialRule?.lastPerformedAtOdometerM ?? currentOdometerM, unitSystem))
   );
   const [notes, setNotes] = useState(initialRule?.notes ?? '');
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     if (!action.trim()) {
       Alert.alert(t('addEditRule.actionRequiredTitle'), t('addEditRule.actionRequiredMessage'));
       return;
     }
 
-    const parsedIntervalKm = intervalKm.trim() ? Number(intervalKm) : NaN;
-    const parsedLastPerformedKm = lastPerformedAtOdometerKm.trim() ? Number(lastPerformedAtOdometerKm) : NaN;
+    const parsedInterval = intervalDisplay.trim() ? Number(intervalDisplay) : NaN;
+    const parsedLastPerformed = lastPerformedDisplay.trim() ? Number(lastPerformedDisplay) : NaN;
 
-    if (Number.isNaN(parsedIntervalKm) || parsedIntervalKm <= 0) {
+    if (Number.isNaN(parsedInterval) || parsedInterval <= 0) {
       Alert.alert(
         t('addEditRule.invalidIntervalTitle'),
         t('addEditRule.invalidIntervalMessage', { unit: distanceUnitLabel(unitSystem) })
       );
       return;
     }
-    if (Number.isNaN(parsedLastPerformedKm)) {
+    if (Number.isNaN(parsedLastPerformed)) {
       Alert.alert(t('addEditRule.invalidOdometerTitle'), t('addEditRule.invalidOdometerMessage'));
       return;
     }
 
     const values = {
       action: action.trim(),
-      intervalM: Math.round(distanceUnitToMeters(parsedIntervalKm, unitSystem)),
-      lastPerformedAtOdometerM: Math.round(distanceUnitToMeters(parsedLastPerformedKm, unitSystem)),
+      intervalM: Math.round(distanceUnitToMeters(parsedInterval, unitSystem)),
+      lastPerformedAtOdometerM: Math.round(distanceUnitToMeters(parsedLastPerformed, unitSystem)),
       notes: notes.trim() || null,
     };
 
     if (isEditing && initialRule) {
-      await updateRule.mutateAsync({ id: initialRule.id, changes: values });
+      updateRule.mutate({ id: initialRule.id, changes: values }, { onSuccess: () => router.back() });
     } else {
-      await createRule.mutateAsync({ componentId, ...values });
+      createRule.mutate({ componentId, ...values }, { onSuccess: () => router.back() });
     }
-    router.back();
   };
 
   const handleMarkAsDone = () => {
@@ -156,10 +152,8 @@ function RuleForm({
         { text: t('common.cancel'), style: 'cancel' },
         {
           text: t('addEditRule.markAsDone'),
-          onPress: async () => {
-            await markAsDone.mutateAsync({ rule: initialRule, currentOdometerM });
-            router.back();
-          },
+          onPress: () =>
+            markAsDone.mutate({ rule: initialRule, currentOdometerM }, { onSuccess: () => router.back() }),
         },
       ]
     );
@@ -175,10 +169,8 @@ function RuleForm({
         {
           text: t('addEditRule.removeRule'),
           style: 'destructive',
-          onPress: async () => {
-            await archiveRule.mutateAsync({ id: initialRule.id, componentId });
-            router.back();
-          },
+          onPress: () =>
+            archiveRule.mutate({ id: initialRule.id, componentId }, { onSuccess: () => router.back() }),
         },
       ]
     );
@@ -189,15 +181,12 @@ function RuleForm({
   return (
     <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 20 + insets.bottom }]}>
       {isEditing && (
-        <Pressable
-          style={styles.markDoneButton}
+        <Button
+          title={markAsDone.isPending ? t('common.saving') : t('addEditRule.markAsDone')}
           onPress={handleMarkAsDone}
           disabled={markAsDone.isPending}
-        >
-          <Text style={styles.markDoneButtonText}>
-            {markAsDone.isPending ? t('common.saving') : t('addEditRule.markAsDone')}
-          </Text>
-        </Pressable>
+          style={styles.markDoneButton}
+        />
       )}
 
       {!isEditing && (
@@ -205,91 +194,57 @@ function RuleForm({
           <Text style={styles.label}>{t('addEditRule.presetLabel')}</Text>
           <View style={styles.chipRow}>
             {PRESETS.map((preset) => (
-              <Pressable
+              <Chip
                 key={preset.label}
-                style={styles.chip}
+                label={t(preset.labelKey)}
                 onPress={() => {
                   setAction(preset.action);
                   if (preset.intervalKm != null) {
-                    setIntervalKm(String(metersToDistanceUnit(preset.intervalKm * 1000, unitSystem)));
+                    setIntervalDisplay(String(metersToDistanceUnit(preset.intervalKm * 1000, unitSystem)));
                   }
                 }}
-              >
-                <Text style={styles.chipText}>{t(preset.labelKey)}</Text>
-              </Pressable>
+              />
             ))}
           </View>
         </>
       )}
 
-      <Field
+      <FormField
         label={t('addEditRule.actionLabel')}
         value={action}
         onChangeText={setAction}
         placeholder={t('addEditRule.actionPlaceholder')}
-        styles={styles}
-        placeholderTextColor={colors.textDisabled}
       />
-      <Field
+      <FormField
         label={t('addEditRule.intervalLabel', { unit: distanceUnitLabel(unitSystem) })}
-        value={intervalKm}
-        onChangeText={setIntervalKm}
+        value={intervalDisplay}
+        onChangeText={setIntervalDisplay}
         keyboardType="decimal-pad"
-        styles={styles}
-        placeholderTextColor={colors.textDisabled}
       />
-      <Field
+      <FormField
         label={t('addEditRule.lastPerformedLabel', { unit: distanceUnitLabel(unitSystem) })}
-        value={lastPerformedAtOdometerKm}
-        onChangeText={setLastPerformedAtOdometerKm}
+        value={lastPerformedDisplay}
+        onChangeText={setLastPerformedDisplay}
         keyboardType="decimal-pad"
-        styles={styles}
-        placeholderTextColor={colors.textDisabled}
       />
-      <Field
-        label={t('common.notesOptional')}
-        value={notes}
-        onChangeText={setNotes}
-        styles={styles}
-        placeholderTextColor={colors.textDisabled}
-      />
+      <FormField label={t('common.notesOptional')} value={notes} onChangeText={setNotes} />
 
-      <Pressable style={styles.primaryButton} onPress={handleSubmit} disabled={saving}>
-        <Text style={styles.primaryButtonText}>
-          {saving ? t('common.saving') : isEditing ? t('common.saveChanges') : t('addEditRule.addRule')}
-        </Text>
-      </Pressable>
+      <Button
+        title={saving ? t('common.saving') : isEditing ? t('common.saveChanges') : t('addEditRule.addRule')}
+        onPress={handleSubmit}
+        disabled={saving}
+        style={styles.submitButton}
+      />
 
       {isEditing && (
-        <Pressable style={styles.archiveButton} onPress={handleArchive}>
-          <Text style={styles.archiveButtonText}>{t('addEditRule.removeRule')}</Text>
-        </Pressable>
+        <Button
+          title={t('addEditRule.removeRule')}
+          onPress={handleArchive}
+          variant="ghostDanger"
+          style={styles.archiveButton}
+        />
       )}
     </ScrollView>
-  );
-}
-
-function Field(props: {
-  label: string;
-  value: string;
-  onChangeText: (text: string) => void;
-  placeholder?: string;
-  keyboardType?: 'default' | 'decimal-pad';
-  styles: ReturnType<typeof createStyles>;
-  placeholderTextColor?: string;
-}) {
-  return (
-    <View style={props.styles.field}>
-      <Text style={props.styles.label}>{props.label}</Text>
-      <TextInput
-        style={props.styles.input}
-        value={props.value}
-        onChangeText={props.onChangeText}
-        placeholder={props.placeholder}
-        placeholderTextColor={props.placeholderTextColor}
-        keyboardType={props.keyboardType ?? 'default'}
-      />
-    </View>
   );
 }
 
@@ -311,35 +266,10 @@ function createStyles(colors: ThemeColors) {
     },
     markDoneButton: {
       marginBottom: 20,
-      backgroundColor: colors.primary,
-      paddingVertical: 14,
-      borderRadius: 8,
-      alignItems: 'center',
-    },
-    markDoneButtonText: {
-      color: colors.onPrimary,
-      fontWeight: '600',
-      fontSize: 16,
     },
     chipRow: {
       flexDirection: 'row',
       flexWrap: 'wrap',
-      marginBottom: 16,
-    },
-    chip: {
-      borderWidth: 1,
-      borderColor: colors.surfaceBorder,
-      borderRadius: 16,
-      paddingHorizontal: 12,
-      paddingVertical: 6,
-      marginRight: 8,
-      marginBottom: 8,
-    },
-    chipText: {
-      fontSize: 13,
-      color: colors.chipText,
-    },
-    field: {
       marginBottom: 16,
     },
     label: {
@@ -347,36 +277,11 @@ function createStyles(colors: ThemeColors) {
       color: colors.textMuted,
       marginBottom: 4,
     },
-    input: {
-      borderWidth: 1,
-      borderColor: colors.surfaceBorder,
-      borderRadius: 8,
-      paddingHorizontal: 12,
-      paddingVertical: 10,
-      fontSize: 15,
-      color: colors.text,
-    },
-    primaryButton: {
+    submitButton: {
       marginTop: 8,
-      backgroundColor: colors.primary,
-      paddingVertical: 14,
-      borderRadius: 8,
-      alignItems: 'center',
-    },
-    primaryButtonText: {
-      color: colors.onPrimary,
-      fontWeight: '600',
-      fontSize: 16,
     },
     archiveButton: {
       marginTop: 12,
-      paddingVertical: 14,
-      borderRadius: 8,
-      alignItems: 'center',
-    },
-    archiveButtonText: {
-      color: colors.danger,
-      fontWeight: '600',
     },
   });
 }

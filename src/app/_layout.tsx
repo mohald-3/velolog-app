@@ -1,8 +1,8 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { MutationCache, QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ActivityIndicator, Alert, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { db } from '../data/db';
@@ -11,7 +11,17 @@ import i18n from '../i18n';
 import { useSettings } from '../features/settings/hooks/useSettings';
 import { useTheme } from '../theme/useTheme';
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  mutationCache: new MutationCache({
+    // Screens call mutations fire-and-forget (mutate + onSuccess for navigation); this is the
+    // one place a failed write surfaces to the user. A mutation that owns its failure UX opts
+    // out via meta: { suppressErrorAlert: true } (e.g. the ride-save retry flow).
+    onError: (_error, _variables, _context, mutation) => {
+      if (mutation.meta?.suppressErrorAlert) return;
+      Alert.alert(i18n.t('common.errorTitle'), i18n.t('common.errorMessage'));
+    },
+  }),
+});
 
 function LocaleSync() {
   const { data: settings } = useSettings();

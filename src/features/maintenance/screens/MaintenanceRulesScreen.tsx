@@ -1,9 +1,10 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Button, LoadingState } from '../../../components';
 import { computeDueInfo, type DueStatus } from '../../../domain/maintenance';
 import { computeOdometerM } from '../../../domain/odometer';
 import type { MaintenanceRule, UnitSystem } from '../../../domain/types';
@@ -30,11 +31,7 @@ export default function MaintenanceRulesScreen() {
   const { data: settings, isLoading: isLoadingSettings } = useSettings();
 
   if (isLoadingBike || isLoadingComponent || isLoadingRides || isLoadingRules || isLoadingSettings || !settings) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" />
-      </View>
-    );
+    return <LoadingState />;
   }
 
   if (!bike || !component) {
@@ -68,12 +65,11 @@ export default function MaintenanceRulesScreen() {
         ))
       )}
 
-      <Pressable
-        style={styles.addButton}
+      <Button
+        title={t('maintenanceRules.addRule')}
         onPress={() => router.push(`/bikes/${bikeId}/components/${componentId}/rules/new`)}
-      >
-        <Text style={styles.addButtonText}>{t('maintenanceRules.addRule')}</Text>
-      </Pressable>
+        style={styles.addButton}
+      />
     </ScrollView>
   );
 }
@@ -172,15 +168,6 @@ function createStyles(colors: ThemeColors) {
     },
     addButton: {
       marginTop: 20,
-      backgroundColor: colors.primary,
-      paddingVertical: 14,
-      borderRadius: 8,
-      alignItems: 'center',
-    },
-    addButtonText: {
-      color: colors.onPrimary,
-      fontWeight: '600',
-      fontSize: 16,
     },
   });
 }

@@ -9,7 +9,9 @@
     "notesOptional": "Anteckningar (valfritt)",
     "bikeNotFound": "Cykeln hittades inte.",
     "notFound": "Hittades inte.",
-    "retry": "Försök igen"
+    "retry": "Försök igen",
+    "errorTitle": "Något gick fel",
+    "errorMessage": "Ändringen kunde inte sparas. Försök igen."
   },
   "bikeList": {
     "headerTitle": "Mina cyklar",

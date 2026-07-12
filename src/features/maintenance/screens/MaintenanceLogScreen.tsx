@@ -1,9 +1,10 @@
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { LoadingState } from '../../../components';
 import type { MaintenanceRecord, UnitSystem } from '../../../domain/types';
 import { formatDistance } from '../../../domain/units';
 import i18n from '../../../i18n';
@@ -24,11 +25,7 @@ export default function MaintenanceLogScreen() {
   const { data: settings, isLoading: isLoadingSettings } = useSettings();
 
   if (isLoadingComponent || isLoadingRecords || isLoadingSettings || !settings) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" />
-      </View>
-    );
+    return <LoadingState />;
   }
 
   const unitSystem = settings.unitSystem;
@@ -82,11 +79,6 @@ function RecordRow({
 
 function createStyles(colors: ThemeColors) {
   return StyleSheet.create({
-    center: {
-      flex: 1,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
     content: {
       padding: 20,
     },

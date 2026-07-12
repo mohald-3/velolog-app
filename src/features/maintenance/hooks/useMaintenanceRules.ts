@@ -2,13 +2,11 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import type { MaintenanceRuleUpdate, NewMaintenanceRule } from '../../../domain/types';
 import { maintenanceRuleRepository } from '../../../data/repositories/maintenanceRuleRepository';
-
-const rulesKey = (componentId: string) => ['components', componentId, 'maintenanceRules'] as const;
-const ruleKey = (id: string) => ['maintenanceRules', id] as const;
+import { queryKeys } from '../../queryKeys';
 
 export function useMaintenanceRules(componentId: string | undefined) {
   return useQuery({
-    queryKey: rulesKey(componentId ?? ''),
+    queryKey: queryKeys.maintenanceRules(componentId ?? ''),
     queryFn: () => maintenanceRuleRepository.listByComponent(componentId as string),
     enabled: Boolean(componentId),
   });
@@ -16,7 +14,7 @@ export function useMaintenanceRules(componentId: string | undefined) {
 
 export function useMaintenanceRule(id: string | undefined) {
   return useQuery({
-    queryKey: ruleKey(id ?? ''),
+    queryKey: queryKeys.maintenanceRule(id ?? ''),
     queryFn: () => maintenanceRuleRepository.getById(id as string),
     enabled: Boolean(id),
   });
@@ -27,7 +25,7 @@ export function useCreateMaintenanceRule() {
   return useMutation({
     mutationFn: (input: NewMaintenanceRule) => maintenanceRuleRepository.create(input),
     onSuccess: (created) => {
-      queryClient.invalidateQueries({ queryKey: rulesKey(created.componentId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.maintenanceRules(created.componentId) });
     },
   });
 }
@@ -38,8 +36,8 @@ export function useUpdateMaintenanceRule() {
     mutationFn: ({ id, changes }: { id: string; changes: MaintenanceRuleUpdate }) =>
       maintenanceRuleRepository.update(id, changes),
     onSuccess: (updated) => {
-      queryClient.invalidateQueries({ queryKey: rulesKey(updated.componentId) });
-      queryClient.invalidateQueries({ queryKey: ruleKey(updated.id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.maintenanceRules(updated.componentId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.maintenanceRule(updated.id) });
     },
   });
 }
@@ -49,8 +47,8 @@ export function useArchiveMaintenanceRule() {
   return useMutation({
     mutationFn: (rule: { id: string; componentId: string }) => maintenanceRuleRepository.archive(rule.id),
     onSuccess: (_result, rule) => {
-      queryClient.invalidateQueries({ queryKey: rulesKey(rule.componentId) });
-      queryClient.invalidateQueries({ queryKey: ruleKey(rule.id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.maintenanceRules(rule.componentId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.maintenanceRule(rule.id) });
     },
   });
 }

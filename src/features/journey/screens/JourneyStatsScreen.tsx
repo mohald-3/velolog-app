@@ -1,9 +1,10 @@
 import { Stack } from 'expo-router';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Card, LoadingState, StatRow } from '../../../components';
 import type { MilestoneProgress } from '../../../domain/journey';
 import type { UnitSystem } from '../../../domain/types';
 import { distanceUnitLabel, formatDistance, metersToDistanceUnit } from '../../../domain/units';
@@ -21,11 +22,7 @@ export default function JourneyStatsScreen() {
   const { data: settings, isLoading: isLoadingSettings } = useSettings();
 
   if (isLoadingStats || isLoadingSettings || !stats || !settings) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" />
-      </View>
-    );
+    return <LoadingState />;
   }
 
   const unitSystem = settings.unitSystem;
@@ -46,44 +43,26 @@ export default function JourneyStatsScreen() {
     <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 20 + insets.bottom }]}>
       <Stack.Screen options={{ title: t('journey.headerTitle') }} />
 
-      <View style={styles.card}>
-        <Stat label={t('journey.totalDistance')} value={formatDistance(stats.totalDistanceM, unitSystem)} styles={styles} />
-        <Stat label={t('journey.totalRides')} value={String(stats.totalRideCount)} styles={styles} />
+      <Card>
+        <StatRow label={t('journey.totalDistance')} value={formatDistance(stats.totalDistanceM, unitSystem)} />
+        <StatRow label={t('journey.totalRides')} value={String(stats.totalRideCount)} />
         {costPerUnit != null && (
-          <Stat
+          <StatRow
             label={t('journey.costPerUnit', { unit: distanceUnitLabel(unitSystem) })}
             value={costPerUnit.toFixed(2)}
-            styles={styles}
           />
         )}
-        <Stat label={t('journey.co2Saved')} value={`${stats.co2SavedKg.toFixed(1)} kg`} styles={styles} />
-        <Stat label={t('journey.calories')} value={`${stats.caloriesBurned.toFixed(0)} kcal`} styles={styles} />
-      </View>
+        <StatRow label={t('journey.co2Saved')} value={`${stats.co2SavedKg.toFixed(1)} kg`} />
+        <StatRow label={t('journey.calories')} value={`${stats.caloriesBurned.toFixed(0)} kcal`} />
+      </Card>
 
       <Text style={styles.sectionTitle}>{t('journey.milestonesTitle')}</Text>
-      <View style={styles.card}>
+      <Card>
         {stats.milestones.map((milestone) => (
           <MilestoneRow key={milestone.id} milestone={milestone} unitSystem={unitSystem} styles={styles} />
         ))}
-      </View>
+      </Card>
     </ScrollView>
-  );
-}
-
-function Stat({
-  label,
-  value,
-  styles,
-}: {
-  label: string;
-  value: string;
-  styles: ReturnType<typeof createStyles>;
-}) {
-  return (
-    <View style={styles.stat}>
-      <Text style={styles.statLabel}>{label}</Text>
-      <Text style={styles.statValue}>{value}</Text>
-    </View>
   );
 }
 
@@ -128,23 +107,6 @@ function createStyles(colors: ThemeColors) {
     content: {
       padding: 20,
       backgroundColor: colors.background,
-    },
-    card: {
-      backgroundColor: colors.surface,
-      borderRadius: 12,
-      padding: 16,
-    },
-    stat: {
-      marginTop: 8,
-    },
-    statLabel: {
-      fontSize: 12,
-      color: colors.textMuted,
-    },
-    statValue: {
-      fontSize: 18,
-      fontWeight: '700',
-      color: colors.text,
     },
     sectionTitle: {
       fontSize: 16,
