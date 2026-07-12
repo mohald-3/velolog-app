@@ -47,10 +47,10 @@ Done (all merged to main 2026-07-13 — PRs #44, #46, #47):
 - Live emulator verification of the whole arc passed (record → stop → save, forms, badges,
   translated labels, discard flow)
 
-Next:
-1. UX/UI pass — includes #43's open D-items: D1 formatDuration hours, D2 expectedLifetimeKm
-   unit, D3 BikeDetail header actions, D4 LocaleSync effect, D5 naming, D6 missing header title
-   on component form, D7 unrounded odometer float
+Next (planned 2026-07-13, resume here):
+1. **UX/UI pass — plan ready in `.planning/STATE.md`, 4 phases: quick D-fixes → header
+   actions/OverflowMenu → wear visibility (D2 + progress display) → visual sweep.** Run
+   `/execute` to start Phase 1. (D5 already done via the C1 conversion.)
 2. Real-device field ride: cold-start #45 scenario + Spike 0's two open items (#5 kill test,
    #6 open-road accuracy)
 3. Then M6 (v0.3 candidates — pick 2–3)
