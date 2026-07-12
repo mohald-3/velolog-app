@@ -12,9 +12,6 @@
   },
   "bikeList": {
     "headerTitle": "Mina cyklar",
-    "emptyTitle": "Inga cyklar än",
-    "emptySubtitle": "Lägg till din första cykel för att börja spåra den.",
-    "addBike": "Lägg till en cykel",
     "devLink": "GPS-testskärm"
   },
   "addEditBike": {
@@ -180,6 +177,14 @@
     "languageSection": "Språk",
     "languageEnglish": "English",
     "languageSwedish": "Svenska"
+  },
+  "onboarding": {
+    "welcomeTitle": "Välkommen till VeloLog",
+    "tagline": "Strava spårar dig. VeloLog spårar din cykel.",
+    "pitchLine1": "Spela in turer med GPS — även utan täckning.",
+    "pitchLine2": "Håll koll på slitage på kedja, däck och bromsar medan du cyklar.",
+    "pitchLine3": "Få en påminnelse innan underhåll blir försenat.",
+    "addFirstBike": "Lägg till din första cykel"
   },
   "journey": {
     "headerTitle": "Din resa",

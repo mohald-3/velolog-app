@@ -1,10 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Link, Stack, useRouter } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { Bike } from '../../../domain/types';
+import OnboardingScreen from '../../onboarding/screens/OnboardingScreen';
 import { useBikes } from '../hooks/useBikes';
 
 export default function BikeListScreen() {
@@ -38,17 +39,10 @@ export default function BikeListScreen() {
 
   if (!bikes || bikes.length === 0) {
     return (
-      <View style={styles.center}>
+      <>
         <Stack.Screen options={headerOptions} />
-        <Text style={styles.emptyTitle}>{t('bikeList.emptyTitle')}</Text>
-        <Text style={styles.emptySubtitle}>{t('bikeList.emptySubtitle')}</Text>
-        <Pressable style={styles.primaryButton} onPress={() => router.push('/bikes/new')}>
-          <Text style={styles.primaryButtonText}>{t('bikeList.addBike')}</Text>
-        </Pressable>
-        <Link href="/dev/gps-spike" style={styles.devLink}>
-          {t('bikeList.devLink')}
-        </Link>
-      </View>
+        <OnboardingScreen />
+      </>
     );
   }
 
@@ -99,32 +93,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     padding: 24,
-  },
-  emptyTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-  },
-  emptySubtitle: {
-    fontSize: 14,
-    color: '#666666',
-    marginTop: 8,
-    textAlign: 'center',
-  },
-  primaryButton: {
-    marginTop: 20,
-    backgroundColor: '#2f6f4f',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 8,
-  },
-  primaryButtonText: {
-    color: '#ffffff',
-    fontWeight: '600',
-  },
-  devLink: {
-    marginTop: 24,
-    fontSize: 12,
-    color: '#999999',
   },
   list: {
     padding: 16,

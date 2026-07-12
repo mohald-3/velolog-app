@@ -12,9 +12,6 @@
   },
   "bikeList": {
     "headerTitle": "My Bikes",
-    "emptyTitle": "No bikes yet",
-    "emptySubtitle": "Add your first bike to start tracking it.",
-    "addBike": "Add a bike",
     "devLink": "GPS spike test screen"
   },
   "addEditBike": {
@@ -180,6 +177,14 @@
     "languageSection": "Language",
     "languageEnglish": "English",
     "languageSwedish": "Svenska"
+  },
+  "onboarding": {
+    "welcomeTitle": "Welcome to VeloLog",
+    "tagline": "Strava tracks you. VeloLog tracks your bike.",
+    "pitchLine1": "Record rides with GPS — even with no signal.",
+    "pitchLine2": "Track wear on your chain, tires, and brakes as you ride.",
+    "pitchLine3": "Get reminded before maintenance is overdue.",
+    "addFirstBike": "Add your first bike"
   },
   "journey": {
     "headerTitle": "Your Journey",
