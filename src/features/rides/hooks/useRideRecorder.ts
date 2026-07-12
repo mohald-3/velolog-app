@@ -13,13 +13,14 @@ import { initialRecordingState, recordingReducer } from '../../../domain/recordi
 import {
   discardRideRecordingAsync,
   ensureLocationUpdatesRunningAsync,
+  finalizeRideRecordingAsync,
   pauseRideRecordingAsync,
   readActiveRideAsync,
   readTrackPointsAsync,
   resumeRideRecordingAsync,
   startRideRecordingAsync,
   stopRideRecordingAsync,
-} from '../../../../tasks/rideRecordingTask';
+} from '../../../services/rideRecordingTask';
 
 export interface LiveRideStats {
   distanceM: number;
@@ -211,32 +212,48 @@ export function useRideRecorder(bikeId: string) {
     dispatch({ type: 'RESUME', at: Date.now() });
   }, []);
 
+  // Guards against a double-tap on Stop: both taps can pass the status check before the first
+  // dispatch lands (the reducer state in this closure only updates on re-render), which would
+  // save the ride twice.
+  const stoppingRef = useRef(false);
+
   const stop = useCallback(async (): Promise<RideSummary | null> => {
     if (state.status !== 'recording' && state.status !== 'paused') return null;
     const trackUri = trackUriRef.current;
-    if (!trackUri) return null;
+    if (!trackUri || stoppingRef.current) return null;
+    stoppingRef.current = true;
 
-    await stopRideRecordingAsync();
-    const endedAt = Date.now();
+    try {
+      await stopRideRecordingAsync();
+      const endedAt = Date.now();
 
-    // Re-read the track file rather than trusting the last poll, so points appended in the
-    // final poll interval before Stop are still included in the saved totals.
-    const finalPoints = applyGpsFilters(await readTrackPointsAsync(trackUri));
-    const moving = computeMovingStats(finalPoints);
+      // Re-read the track file rather than trusting the last poll, so points appended in the
+      // final poll interval before Stop are still included in the saved totals.
+      const finalPoints = applyGpsFilters(await readTrackPointsAsync(trackUri));
+      const moving = computeMovingStats(finalPoints);
 
-    const { bikeId: ridingBikeId, startedAt } = state;
-    dispatch({ type: 'STOP', at: endedAt });
+      const { bikeId: ridingBikeId, startedAt } = state;
+      dispatch({ type: 'STOP', at: endedAt });
 
-    return {
-      bikeId: ridingBikeId,
-      startedAt,
-      endedAt,
-      distanceM: moving.distanceM,
-      movingTimeMs: moving.movingTimeMs,
-      pausedTimeMs: moving.pausedTimeMs,
-      trackUri,
-    };
+      return {
+        bikeId: ridingBikeId,
+        startedAt,
+        endedAt,
+        distanceM: moving.distanceM,
+        movingTimeMs: moving.movingTimeMs,
+        pausedTimeMs: moving.pausedTimeMs,
+        trackUri,
+      };
+    } finally {
+      stoppingRef.current = false;
+    }
   }, [state]);
+
+  /** Clears the persisted active-ride pointer. Call only after the ride row is safely saved —
+   * until then the pointer is what lets a killed app recover the stopped-but-unsaved ride. */
+  const finalize = useCallback(async () => {
+    await finalizeRideRecordingAsync();
+  }, []);
 
   const discard = useCallback(async () => {
     await discardRideRecordingAsync();
@@ -251,6 +268,7 @@ export function useRideRecorder(bikeId: string) {
     pause,
     resume,
     stop,
+    finalize,
     discard,
     autoPauseEnabled,
     setAutoPauseEnabled,

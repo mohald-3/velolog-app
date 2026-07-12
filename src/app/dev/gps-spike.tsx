@@ -11,7 +11,7 @@ import {
   readLogStatsAsync,
   startTrackingAsync,
   stopTrackingAsync,
-} from '../../../tasks/locationTask';
+} from '../../services/locationTask';
 
 export const options = { title: 'GPS Spike Test' };
 

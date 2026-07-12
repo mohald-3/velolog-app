@@ -1,6 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { maintenanceRuleRepository } from '../../../data/repositories/maintenanceRuleRepository';
 import type { Component, ComponentUpdate, NewComponent } from '../../../domain/types';
 import { componentRepository } from '../../../data/repositories/componentRepository';
 
@@ -59,7 +58,8 @@ export function useRetireComponent() {
 
 /** Retires the old component and installs a fresh one of the same type/name at the bike's
  * current odometer. Active maintenance rules move to the new component with their counter reset
- * to that odometer, since a replaced part's own service history doesn't apply to the new one. */
+ * to that odometer, since a replaced part's own service history doesn't apply to the new one.
+ * The whole swap is a single transaction in the repository. */
 export function useReplaceComponent() {
   const queryClient = useQueryClient();
   return useMutation({
@@ -69,28 +69,10 @@ export function useReplaceComponent() {
     }: {
       oldComponent: Component;
       currentOdometerM: number;
-    }) => {
-      await componentRepository.retire(oldComponent.id);
-      const newComponent = await componentRepository.create({
-        bikeId: oldComponent.bikeId,
-        type: oldComponent.type,
-        name: oldComponent.name,
-        installedAtOdometerM: currentOdometerM,
-        installedDate: new Date(),
-        expectedLifetimeKm: oldComponent.expectedLifetimeKm,
-        notes: oldComponent.notes,
-      });
-
-      const rules = await maintenanceRuleRepository.listByComponent(oldComponent.id);
-      for (const rule of rules) {
-        await maintenanceRuleRepository.update(rule.id, {
-          componentId: newComponent.id,
-          lastPerformedAtOdometerM: currentOdometerM,
-        });
-      }
-
-      return { oldComponent, newComponent };
-    },
+    }) => ({
+      oldComponent,
+      newComponent: await componentRepository.replace(oldComponent, currentOdometerM),
+    }),
     onSuccess: ({ oldComponent, newComponent }) => {
       queryClient.invalidateQueries({ queryKey: componentsKey(oldComponent.bikeId) });
       queryClient.invalidateQueries({ queryKey: componentKey(oldComponent.id) });

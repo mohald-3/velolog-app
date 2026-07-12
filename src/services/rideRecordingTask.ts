@@ -1,9 +1,10 @@
 import * as Crypto from 'expo-crypto';
+import { File } from 'expo-file-system';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Location from 'expo-location';
 import * as TaskManager from 'expo-task-manager';
 
-import type { RawGpsPoint } from '../src/domain/gps-filter';
+import type { RawGpsPoint } from '../domain/gps-filter';
 
 export const RIDE_RECORDING_TASK_NAME = 'velolog-ride-recording-task';
 
@@ -38,6 +39,8 @@ TaskManager.defineTask(RIDE_RECORDING_TASK_NAME, async ({ data, error }) => {
   const activeRide = await readActiveRideAsync();
   if (!activeRide) return;
 
+  // Each batch ends with a trailing newline so appends never need to know whether the file is
+  // empty — the reader splits on '\n' and drops blank lines.
   const lines = locations
     .map((loc): RawGpsPoint => ({
       ts: loc.timestamp,
@@ -45,17 +48,21 @@ TaskManager.defineTask(RIDE_RECORDING_TASK_NAME, async ({ data, error }) => {
       lon: loc.coords.longitude,
       accuracyM: loc.coords.accuracy,
     }))
-    .map((point) => JSON.stringify(point))
-    .join('\n');
+    .map((point) => `${JSON.stringify(point)}\n`)
+    .join('');
 
-  await appendLines(activeRide.trackUri, lines);
+  appendLines(activeRide.trackUri, lines);
 });
 
-async function appendLines(trackUri: string, lines: string): Promise<void> {
-  const info = await FileSystem.getInfoAsync(trackUri);
-  const existing = info.exists ? await FileSystem.readAsStringAsync(trackUri) : '';
-  const next = existing ? `${existing}\n${lines}` : lines;
-  await FileSystem.writeAsStringAsync(trackUri, next);
+/** True append — never read-modify-write. Rewriting the whole file per batch is O(n²) I/O over
+ * a multi-hour ride, and a kill mid-rewrite could truncate the entire track; appending bounds
+ * any loss to the final batch. */
+function appendLines(trackUri: string, lines: string): void {
+  const file = new File(trackUri);
+  if (!file.exists) {
+    file.create();
+  }
+  file.write(lines, { append: true });
 }
 
 async function ensureRidesDirAsync(): Promise<void> {
@@ -79,8 +86,15 @@ async function clearActiveRideAsync(): Promise<void> {
 export async function readActiveRideAsync(): Promise<ActiveRide | null> {
   const info = await FileSystem.getInfoAsync(ACTIVE_RIDE_URI);
   if (!info.exists) return null;
-  const content = await FileSystem.readAsStringAsync(ACTIVE_RIDE_URI);
-  return JSON.parse(content) as ActiveRide;
+  try {
+    const content = await FileSystem.readAsStringAsync(ACTIVE_RIDE_URI);
+    return JSON.parse(content) as ActiveRide;
+  } catch {
+    // A pointer corrupted by a kill mid-write would otherwise crash rehydration on every
+    // launch — clear it and treat as "no active ride" instead.
+    await clearActiveRideAsync().catch(() => {});
+    return null;
+  }
 }
 
 async function startLocationUpdatesIfNeededAsync(): Promise<void> {
@@ -155,6 +169,10 @@ export async function ensureLocationUpdatesRunningAsync(): Promise<void> {
   await startLocationUpdatesIfNeededAsync();
 }
 
+/** Stops location updates but deliberately leaves the active-ride pointer in place — the ride
+ * isn't safe until it's in the database. Call finalizeRideRecordingAsync() after a successful
+ * save; until then, a kill lets the app rehydrate and stop/save again instead of losing the
+ * ride. */
 export async function stopRideRecordingAsync(): Promise<void> {
   const running = await Location.hasStartedLocationUpdatesAsync(RIDE_RECORDING_TASK_NAME).catch(
     () => false
@@ -162,6 +180,10 @@ export async function stopRideRecordingAsync(): Promise<void> {
   if (running) {
     await Location.stopLocationUpdatesAsync(RIDE_RECORDING_TASK_NAME);
   }
+}
+
+/** Clears the active-ride pointer once the ride row is safely persisted. */
+export async function finalizeRideRecordingAsync(): Promise<void> {
   await clearActiveRideAsync();
 }
 
@@ -192,5 +214,11 @@ export async function readTrackPointsAsync(trackUri: string): Promise<RawGpsPoin
   return content
     .split('\n')
     .filter(Boolean)
-    .map((line) => JSON.parse(line) as RawGpsPoint);
+    .flatMap((line) => {
+      try {
+        return [JSON.parse(line) as RawGpsPoint];
+      } catch {
+        return []; // skip a line truncated by a kill mid-append rather than losing the ride
+      }
+    });
 }

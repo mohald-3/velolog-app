@@ -9,7 +9,7 @@ import type { ThemeColors } from '../../../theme/colors';
 import { useTheme } from '../../../theme/useTheme';
 import { useSettings } from '../../settings/hooks/useSettings';
 import { formatDuration } from '../format';
-import { useRideRecorder } from '../hooks/useRideRecorder';
+import { useRideRecorder, type RideSummary } from '../hooks/useRideRecorder';
 import { useCreateRide } from '../hooks/useRides';
 
 export default function RecordRideScreen() {
@@ -25,6 +25,7 @@ export default function RecordRideScreen() {
     pause,
     resume,
     stop,
+    finalize,
     discard,
     autoPauseEnabled,
     setAutoPauseEnabled,
@@ -43,19 +44,29 @@ export default function RecordRideScreen() {
     }
   };
 
-  const handleStop = async () => {
-    const summary = await stop();
-    if (!summary) return;
+  const saveRide = async (summary: RideSummary) => {
+    try {
+      await createRide.mutateAsync({
+        bikeId: summary.bikeId,
+        startedAt: new Date(summary.startedAt),
+        endedAt: new Date(summary.endedAt),
+        distanceM: summary.distanceM,
+        movingTimeMs: summary.movingTimeMs,
+        pausedTimeMs: summary.pausedTimeMs,
+        trackUri: summary.trackUri,
+      });
+    } catch {
+      // The track file and active-ride pointer are still on disk — nothing is lost yet.
+      Alert.alert(t('recordRide.saveFailedTitle'), t('recordRide.saveFailedMessage'), [
+        { text: t('common.retry'), onPress: () => void saveRide(summary) },
+        { text: t('common.cancel'), style: 'cancel' },
+      ]);
+      return;
+    }
 
-    await createRide.mutateAsync({
-      bikeId: summary.bikeId,
-      startedAt: new Date(summary.startedAt),
-      endedAt: new Date(summary.endedAt),
-      distanceM: summary.distanceM,
-      movingTimeMs: summary.movingTimeMs,
-      pausedTimeMs: summary.pausedTimeMs,
-      trackUri: summary.trackUri,
-    });
+    // Only now is the ride safely in the database — clear the crash-recovery pointer. If this
+    // cleanup itself fails, a stale pointer is recoverable noise, not data loss.
+    await finalize().catch(() => {});
 
     Alert.alert(
       t('recordRide.rideCompleteTitle'),
@@ -66,6 +77,12 @@ export default function RecordRideScreen() {
       }),
       [{ text: t('common.ok'), onPress: () => router.back() }]
     );
+  };
+
+  const handleStop = async () => {
+    const summary = await stop();
+    if (!summary) return;
+    await saveRide(summary);
   };
 
   const handleDiscard = () => {
@@ -110,13 +127,15 @@ export default function RecordRideScreen() {
 
       {state.status === 'recording' && (
         <>
-          <Pressable style={styles.primaryButton} onPress={pause}>
+          <Pressable style={styles.primaryButton} onPress={pause} disabled={createRide.isPending}>
             <Text style={styles.primaryButtonText}>{t('recordRide.pause')}</Text>
           </Pressable>
-          <Pressable style={styles.stopButton} onPress={handleStop}>
-            <Text style={styles.stopButtonText}>{t('recordRide.stop')}</Text>
+          <Pressable style={styles.stopButton} onPress={handleStop} disabled={createRide.isPending}>
+            <Text style={styles.stopButtonText}>
+              {createRide.isPending ? t('common.saving') : t('recordRide.stop')}
+            </Text>
           </Pressable>
-          <Pressable style={styles.discardButton} onPress={handleDiscard}>
+          <Pressable style={styles.discardButton} onPress={handleDiscard} disabled={createRide.isPending}>
             <Text style={styles.discardButtonText}>{t('recordRide.discard')}</Text>
           </Pressable>
         </>
@@ -125,13 +144,15 @@ export default function RecordRideScreen() {
       {state.status === 'paused' && (
         <>
           {isAutoPaused && <Text style={styles.autoPausedNotice}>{t('recordRide.autoPausedNotice')}</Text>}
-          <Pressable style={styles.primaryButton} onPress={resume}>
+          <Pressable style={styles.primaryButton} onPress={resume} disabled={createRide.isPending}>
             <Text style={styles.primaryButtonText}>{t('recordRide.resume')}</Text>
           </Pressable>
-          <Pressable style={styles.stopButton} onPress={handleStop}>
-            <Text style={styles.stopButtonText}>{t('recordRide.stop')}</Text>
+          <Pressable style={styles.stopButton} onPress={handleStop} disabled={createRide.isPending}>
+            <Text style={styles.stopButtonText}>
+              {createRide.isPending ? t('common.saving') : t('recordRide.stop')}
+            </Text>
           </Pressable>
-          <Pressable style={styles.discardButton} onPress={handleDiscard}>
+          <Pressable style={styles.discardButton} onPress={handleDiscard} disabled={createRide.isPending}>
             <Text style={styles.discardButtonText}>{t('recordRide.discard')}</Text>
           </Pressable>
         </>

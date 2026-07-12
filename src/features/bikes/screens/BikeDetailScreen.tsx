@@ -167,6 +167,7 @@ function ComponentRow({
   styles: ReturnType<typeof createStyles>;
   colors: ThemeColors;
 }) {
+  const { t } = useTranslation();
   const router = useRouter();
   const wearLabel = formatDistance(computeComponentWearM(currentOdometerM, component.installedAtOdometerM), unitSystem, 0);
   const { data: rules } = useMaintenanceRules(component.id);
@@ -189,7 +190,7 @@ function ComponentRow({
             <View style={[styles.statusDot, { backgroundColor: statusColors[status] }]} />
           )}
         </View>
-        <Text style={styles.componentType}>{component.type}</Text>
+        <Text style={styles.componentType}>{t(`componentType.${component.type}`)}</Text>
       </View>
       <Text style={styles.componentWear}>{wearLabel}</Text>
     </Pressable>

@@ -115,7 +115,7 @@ function RuleRow({
         </Text>
       </View>
       <View style={[styles.statusBadge, { backgroundColor: statusColors[status] }]}>
-        <Text style={styles.statusBadgeText}>{status}</Text>
+        <Text style={styles.statusBadgeText}>{t(`dueStatus.${status}`)}</Text>
       </View>
     </Pressable>
   );

@@ -3,7 +3,7 @@ import * as Crypto from 'expo-crypto';
 
 import type { Component, ComponentUpdate, NewComponent } from '../../domain/types';
 import { db } from '../db';
-import { components } from '../schema';
+import { components, maintenanceRules } from '../schema';
 
 export interface ComponentRepository {
   listByBike(bikeId: string, options?: { includeRetired?: boolean }): Promise<Component[]>;
@@ -11,6 +11,10 @@ export interface ComponentRepository {
   create(input: NewComponent): Promise<Component>;
   update(id: string, changes: ComponentUpdate): Promise<Component>;
   retire(id: string): Promise<void>;
+  /** Retires the old component and installs a fresh one of the same type/name at the given
+   * odometer, migrating its active rules with their counter reset — atomically, so a failure
+   * can't leave a retired component with no replacement or stranded rules. */
+  replace(oldComponent: Component, currentOdometerM: number): Promise<Component>;
 }
 
 export const componentRepository: ComponentRepository = {
@@ -71,5 +75,41 @@ export const componentRepository: ComponentRepository = {
     if (!updated) {
       throw new Error(`Component not found: ${id}`);
     }
+  },
+
+  async replace(oldComponent, currentOdometerM) {
+    const now = new Date();
+    // The expo-sqlite driver is synchronous, so the transaction callback must run sync
+    // statements (.run()/.get()) — an async callback would commit before the work finishes.
+    return db.transaction((tx) => {
+      tx.update(components)
+        .set({ isRetired: true, updatedAt: now })
+        .where(eq(components.id, oldComponent.id))
+        .run();
+
+      const created = tx
+        .insert(components)
+        .values({
+          id: Crypto.randomUUID(),
+          bikeId: oldComponent.bikeId,
+          type: oldComponent.type,
+          name: oldComponent.name,
+          installedAtOdometerM: currentOdometerM,
+          installedDate: now,
+          expectedLifetimeKm: oldComponent.expectedLifetimeKm,
+          notes: oldComponent.notes,
+          createdAt: now,
+          updatedAt: now,
+        })
+        .returning()
+        .get();
+
+      tx.update(maintenanceRules)
+        .set({ componentId: created.id, lastPerformedAtOdometerM: currentOdometerM, updatedAt: now })
+        .where(and(eq(maintenanceRules.componentId, oldComponent.id), eq(maintenanceRules.isArchived, false)))
+        .run();
+
+      return created;
+    });
   },
 };
