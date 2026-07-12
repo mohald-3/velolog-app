@@ -34,42 +34,26 @@ Decided 2026-07-12: with the MVP serving its purpose, next effort goes to mainta
 UX/UI rather than new features. Target architecture inspiration: GoDo mobile app (shared UI
 primitives, size discipline), while keeping VeloLog's stricter domain purity.
 
-Done so far:
-- Feature-construction conventions written: CLAUDE.md "Building a feature" section +
-  `.claude/patterns/` scaffold templates (domain module, repository, hook, screen+route)
-- Decisions: shared primitives will live in `src/components/` (rule of three), soft ~200-line
-  file guideline (excluding `createStyles`)
-- Full-codebase review done — findings tracked in issue #43 (A correctness / B conventions /
-  C maintainability / D minor)
-- A-batch fixed on `fix/code-review-correctness`: stop-vs-save ride-loss window (pointer now
-  cleared only after DB save, retry alert on failure), true file append instead of full rewrite,
-  transactional replace-component and mark-as-done, corrupt-JSON guards on recovery paths,
-  double-tap-Stop guard
-
-- B-batch fixed on the same branch: notifications + component-type/due-status labels now
-  translated (197 i18n keys, full parity), `componentTypeValues` moved to `domain/types.ts`,
-  `tasks/` moved to `src/services/` per the CLAUDE.md tree
-
-- A+B PR opened: #44 (`fix/code-review-correctness`)
-- C-batch done on `refactor/code-review-maintainability` (branched off the A+B branch):
-  `src/components/` primitives (Button/FormField/StatRow/Card/Chip/LoadingState) with all 14
-  screens converted (3 reference screens by hand, rest via parallel agents), query keys
-  centralized in `src/features/queryKeys.ts` + journey-invalidation gap fixed, global mutation
-  error alert (MutationCache.onError, opt-out via meta.suppressErrorAlert)
-
-- Live emulator verification passed (2026-07-13): record → stop → save through the new
-  append/finalize path (odometer 0.2→0.4 km, pointer cleared after save, due-status dot +
-  translated "Due soon" badge, translated type chips, primitives render correctly). Discard
-  flow also verified.
-- Found during verification: **#45** — a stale first GPS fix suppresses the whole ride's
-  distance (jump filter anchors on the first point unconditionally). D6/D7 minor UI warts
-  added to #43.
+Done (all merged to main 2026-07-13 — PRs #44, #46, #47):
+- Feature-construction conventions: CLAUDE.md "Building a feature" section + `.claude/patterns/`
+  scaffold templates (domain module, repository, hook, screen+route)
+- Full-codebase review — findings tracked in issue #43; A (correctness: ride-loss window, true
+  file append, transactions, recovery guards, double-tap guard), B (conventions: notification +
+  enum-label i18n, layering fixes, tasks/ → src/services/), and C (maintainability:
+  `src/components/` primitives with all 14 screens converted, `src/features/queryKeys.ts`,
+  global mutation error alert) are all checked off in the issue
+- #45 fixed: stale-first-GPS-fix re-anchoring in `gps-filter.ts` (found via live emulator
+  verification, 6 new unit tests — suite now 97)
+- Live emulator verification of the whole arc passed (record → stop → save, forms, badges,
+  translated labels, discard flow)
 
 Next:
-1. Merge PR #44 (A+B), then PR the C-batch branch on top
-2. Fix #45 (stale-first-fix GPS bug) — domain-pure, needs solid unit tests
-3. UX/UI pass after the code is settled (includes D3 BikeDetail header actions; D1/D2/D4-D7
-   from #43 still open)
+1. UX/UI pass — includes #43's open D-items: D1 formatDuration hours, D2 expectedLifetimeKm
+   unit, D3 BikeDetail header actions, D4 LocaleSync effect, D5 naming, D6 missing header title
+   on component form, D7 unrounded odometer float
+2. Real-device field ride: cold-start #45 scenario + Spike 0's two open items (#5 kill test,
+   #6 open-road accuracy)
+3. Then M6 (v0.3 candidates — pick 2–3)
 
 ## After that
 
