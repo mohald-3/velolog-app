@@ -9,7 +9,9 @@
     "notesOptional": "Notes (optional)",
     "bikeNotFound": "Bike not found.",
     "notFound": "Not found.",
-    "retry": "Retry"
+    "retry": "Retry",
+    "errorTitle": "Something went wrong",
+    "errorMessage": "The change couldn't be saved. Please try again."
   },
   "bikeList": {
     "headerTitle": "My Bikes",

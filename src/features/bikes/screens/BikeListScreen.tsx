@@ -2,9 +2,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { LoadingState } from '../../../components';
 import type { Bike } from '../../../domain/types';
 import type { ThemeColors } from '../../../theme/colors';
 import { useTheme } from '../../../theme/useTheme';
@@ -35,10 +36,10 @@ export default function BikeListScreen() {
 
   if (isLoading) {
     return (
-      <View style={styles.center}>
+      <>
         <Stack.Screen options={headerOptions} />
-        <ActivityIndicator size="large" />
-      </View>
+        <LoadingState />
+      </>
     );
   }
 
@@ -94,13 +95,6 @@ function createStyles(colors: ThemeColors) {
     },
     headerButton: {
       marginRight: 16,
-    },
-    center: {
-      flex: 1,
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: 24,
-      backgroundColor: colors.background,
     },
     list: {
       padding: 16,

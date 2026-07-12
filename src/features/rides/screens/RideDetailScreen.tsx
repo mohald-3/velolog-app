@@ -4,9 +4,10 @@ import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import * as Sharing from 'expo-sharing';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Alert, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Alert, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Button, Card, FormField, LoadingState, StatRow } from '../../../components';
 import { speedKmh } from '../../../domain/gps-filter';
 import { formatDistance, formatSpeed } from '../../../domain/units';
 import { readTrackPointsAsync } from '../../../services/rideRecordingTask';
@@ -59,11 +60,7 @@ export default function RideDetailScreen() {
   }, [ride]);
 
   if (isLoading || isLoadingSettings || !ride || !settings) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" />
-      </View>
-    );
+    return <LoadingState />;
   }
 
   const unitSystem = settings.unitSystem;
@@ -90,10 +87,11 @@ export default function RideDetailScreen() {
       {
         text: t('common.delete'),
         style: 'destructive',
-        onPress: async () => {
-          await deleteRide.mutateAsync({ id: ride.id, bikeId: ride.bikeId, distanceM: ride.distanceM });
-          router.back();
-        },
+        onPress: () =>
+          deleteRide.mutate(
+            { id: ride.id, bikeId: ride.bikeId, distanceM: ride.distanceM },
+            { onSuccess: () => router.back() }
+          ),
       },
     ]);
   };
@@ -153,46 +151,34 @@ export default function RideDetailScreen() {
         )}
       </View>
 
-      <View style={styles.card}>
-        <Stat styles={styles} label={t('rideDetail.distanceLabel')} value={formatDistance(ride.distanceM, unitSystem, 2)} />
-        <Stat styles={styles} label={t('rideDetail.durationLabel')} value={formatDuration(durationMs)} />
-        <Stat styles={styles} label={t('rideDetail.avgSpeedLabel')} value={formatSpeed(avgSpeedKmh, unitSystem)} />
-        <Stat styles={styles} label={t('rideDetail.movingTimeLabel')} value={formatDuration(ride.movingTimeMs)} />
-        <Stat styles={styles} label={t('rideDetail.pausedTimeLabel')} value={formatDuration(ride.pausedTimeMs)} />
-      </View>
+      <Card>
+        <StatRow label={t('rideDetail.distanceLabel')} value={formatDistance(ride.distanceM, unitSystem, 2)} />
+        <StatRow label={t('rideDetail.durationLabel')} value={formatDuration(durationMs)} />
+        <StatRow label={t('rideDetail.avgSpeedLabel')} value={formatSpeed(avgSpeedKmh, unitSystem)} />
+        <StatRow label={t('rideDetail.movingTimeLabel')} value={formatDuration(ride.movingTimeMs)} />
+        <StatRow label={t('rideDetail.pausedTimeLabel')} value={formatDuration(ride.pausedTimeMs)} />
+      </Card>
 
-      <Text style={styles.label}>{t('common.notesLabel')}</Text>
-      <TextInput
-        style={styles.notesInput}
-        multiline
-        placeholder={t('rideDetail.notesPlaceholder')}
-        placeholderTextColor={colors.textDisabled}
+      <FormField
+        label={t('common.notesLabel')}
         value={notes}
         onChangeText={setNotes}
+        placeholder={t('rideDetail.notesPlaceholder')}
+        multiline
+        style={styles.notesField}
       />
-      <Pressable style={styles.saveButton} onPress={handleSaveNotes}>
-        <Text style={styles.saveButtonText}>{t('rideDetail.saveNotes')}</Text>
-      </Pressable>
+      <Button
+        title={t('rideDetail.saveNotes')}
+        onPress={handleSaveNotes}
+        variant="secondary"
+        style={styles.saveButton}
+      />
     </ScrollView>
-  );
-}
-
-function Stat({ label, value, styles }: { label: string; value: string; styles: ReturnType<typeof createStyles> }) {
-  return (
-    <View style={styles.stat}>
-      <Text style={styles.statLabel}>{label}</Text>
-      <Text style={styles.statValue}>{value}</Text>
-    </View>
   );
 }
 
 function createStyles(colors: ThemeColors) {
   return StyleSheet.create({
-    center: {
-      flex: 1,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
     content: {
       padding: 20,
     },
@@ -217,48 +203,12 @@ function createStyles(colors: ThemeColors) {
       color: colors.textMuted,
       textAlign: 'center',
     },
-    card: {
-      backgroundColor: colors.surface,
-      borderRadius: 12,
-      padding: 16,
-    },
-    stat: {
-      marginTop: 8,
-    },
-    statLabel: {
-      fontSize: 12,
-      color: colors.textMuted,
-    },
-    statValue: {
-      fontSize: 18,
-      fontWeight: '700',
-      color: colors.text,
-    },
-    label: {
-      fontSize: 12,
-      color: colors.textMuted,
+    notesField: {
       marginTop: 20,
-      marginBottom: 6,
-    },
-    notesInput: {
-      backgroundColor: colors.surface,
-      borderRadius: 10,
-      padding: 12,
-      fontSize: 14,
-      minHeight: 80,
-      textAlignVertical: 'top',
-      color: colors.text,
+      marginBottom: 0,
     },
     saveButton: {
       marginTop: 12,
-      backgroundColor: colors.surface,
-      paddingVertical: 12,
-      borderRadius: 8,
-      alignItems: 'center',
-    },
-    saveButtonText: {
-      color: colors.primary,
-      fontWeight: '600',
     },
     headerActions: {
       flexDirection: 'row',

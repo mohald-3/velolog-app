@@ -1,9 +1,10 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Alert, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Button, Card, LoadingState } from '../../../components';
 import type { Component, UnitSystem } from '../../../domain/types';
 import { computeDueInfo, worstDueStatus, type DueStatus } from '../../../domain/maintenance';
 import { computeOdometerM } from '../../../domain/odometer';
@@ -31,11 +32,7 @@ export default function BikeDetailScreen() {
   const archiveBike = useArchiveBike();
 
   if (isLoading || isLoadingSettings || !settings) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" />
-      </View>
-    );
+    return <LoadingState />;
   }
 
   if (!bike) {
@@ -55,10 +52,7 @@ export default function BikeDetailScreen() {
       {
         text: t('bikeDetail.archiveBike'),
         style: 'destructive',
-        onPress: async () => {
-          await archiveBike.mutateAsync(bike.id);
-          router.replace('/');
-        },
+        onPress: () => archiveBike.mutate(bike.id, { onSuccess: () => router.replace('/') }),
       },
     ]);
   };
@@ -73,18 +67,18 @@ export default function BikeDetailScreen() {
         <Text style={styles.subtitle}>{[bike.brand, bike.model].filter(Boolean).join(' ')}</Text>
       )}
 
-      <View style={styles.card}>
+      <Card style={styles.card}>
         <Row label={t('bikeDetail.odometerLabel')} value={formatDistance(currentOdometerM, unitSystem)} styles={styles} />
         {bike.year != null && <Row label={t('bikeDetail.yearLabel')} value={String(bike.year)} styles={styles} />}
         {bike.color && <Row label={t('bikeDetail.colorLabel')} value={bike.color} styles={styles} />}
         {bike.frameSize && <Row label={t('bikeDetail.frameSizeLabel')} value={bike.frameSize} styles={styles} />}
-      </View>
+      </Card>
 
       {bike.notes && (
-        <View style={styles.card}>
+        <Card style={styles.card}>
           <Text style={styles.label}>{t('bikeDetail.notes')}</Text>
           <Text style={styles.notes}>{bike.notes}</Text>
-        </View>
+        </Card>
       )}
 
       <View style={styles.componentsHeader}>
@@ -110,27 +104,35 @@ export default function BikeDetailScreen() {
         ))
       )}
 
-      <Pressable style={styles.primaryButton} onPress={() => router.push(`/bikes/${bike.id}/record`)}>
-        <Text style={styles.primaryButtonText}>{t('bikeDetail.startRide')}</Text>
-      </Pressable>
-
-      <Pressable style={styles.secondaryButton} onPress={() => router.push(`/bikes/${bike.id}/rides`)}>
-        <Text style={styles.secondaryButtonText}>
-          {t('bikeDetail.viewRides')}
-          {rides && rides.length > 0 ? ` (${rides.length})` : ''}
-        </Text>
-      </Pressable>
-
-      <Pressable style={styles.secondaryButton} onPress={() => router.push(`/bikes/${bike.id}/stats`)}>
-        <Text style={styles.secondaryButtonText}>{t('bikeDetail.statistics')}</Text>
-      </Pressable>
-
-      <Pressable style={styles.secondaryButton} onPress={() => router.push(`/bikes/${bike.id}/edit`)}>
-        <Text style={styles.secondaryButtonText}>{t('bikeDetail.edit')}</Text>
-      </Pressable>
-      <Pressable style={styles.archiveButton} onPress={handleArchive}>
-        <Text style={styles.archiveButtonText}>{t('bikeDetail.archiveBike')}</Text>
-      </Pressable>
+      <Button
+        title={t('bikeDetail.startRide')}
+        onPress={() => router.push(`/bikes/${bike.id}/record`)}
+        style={styles.startRideButton}
+      />
+      <Button
+        title={`${t('bikeDetail.viewRides')}${rides && rides.length > 0 ? ` (${rides.length})` : ''}`}
+        onPress={() => router.push(`/bikes/${bike.id}/rides`)}
+        variant="secondary"
+        style={styles.stackedButton}
+      />
+      <Button
+        title={t('bikeDetail.statistics')}
+        onPress={() => router.push(`/bikes/${bike.id}/stats`)}
+        variant="secondary"
+        style={styles.stackedButton}
+      />
+      <Button
+        title={t('bikeDetail.edit')}
+        onPress={() => router.push(`/bikes/${bike.id}/edit`)}
+        variant="secondary"
+        style={styles.stackedButton}
+      />
+      <Button
+        title={t('bikeDetail.archiveBike')}
+        onPress={handleArchive}
+        variant="ghostDanger"
+        style={styles.stackedButton}
+      />
     </ScrollView>
   );
 }
@@ -230,9 +232,6 @@ function createStyles(colors: ThemeColors) {
       marginTop: 4,
     },
     card: {
-      backgroundColor: colors.surface,
-      borderRadius: 12,
-      padding: 16,
       marginTop: 20,
     },
     row: {
@@ -309,39 +308,11 @@ function createStyles(colors: ThemeColors) {
       fontWeight: '600',
       color: colors.primary,
     },
-    primaryButton: {
+    startRideButton: {
       marginTop: 24,
-      backgroundColor: colors.primary,
-      paddingVertical: 14,
-      borderRadius: 8,
-      alignItems: 'center',
     },
-    primaryButtonText: {
-      color: colors.onPrimary,
-      fontWeight: '600',
-      fontSize: 16,
-    },
-    secondaryButton: {
+    stackedButton: {
       marginTop: 12,
-      backgroundColor: colors.surface,
-      paddingVertical: 14,
-      borderRadius: 8,
-      alignItems: 'center',
-    },
-    secondaryButtonText: {
-      color: colors.primary,
-      fontWeight: '600',
-      fontSize: 16,
-    },
-    archiveButton: {
-      marginTop: 12,
-      paddingVertical: 14,
-      borderRadius: 8,
-      alignItems: 'center',
-    },
-    archiveButtonText: {
-      color: colors.danger,
-      fontWeight: '600',
     },
   });
 }

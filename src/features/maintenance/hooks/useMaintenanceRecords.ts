@@ -2,14 +2,11 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { maintenanceRecordRepository } from '../../../data/repositories/maintenanceRecordRepository';
 import type { MaintenanceRule } from '../../../domain/types';
-
-const recordsKey = (componentId: string) => ['components', componentId, 'maintenanceRecords'] as const;
-const rulesKey = (componentId: string) => ['components', componentId, 'maintenanceRules'] as const;
-const ruleKey = (id: string) => ['maintenanceRules', id] as const;
+import { queryKeys } from '../../queryKeys';
 
 export function useMaintenanceRecords(componentId: string | undefined) {
   return useQuery({
-    queryKey: recordsKey(componentId ?? ''),
+    queryKey: queryKeys.maintenanceRecords(componentId ?? ''),
     queryFn: () => maintenanceRecordRepository.listByComponent(componentId as string),
     enabled: Boolean(componentId),
   });
@@ -36,9 +33,9 @@ export function useMarkRuleAsDone() {
         notes,
       }),
     onSuccess: (updatedRule) => {
-      queryClient.invalidateQueries({ queryKey: recordsKey(updatedRule.componentId) });
-      queryClient.invalidateQueries({ queryKey: rulesKey(updatedRule.componentId) });
-      queryClient.invalidateQueries({ queryKey: ruleKey(updatedRule.id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.maintenanceRecords(updatedRule.componentId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.maintenanceRules(updatedRule.componentId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.maintenanceRule(updatedRule.id) });
     },
   });
 }

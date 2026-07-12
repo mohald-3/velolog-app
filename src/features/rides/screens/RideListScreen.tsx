@@ -1,9 +1,10 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Pressable, SectionList, StyleSheet, Text, View } from 'react-native';
+import { Pressable, SectionList, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { LoadingState } from '../../../components';
 import { speedKmh } from '../../../domain/gps-filter';
 import { groupRidesByDay } from '../../../domain/stats';
 import type { Ride, UnitSystem } from '../../../domain/types';
@@ -32,11 +33,7 @@ export default function RideListScreen() {
   const { data: settings, isLoading: isLoadingSettings } = useSettings();
 
   if (isLoading || isLoadingSettings || !settings) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" />
-      </View>
-    );
+    return <LoadingState />;
   }
 
   const groups = groupRidesByDay(rides ?? []);

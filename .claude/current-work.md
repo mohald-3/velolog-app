@@ -50,11 +50,26 @@ Done so far:
   translated (197 i18n keys, full parity), `componentTypeValues` moved to `domain/types.ts`,
   `tasks/` moved to `src/services/` per the CLAUDE.md tree
 
+- A+B PR opened: #44 (`fix/code-review-correctness`)
+- C-batch done on `refactor/code-review-maintainability` (branched off the A+B branch):
+  `src/components/` primitives (Button/FormField/StatRow/Card/Chip/LoadingState) with all 14
+  screens converted (3 reference screens by hand, rest via parallel agents), query keys
+  centralized in `src/features/queryKeys.ts` + journey-invalidation gap fixed, global mutation
+  error alert (MutationCache.onError, opt-out via meta.suppressErrorAlert)
+
+- Live emulator verification passed (2026-07-13): record → stop → save through the new
+  append/finalize path (odometer 0.2→0.4 km, pointer cleared after save, due-status dot +
+  translated "Due soon" badge, translated type chips, primitives render correctly). Discard
+  flow also verified.
+- Found during verification: **#45** — a stale first GPS fix suppresses the whole ride's
+  distance (jump filter anchors on the first point unconditionally). D6/D7 minor UI warts
+  added to #43.
+
 Next:
-1. PR the `fix/code-review-correctness` branch (A+B batches, issue #43)
-2. Issue #43 C-batch: extract shared UI primitives into `src/components/` (Field ×3, Stat ×4,
-   buttons ×6...), centralize query keys, shared mutation-error feedback
-3. UX/UI pass after the code is settled (includes D3 BikeDetail header actions)
+1. Merge PR #44 (A+B), then PR the C-batch branch on top
+2. Fix #45 (stale-first-fix GPS bug) — domain-pure, needs solid unit tests
+3. UX/UI pass after the code is settled (includes D3 BikeDetail header actions; D1/D2/D4-D7
+   from #43 still open)
 
 ## After that
 

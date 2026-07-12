@@ -2,19 +2,10 @@ import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  ActivityIndicator,
-  Alert,
-  Image,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { Alert, Image, Pressable, ScrollView, StyleSheet, Text } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Button, FormField, LoadingState } from '../../../components';
 import type { Bike } from '../../../domain/types';
 import { distanceUnitLabel, distanceUnitToMeters, metersToDistanceUnit } from '../../../domain/units';
 import type { ThemeColors } from '../../../theme/colors';
@@ -27,15 +18,9 @@ export default function AddEditBikeScreen() {
   const isEditing = Boolean(id);
   const { data: existingBike, isLoading: isLoadingBike } = useBike(id);
   const { data: settings, isLoading: isLoadingSettings } = useSettings();
-  const { colors } = useTheme();
-  const styles = useMemo(() => createStyles(colors), [colors]);
 
   if ((isEditing && isLoadingBike) || isLoadingSettings || !settings) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" />
-      </View>
-    );
+    return <LoadingState />;
   }
 
   // Keyed by the loaded bike's id (or 'new') so the form's local state is initialized fresh
@@ -96,7 +81,7 @@ function BikeForm({
     }
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     if (!name.trim()) {
       Alert.alert(t('addEditBike.nameRequiredTitle'), t('addEditBike.nameRequiredMessage'));
       return;
@@ -126,11 +111,9 @@ function BikeForm({
     };
 
     if (isEditing && bikeId) {
-      await updateBike.mutateAsync({ id: bikeId, changes: values });
-      router.back();
+      updateBike.mutate({ id: bikeId, changes: values }, { onSuccess: () => router.back() });
     } else {
-      const created = await createBike.mutateAsync(values);
-      router.replace(`/bikes/${created.id}`);
+      createBike.mutate(values, { onSuccess: (created) => router.replace(`/bikes/${created.id}`) });
     }
   };
 
@@ -146,79 +129,41 @@ function BikeForm({
         )}
       </Pressable>
 
-      <Field
+      <FormField
         label={t('addEditBike.nameLabel')}
         value={name}
         onChangeText={setName}
         placeholder={t('addEditBike.namePlaceholder')}
-        placeholderTextColor={colors.textDisabled}
-        styles={styles}
       />
-      <Field label={t('addEditBike.brandLabel')} value={brand} onChangeText={setBrand} styles={styles} />
-      <Field label={t('addEditBike.modelLabel')} value={model} onChangeText={setModel} styles={styles} />
-      <Field
+      <FormField label={t('addEditBike.brandLabel')} value={brand} onChangeText={setBrand} />
+      <FormField label={t('addEditBike.modelLabel')} value={model} onChangeText={setModel} />
+      <FormField
         label={t('addEditBike.yearLabel')}
         value={year}
         onChangeText={setYear}
         keyboardType="number-pad"
-        styles={styles}
       />
-      <Field label={t('addEditBike.colorLabel')} value={color} onChangeText={setColor} styles={styles} />
-      <Field
-        label={t('addEditBike.frameSizeLabel')}
-        value={frameSize}
-        onChangeText={setFrameSize}
-        styles={styles}
-      />
-      <Field
+      <FormField label={t('addEditBike.colorLabel')} value={color} onChangeText={setColor} />
+      <FormField label={t('addEditBike.frameSizeLabel')} value={frameSize} onChangeText={setFrameSize} />
+      <FormField
         label={t('addEditBike.startingOdometerLabel', { unit: distanceUnitLabel(unitSystem) })}
         value={startingOdometer}
         onChangeText={setStartingOdometer}
         keyboardType="decimal-pad"
-        styles={styles}
       />
 
-      <Pressable style={styles.primaryButton} onPress={handleSubmit} disabled={saving}>
-        <Text style={styles.primaryButtonText}>
-          {saving ? t('common.saving') : isEditing ? t('common.saveChanges') : t('addEditBike.addBike')}
-        </Text>
-      </Pressable>
+      <Button
+        title={saving ? t('common.saving') : isEditing ? t('common.saveChanges') : t('addEditBike.addBike')}
+        onPress={handleSubmit}
+        disabled={saving}
+        style={styles.submitButton}
+      />
     </ScrollView>
-  );
-}
-
-function Field(props: {
-  label: string;
-  value: string;
-  onChangeText: (text: string) => void;
-  placeholder?: string;
-  placeholderTextColor?: string;
-  keyboardType?: 'default' | 'number-pad' | 'decimal-pad';
-  styles: ReturnType<typeof createStyles>;
-}) {
-  return (
-    <View style={props.styles.field}>
-      <Text style={props.styles.label}>{props.label}</Text>
-      <TextInput
-        style={props.styles.input}
-        value={props.value}
-        onChangeText={props.onChangeText}
-        placeholder={props.placeholder}
-        placeholderTextColor={props.placeholderTextColor}
-        keyboardType={props.keyboardType ?? 'default'}
-      />
-    </View>
   );
 }
 
 function createStyles(colors: ThemeColors) {
   return StyleSheet.create({
-    center: {
-      flex: 1,
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: colors.background,
-    },
     content: {
       padding: 20,
       backgroundColor: colors.background,
@@ -239,34 +184,8 @@ function createStyles(colors: ThemeColors) {
     photoPlaceholder: {
       color: colors.textDisabled,
     },
-    field: {
-      marginBottom: 16,
-    },
-    label: {
-      fontSize: 12,
-      color: colors.textMuted,
-      marginBottom: 4,
-    },
-    input: {
-      borderWidth: 1,
-      borderColor: colors.surfaceBorder,
-      borderRadius: 8,
-      paddingHorizontal: 12,
-      paddingVertical: 10,
-      fontSize: 15,
-      color: colors.text,
-    },
-    primaryButton: {
+    submitButton: {
       marginTop: 8,
-      backgroundColor: colors.primary,
-      paddingVertical: 14,
-      borderRadius: 8,
-      alignItems: 'center',
-    },
-    primaryButtonText: {
-      color: colors.onPrimary,
-      fontWeight: '600',
-      fontSize: 16,
     },
   });
 }
