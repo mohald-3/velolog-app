@@ -94,6 +94,99 @@ describe('filterImplausibleJumps', () => {
   it('returns an empty array for an empty input', () => {
     expect(filterImplausibleJumps([])).toEqual([]);
   });
+
+  describe('stale-start recovery (#45)', () => {
+    // A cached last-known location can be km away from the actual ride start; latOffset 0.5deg
+    // is ~55km — hopelessly implausible against a ride that starts at the ORIGIN.
+    const STALE_OFFSET = 0.5;
+
+    it('re-anchors on the real stream when the first fix is stale, instead of recording 0', () => {
+      const points = [
+        pointAt(0, STALE_OFFSET), // cached fix, far away
+        // real ride at ~20 km/h, 2s ticks
+        pointAt(2000, 0),
+        pointAt(4000, 0.0001),
+        pointAt(6000, 0.0002),
+        pointAt(8000, 0.0003),
+      ];
+      const result = filterImplausibleJumps(points);
+      expect(result.map((p) => p.ts)).toEqual([2000, 4000, 6000, 8000]);
+      expect(accumulateDistanceM(result)).toBeGreaterThan(30);
+    });
+
+    it('recovers from several mutually-consistent stale fixes, not just one', () => {
+      const points = [
+        pointAt(0, STALE_OFFSET),
+        pointAt(2000, STALE_OFFSET + 0.00001), // slight jitter around the cached position
+        // real stream — must outnumber the stale prefix before it wins
+        pointAt(4000, 0),
+        pointAt(6000, 0.0001),
+        pointAt(8000, 0.0002),
+        pointAt(10000, 0.0003),
+      ];
+      const result = filterImplausibleJumps(points);
+      expect(result.map((p) => p.ts)).toEqual([4000, 6000, 8000, 10000]);
+    });
+
+    it('keeps accumulating normally after a re-anchor', () => {
+      const points = [
+        pointAt(0, STALE_OFFSET),
+        pointAt(2000, 0),
+        pointAt(4000, 0.0001),
+        pointAt(6000, 0.0002),
+        // a glitch after the re-anchor is still dropped as usual
+        pointAt(8000, 0.05),
+        pointAt(10000, 0.0004),
+      ];
+      const result = filterImplausibleJumps(points);
+      expect(result.map((p) => p.ts)).toEqual([2000, 4000, 6000, 10000]);
+    });
+
+    it('does not re-anchor onto a short glitch burst at the start', () => {
+      const points = [
+        pointAt(0, 0),
+        // two mutually-consistent glitch points — under the run threshold of 3
+        pointAt(1000, 0.05),
+        pointAt(2000, 0.05001),
+        // real track resumes from the anchor
+        pointAt(3000, 0.0001),
+        pointAt(4000, 0.00015),
+      ];
+      const result = filterImplausibleJumps(points);
+      expect(result.map((p) => p.ts)).toEqual([0, 3000, 4000]);
+    });
+
+    it('never re-anchors once a longer track has been accepted (mid-ride glitch cluster)', () => {
+      const points = [
+        // six good points — past the stale-prefix window
+        pointAt(0, 0),
+        pointAt(1000, 0.00005),
+        pointAt(2000, 0.0001),
+        pointAt(3000, 0.00015),
+        pointAt(4000, 0.0002),
+        pointAt(5000, 0.00025),
+        // a mutually-consistent glitch cluster longer than REANCHOR_MIN_RUN
+        pointAt(6000, 0.05),
+        pointAt(7000, 0.05001),
+        pointAt(8000, 0.05002),
+        pointAt(9000, 0.05003),
+        pointAt(10000, 0.05004),
+        pointAt(11000, 0.05005),
+        pointAt(12000, 0.05006),
+        // real track resumes
+        pointAt(13000, 0.0003),
+      ];
+      const result = filterImplausibleJumps(points);
+      expect(result.map((p) => p.ts)).toEqual([0, 1000, 2000, 3000, 4000, 5000, 13000]);
+    });
+
+    it('keeps a stationary start (all points at the cached location are simply the real start)', () => {
+      // If the rider genuinely starts where the cached fix is, nothing is implausible and
+      // nothing is re-anchored.
+      const points = [pointAt(0, 0), pointAt(2000, 0.00001), pointAt(4000, 0.00002)];
+      expect(filterImplausibleJumps(points)).toHaveLength(3);
+    });
+  });
 });
 
 describe('applyGpsFilters', () => {
