@@ -1,5 +1,24 @@
 # Current Work
 
+## M5 — Polish & "Your Journey" (v0.2) — COMPLETE (2026-07-12)
+
+All 4 phases done, all 4 issues closed (#35-#38), milestone closed. Units (km/mi) + Swedish/
+English i18n across every screen, a garage-wide Journey stats screen (distance, cost, CO₂ saved,
+calories, real-world distance milestone checklist), an onboarding screen for an empty garage,
+dark mode with a system/light/dark toggle (`src/theme/`), and a real app icon + splash screen —
+a "VL" wheel-monogram + map-pin + road mark, adapted from a user-provided reference logo into the
+app's existing brand green — replacing Expo's default placeholder art. `AppSettings` singleton
+repository backs units/locale/theme mode, consistent with the app's repository-pattern
+architecture. Verified live on an Android emulator: units/language/theme toggles, journey
+milestones, onboarding flow, and the new icon/splash screen all confirmed working. Full summary
+archived at `.planning/archive/m5-polish-your-journey/SUMMARY.md`. PR: #42.
+
+No active feature plan right now. Next up: M6 — v0.3 candidates (pick 2–3, not all): GPX
+export/import, distance charts, elevation gain, weather snapshot on ride save (first optional
+network dependency), ride photos.
+
+---
+
 ## M4 — Maintenance (v0.2) — COMPLETE (2026-07-12)
 
 All 3 phases done, all 6 issues closed (#29-#34), milestone closed. `MaintenanceRule` domain
@@ -80,4 +99,4 @@ points, no crashes, clean data.
 Full detail archived at `.planning/archive/spike-0-gps-derisk/STATE.md`.
 
 ---
-_Last updated: 2026-07-12 (M4 complete, all 6 issues closed, milestone closed; Spike 0's two real-device items still pending)._
+_Last updated: 2026-07-12 (M5 complete, all 4 issues closed, milestone closed; Spike 0's two real-device items still pending)._
