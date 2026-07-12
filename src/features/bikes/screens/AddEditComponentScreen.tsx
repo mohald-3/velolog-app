@@ -1,10 +1,12 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { Component, ComponentType, UnitSystem } from '../../../domain/types';
+import type { ThemeColors } from '../../../theme/colors';
+import { useTheme } from '../../../theme/useTheme';
 import { componentTypeValues } from '../../../data/schema';
 import { computeOdometerM } from '../../../domain/odometer';
 import { distanceUnitLabel, distanceUnitToMeters, formatDistance, metersToDistanceUnit } from '../../../domain/units';
@@ -33,6 +35,8 @@ export default function AddEditComponentScreen() {
   const { data: existingComponent, isLoading: isLoadingComponent } = useComponent(componentId);
   const { data: settings, isLoading: isLoadingSettings } = useSettings();
   const { t } = useTranslation();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   if (isLoadingBike || isLoadingRides || (isEditing && isLoadingComponent) || isLoadingSettings || !settings) {
     return (
@@ -76,6 +80,8 @@ function ComponentForm({
   const { t } = useTranslation();
   const { data: rules } = useMaintenanceRules(initialComponent?.id);
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const isEditing = Boolean(initialComponent);
   const createComponent = useCreateComponent();
   const updateComponent = useUpdateComponent();
@@ -201,25 +207,29 @@ function ComponentForm({
         value={name}
         onChangeText={setName}
         placeholder={t('addEditComponent.namePlaceholder')}
+        styles={styles}
       />
       <Field
         label={t('addEditComponent.installedAtOdometerLabel', { unit: distanceUnitLabel(unitSystem) })}
         value={installedAtOdometerDisplay}
         onChangeText={setInstalledAtOdometerDisplay}
         keyboardType="decimal-pad"
+        styles={styles}
       />
       <Field
         label={t('addEditComponent.installedDateLabel')}
         value={installedDate}
         onChangeText={setInstalledDate}
+        styles={styles}
       />
       <Field
         label={t('addEditComponent.expectedLifetimeLabel', { unit: distanceUnitLabel(unitSystem) })}
         value={expectedLifetimeDisplay}
         onChangeText={setExpectedLifetimeDisplay}
         keyboardType="decimal-pad"
+        styles={styles}
       />
-      <Field label={t('common.notesOptional')} value={notes} onChangeText={setNotes} />
+      <Field label={t('common.notesOptional')} value={notes} onChangeText={setNotes} styles={styles} />
 
       <Pressable style={styles.primaryButton} onPress={handleSubmit} disabled={saving}>
         <Text style={styles.primaryButtonText}>
@@ -271,12 +281,13 @@ function Field(props: {
   onChangeText: (text: string) => void;
   placeholder?: string;
   keyboardType?: 'default' | 'decimal-pad';
+  styles: ReturnType<typeof createStyles>;
 }) {
   return (
-    <View style={styles.field}>
-      <Text style={styles.label}>{props.label}</Text>
+    <View style={props.styles.field}>
+      <Text style={props.styles.label}>{props.label}</Text>
       <TextInput
-        style={styles.input}
+        style={props.styles.input}
         value={props.value}
         onChangeText={props.onChangeText}
         placeholder={props.placeholder}
@@ -286,92 +297,97 @@ function Field(props: {
   );
 }
 
-const styles = StyleSheet.create({
-  center: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  notFound: {
-    fontSize: 16,
-    color: '#666666',
-  },
-  content: {
-    padding: 20,
-  },
-  chipRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginBottom: 16,
-  },
-  chip: {
-    borderWidth: 1,
-    borderColor: '#dddddd',
-    borderRadius: 16,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    marginRight: 8,
-    marginBottom: 8,
-  },
-  chipSelected: {
-    backgroundColor: '#2f6f4f',
-    borderColor: '#2f6f4f',
-  },
-  chipText: {
-    fontSize: 13,
-    color: '#333333',
-  },
-  chipTextSelected: {
-    color: '#ffffff',
-  },
-  field: {
-    marginBottom: 16,
-  },
-  label: {
-    fontSize: 12,
-    color: '#888888',
-    marginBottom: 4,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#dddddd',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 15,
-  },
-  primaryButton: {
-    marginTop: 8,
-    backgroundColor: '#2f6f4f',
-    paddingVertical: 14,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  primaryButtonText: {
-    color: '#ffffff',
-    fontWeight: '600',
-    fontSize: 16,
-  },
-  secondaryButton: {
-    marginTop: 12,
-    backgroundColor: '#f2f2f2',
-    paddingVertical: 14,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  secondaryButtonText: {
-    color: '#2f6f4f',
-    fontWeight: '600',
-    fontSize: 16,
-  },
-  retireButton: {
-    marginTop: 12,
-    paddingVertical: 14,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  retireButtonText: {
-    color: '#b00020',
-    fontWeight: '600',
-  },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    center: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colors.background,
+    },
+    notFound: {
+      fontSize: 16,
+      color: colors.textSecondary,
+    },
+    content: {
+      padding: 20,
+      backgroundColor: colors.background,
+    },
+    chipRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      marginBottom: 16,
+    },
+    chip: {
+      borderWidth: 1,
+      borderColor: colors.surfaceBorder,
+      borderRadius: 16,
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      marginRight: 8,
+      marginBottom: 8,
+    },
+    chipSelected: {
+      backgroundColor: colors.primary,
+      borderColor: colors.primary,
+    },
+    chipText: {
+      fontSize: 13,
+      color: colors.chipText,
+    },
+    chipTextSelected: {
+      color: colors.onPrimary,
+    },
+    field: {
+      marginBottom: 16,
+    },
+    label: {
+      fontSize: 12,
+      color: colors.textMuted,
+      marginBottom: 4,
+    },
+    input: {
+      borderWidth: 1,
+      borderColor: colors.surfaceBorder,
+      borderRadius: 8,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+      fontSize: 15,
+      color: colors.text,
+    },
+    primaryButton: {
+      marginTop: 8,
+      backgroundColor: colors.primary,
+      paddingVertical: 14,
+      borderRadius: 8,
+      alignItems: 'center',
+    },
+    primaryButtonText: {
+      color: colors.onPrimary,
+      fontWeight: '600',
+      fontSize: 16,
+    },
+    secondaryButton: {
+      marginTop: 12,
+      backgroundColor: colors.surface,
+      paddingVertical: 14,
+      borderRadius: 8,
+      alignItems: 'center',
+    },
+    secondaryButtonText: {
+      color: colors.primary,
+      fontWeight: '600',
+      fontSize: 16,
+    },
+    retireButton: {
+      marginTop: 12,
+      paddingVertical: 14,
+      borderRadius: 8,
+      alignItems: 'center',
+    },
+    retireButtonText: {
+      color: colors.danger,
+      fontWeight: '600',
+    },
+  });
+}

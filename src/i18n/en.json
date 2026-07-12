@@ -176,7 +176,11 @@
     "unitsImperial": "Miles (mi)",
     "languageSection": "Language",
     "languageEnglish": "English",
-    "languageSwedish": "Svenska"
+    "languageSwedish": "Svenska",
+    "themeSection": "Appearance",
+    "themeSystem": "System",
+    "themeLight": "Light",
+    "themeDark": "Dark"
   },
   "onboarding": {
     "welcomeTitle": "Welcome to VeloLog",

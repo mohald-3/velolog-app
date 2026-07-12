@@ -1,9 +1,12 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert, Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 
 import { speedKmh } from '../../../domain/gps-filter';
 import { formatDistance, formatSpeed } from '../../../domain/units';
+import type { ThemeColors } from '../../../theme/colors';
+import { useTheme } from '../../../theme/useTheme';
 import { useSettings } from '../../settings/hooks/useSettings';
 import { formatDuration } from '../format';
 import { useRideRecorder } from '../hooks/useRideRecorder';
@@ -13,6 +16,8 @@ export default function RecordRideScreen() {
   const { t } = useTranslation();
   const { id: bikeId } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const {
     state,
     stats,
@@ -82,10 +87,10 @@ export default function RecordRideScreen() {
       <Stack.Screen options={{ title: t('recordRide.headerTitle') }} />
 
       <View style={styles.card}>
-        <Stat label={t('recordRide.distanceLabel')} value={formatDistance(stats.distanceM, unitSystem, 2)} />
-        <Stat label={t('recordRide.durationLabel')} value={formatDuration(stats.durationMs)} />
-        <Stat label={t('recordRide.currentSpeedLabel')} value={formatSpeed(stats.currentSpeedKmh, unitSystem)} />
-        <Stat label={t('recordRide.avgSpeedLabel')} value={formatSpeed(stats.avgSpeedKmh, unitSystem)} />
+        <Stat label={t('recordRide.distanceLabel')} value={formatDistance(stats.distanceM, unitSystem, 2)} styles={styles} />
+        <Stat label={t('recordRide.durationLabel')} value={formatDuration(stats.durationMs)} styles={styles} />
+        <Stat label={t('recordRide.currentSpeedLabel')} value={formatSpeed(stats.currentSpeedKmh, unitSystem)} styles={styles} />
+        <Stat label={t('recordRide.avgSpeedLabel')} value={formatSpeed(stats.avgSpeedKmh, unitSystem)} styles={styles} />
       </View>
 
       {state.status === 'idle' && (
@@ -135,7 +140,15 @@ export default function RecordRideScreen() {
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+function Stat({
+  label,
+  value,
+  styles,
+}: {
+  label: string;
+  value: string;
+  styles: ReturnType<typeof createStyles>;
+}) {
   return (
     <View style={styles.stat}>
       <Text style={styles.statLabel}>{label}</Text>
@@ -144,84 +157,89 @@ function Stat({ label, value }: { label: string; value: string }) {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-  },
-  card: {
-    backgroundColor: '#f2f2f2',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 24,
-  },
-  stat: {
-    marginTop: 8,
-  },
-  statLabel: {
-    fontSize: 12,
-    color: '#888888',
-  },
-  statValue: {
-    fontSize: 22,
-    fontWeight: '700',
-  },
-  primaryButton: {
-    backgroundColor: '#2f6f4f',
-    paddingVertical: 14,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 12,
-  },
-  primaryButtonText: {
-    color: '#ffffff',
-    fontWeight: '600',
-    fontSize: 16,
-  },
-  stopButton: {
-    backgroundColor: '#b00020',
-    paddingVertical: 14,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 12,
-  },
-  stopButtonText: {
-    color: '#ffffff',
-    fontWeight: '600',
-    fontSize: 16,
-  },
-  discardButton: {
-    paddingVertical: 14,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 12,
-  },
-  discardButtonText: {
-    color: '#b00020',
-    fontWeight: '600',
-  },
-  autoPauseRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#f2f2f2',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-  },
-  autoPauseLabel: {
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  autoPauseHint: {
-    fontSize: 12,
-    color: '#888888',
-    marginTop: 2,
-  },
-  autoPausedNotice: {
-    fontSize: 13,
-    color: '#888888',
-    textAlign: 'center',
-    marginBottom: 4,
-  },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      padding: 20,
+      backgroundColor: colors.background,
+    },
+    card: {
+      backgroundColor: colors.surface,
+      borderRadius: 12,
+      padding: 16,
+      marginBottom: 24,
+    },
+    stat: {
+      marginTop: 8,
+    },
+    statLabel: {
+      fontSize: 12,
+      color: colors.textMuted,
+    },
+    statValue: {
+      fontSize: 22,
+      fontWeight: '700',
+      color: colors.text,
+    },
+    primaryButton: {
+      backgroundColor: colors.primary,
+      paddingVertical: 14,
+      borderRadius: 8,
+      alignItems: 'center',
+      marginTop: 12,
+    },
+    primaryButtonText: {
+      color: colors.onPrimary,
+      fontWeight: '600',
+      fontSize: 16,
+    },
+    stopButton: {
+      backgroundColor: colors.danger,
+      paddingVertical: 14,
+      borderRadius: 8,
+      alignItems: 'center',
+      marginTop: 12,
+    },
+    stopButtonText: {
+      color: colors.onPrimary,
+      fontWeight: '600',
+      fontSize: 16,
+    },
+    discardButton: {
+      paddingVertical: 14,
+      borderRadius: 8,
+      alignItems: 'center',
+      marginTop: 12,
+    },
+    discardButtonText: {
+      color: colors.danger,
+      fontWeight: '600',
+    },
+    autoPauseRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      backgroundColor: colors.surface,
+      borderRadius: 12,
+      padding: 16,
+      marginBottom: 12,
+    },
+    autoPauseLabel: {
+      fontSize: 15,
+      fontWeight: '600',
+      color: colors.text,
+    },
+    autoPauseHint: {
+      fontSize: 12,
+      color: colors.textMuted,
+      marginTop: 2,
+    },
+    autoPausedNotice: {
+      fontSize: 13,
+      color: colors.textMuted,
+      textAlign: 'center',
+      marginBottom: 4,
+    },
+  });
+}

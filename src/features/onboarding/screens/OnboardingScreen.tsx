@@ -1,6 +1,10 @@
 import { Link, useRouter } from 'expo-router';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+
+import type { ThemeColors } from '../../../theme/colors';
+import { useTheme } from '../../../theme/useTheme';
 
 /** Shown in place of the bike list whenever the garage is empty — first launch, or after the
  * last bike was archived/never added. There's no persisted "seen onboarding" flag: an empty
@@ -9,6 +13,8 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 export default function OnboardingScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   return (
     <View style={styles.container}>
@@ -32,48 +38,52 @@ export default function OnboardingScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 24,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: '700',
-    textAlign: 'center',
-  },
-  tagline: {
-    fontSize: 14,
-    color: '#666666',
-    marginTop: 8,
-    textAlign: 'center',
-  },
-  pitchList: {
-    marginTop: 28,
-    alignSelf: 'stretch',
-  },
-  pitchLine: {
-    fontSize: 14,
-    color: '#333333',
-    marginTop: 10,
-    textAlign: 'center',
-  },
-  primaryButton: {
-    marginTop: 28,
-    backgroundColor: '#2f6f4f',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 8,
-  },
-  primaryButtonText: {
-    color: '#ffffff',
-    fontWeight: '600',
-  },
-  devLink: {
-    marginTop: 24,
-    fontSize: 12,
-    color: '#999999',
-  },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 24,
+      backgroundColor: colors.background,
+    },
+    title: {
+      fontSize: 24,
+      fontWeight: '700',
+      textAlign: 'center',
+      color: colors.text,
+    },
+    tagline: {
+      fontSize: 14,
+      color: colors.textSecondary,
+      marginTop: 8,
+      textAlign: 'center',
+    },
+    pitchList: {
+      marginTop: 28,
+      alignSelf: 'stretch',
+    },
+    pitchLine: {
+      fontSize: 14,
+      color: colors.chipText,
+      marginTop: 10,
+      textAlign: 'center',
+    },
+    primaryButton: {
+      marginTop: 28,
+      backgroundColor: colors.primary,
+      paddingHorizontal: 20,
+      paddingVertical: 12,
+      borderRadius: 8,
+    },
+    primaryButtonText: {
+      color: colors.onPrimary,
+      fontWeight: '600',
+    },
+    devLink: {
+      marginTop: 24,
+      fontSize: 12,
+      color: colors.textDisabled,
+    },
+  });
+}

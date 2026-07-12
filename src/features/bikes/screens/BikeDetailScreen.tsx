@@ -1,4 +1,5 @@
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Alert, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -8,23 +9,21 @@ import { computeDueInfo, worstDueStatus, type DueStatus } from '../../../domain/
 import { computeOdometerM } from '../../../domain/odometer';
 import { formatDistance } from '../../../domain/units';
 import { computeComponentWearM } from '../../../domain/wear';
+import type { ThemeColors } from '../../../theme/colors';
+import { useTheme } from '../../../theme/useTheme';
 import { useMaintenanceRules } from '../../maintenance/hooks/useMaintenanceRules';
 import { useRides } from '../../rides/hooks/useRides';
 import { useSettings } from '../../settings/hooks/useSettings';
 import { useArchiveBike, useBike } from '../hooks/useBikes';
 import { useComponents } from '../hooks/useComponents';
 
-const STATUS_COLORS: Record<DueStatus, string> = {
-  OK: '#2f6f4f',
-  DueSoon: '#b26a00',
-  Overdue: '#b00020',
-};
-
 export default function BikeDetailScreen() {
   const { t } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const { data: bike, isLoading } = useBike(id);
   const { data: components } = useComponents(id);
   const { data: rides } = useRides(id);
@@ -75,10 +74,10 @@ export default function BikeDetailScreen() {
       )}
 
       <View style={styles.card}>
-        <Row label={t('bikeDetail.odometerLabel')} value={formatDistance(currentOdometerM, unitSystem)} />
-        {bike.year != null && <Row label={t('bikeDetail.yearLabel')} value={String(bike.year)} />}
-        {bike.color && <Row label={t('bikeDetail.colorLabel')} value={bike.color} />}
-        {bike.frameSize && <Row label={t('bikeDetail.frameSizeLabel')} value={bike.frameSize} />}
+        <Row label={t('bikeDetail.odometerLabel')} value={formatDistance(currentOdometerM, unitSystem)} styles={styles} />
+        {bike.year != null && <Row label={t('bikeDetail.yearLabel')} value={String(bike.year)} styles={styles} />}
+        {bike.color && <Row label={t('bikeDetail.colorLabel')} value={bike.color} styles={styles} />}
+        {bike.frameSize && <Row label={t('bikeDetail.frameSizeLabel')} value={bike.frameSize} styles={styles} />}
       </View>
 
       {bike.notes && (
@@ -105,6 +104,8 @@ export default function BikeDetailScreen() {
             component={component}
             currentOdometerM={currentOdometerM}
             unitSystem={unitSystem}
+            styles={styles}
+            colors={colors}
           />
         ))
       )}
@@ -134,7 +135,15 @@ export default function BikeDetailScreen() {
   );
 }
 
-function Row({ label, value }: { label: string; value: string }) {
+function Row({
+  label,
+  value,
+  styles,
+}: {
+  label: string;
+  value: string;
+  styles: ReturnType<typeof createStyles>;
+}) {
   return (
     <View style={styles.row}>
       <Text style={styles.label}>{label}</Text>
@@ -148,16 +157,25 @@ function ComponentRow({
   component,
   currentOdometerM,
   unitSystem,
+  styles,
+  colors,
 }: {
   bikeId: string;
   component: Component;
   currentOdometerM: number;
   unitSystem: UnitSystem;
+  styles: ReturnType<typeof createStyles>;
+  colors: ThemeColors;
 }) {
   const router = useRouter();
   const wearLabel = formatDistance(computeComponentWearM(currentOdometerM, component.installedAtOdometerM), unitSystem, 0);
   const { data: rules } = useMaintenanceRules(component.id);
   const status = worstDueStatus((rules ?? []).map((rule) => computeDueInfo(rule, currentOdometerM).status));
+  const statusColors: Record<DueStatus, string> = {
+    OK: colors.primary,
+    DueSoon: colors.warning,
+    Overdue: colors.danger,
+  };
 
   return (
     <Pressable
@@ -168,7 +186,7 @@ function ComponentRow({
         <View style={styles.componentNameRow}>
           <Text style={styles.componentName}>{component.name}</Text>
           {status && status !== 'OK' && (
-            <View style={[styles.statusDot, { backgroundColor: STATUS_COLORS[status] }]} />
+            <View style={[styles.statusDot, { backgroundColor: statusColors[status] }]} />
           )}
         </View>
         <Text style={styles.componentType}>{component.type}</Text>
@@ -178,142 +196,151 @@ function ComponentRow({
   );
 }
 
-const styles = StyleSheet.create({
-  center: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  notFound: {
-    fontSize: 16,
-    color: '#666666',
-  },
-  content: {
-    padding: 20,
-  },
-  photo: {
-    width: '100%',
-    height: 200,
-    borderRadius: 12,
-    marginBottom: 16,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: '700',
-  },
-  subtitle: {
-    fontSize: 14,
-    color: '#666666',
-    marginTop: 4,
-  },
-  card: {
-    backgroundColor: '#f2f2f2',
-    borderRadius: 12,
-    padding: 16,
-    marginTop: 20,
-  },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 8,
-  },
-  label: {
-    fontSize: 12,
-    color: '#888888',
-  },
-  value: {
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  notes: {
-    fontSize: 14,
-    marginTop: 6,
-  },
-  componentsHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 24,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  addComponentLink: {
-    fontSize: 14,
-    color: '#2f6f4f',
-    fontWeight: '600',
-  },
-  emptyComponents: {
-    fontSize: 13,
-    color: '#888888',
-    marginTop: 8,
-  },
-  componentRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#f2f2f2',
-    borderRadius: 10,
-    padding: 12,
-    marginTop: 8,
-  },
-  componentNameRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  componentName: {
-    fontSize: 15,
-    fontWeight: '600',
-  },
-  statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginLeft: 6,
-  },
-  componentType: {
-    fontSize: 12,
-    color: '#888888',
-    marginTop: 2,
-  },
-  componentWear: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#2f6f4f',
-  },
-  primaryButton: {
-    marginTop: 24,
-    backgroundColor: '#2f6f4f',
-    paddingVertical: 14,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  primaryButtonText: {
-    color: '#ffffff',
-    fontWeight: '600',
-    fontSize: 16,
-  },
-  secondaryButton: {
-    marginTop: 12,
-    backgroundColor: '#f2f2f2',
-    paddingVertical: 14,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  secondaryButtonText: {
-    color: '#2f6f4f',
-    fontWeight: '600',
-    fontSize: 16,
-  },
-  archiveButton: {
-    marginTop: 12,
-    paddingVertical: 14,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  archiveButtonText: {
-    color: '#b00020',
-    fontWeight: '600',
-  },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    center: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colors.background,
+    },
+    notFound: {
+      fontSize: 16,
+      color: colors.textSecondary,
+    },
+    content: {
+      padding: 20,
+      backgroundColor: colors.background,
+    },
+    photo: {
+      width: '100%',
+      height: 200,
+      borderRadius: 12,
+      marginBottom: 16,
+    },
+    title: {
+      fontSize: 24,
+      fontWeight: '700',
+      color: colors.text,
+    },
+    subtitle: {
+      fontSize: 14,
+      color: colors.textSecondary,
+      marginTop: 4,
+    },
+    card: {
+      backgroundColor: colors.surface,
+      borderRadius: 12,
+      padding: 16,
+      marginTop: 20,
+    },
+    row: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginTop: 8,
+    },
+    label: {
+      fontSize: 12,
+      color: colors.textMuted,
+    },
+    value: {
+      fontSize: 15,
+      fontWeight: '600',
+      color: colors.text,
+    },
+    notes: {
+      fontSize: 14,
+      marginTop: 6,
+      color: colors.text,
+    },
+    componentsHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginTop: 24,
+    },
+    sectionTitle: {
+      fontSize: 16,
+      fontWeight: '700',
+      color: colors.text,
+    },
+    addComponentLink: {
+      fontSize: 14,
+      color: colors.primary,
+      fontWeight: '600',
+    },
+    emptyComponents: {
+      fontSize: 13,
+      color: colors.textMuted,
+      marginTop: 8,
+    },
+    componentRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      backgroundColor: colors.surface,
+      borderRadius: 10,
+      padding: 12,
+      marginTop: 8,
+    },
+    componentNameRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    componentName: {
+      fontSize: 15,
+      fontWeight: '600',
+      color: colors.text,
+    },
+    statusDot: {
+      width: 8,
+      height: 8,
+      borderRadius: 4,
+      marginLeft: 6,
+    },
+    componentType: {
+      fontSize: 12,
+      color: colors.textMuted,
+      marginTop: 2,
+    },
+    componentWear: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: colors.primary,
+    },
+    primaryButton: {
+      marginTop: 24,
+      backgroundColor: colors.primary,
+      paddingVertical: 14,
+      borderRadius: 8,
+      alignItems: 'center',
+    },
+    primaryButtonText: {
+      color: colors.onPrimary,
+      fontWeight: '600',
+      fontSize: 16,
+    },
+    secondaryButton: {
+      marginTop: 12,
+      backgroundColor: colors.surface,
+      paddingVertical: 14,
+      borderRadius: 8,
+      alignItems: 'center',
+    },
+    secondaryButtonText: {
+      color: colors.primary,
+      fontWeight: '600',
+      fontSize: 16,
+    },
+    archiveButton: {
+      marginTop: 12,
+      paddingVertical: 14,
+      borderRadius: 8,
+      alignItems: 'center',
+    },
+    archiveButtonText: {
+      color: colors.danger,
+      fontWeight: '600',
+    },
+  });
+}

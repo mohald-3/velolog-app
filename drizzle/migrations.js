@@ -7,6 +7,7 @@ import m0002 from './0002_unknown_iron_man.sql';
 import m0003 from './0003_unusual_hellcat.sql';
 import m0004 from './0004_left_whiplash.sql';
 import m0005 from './0005_add_app_settings.sql';
+import m0006 from './0006_add_theme_mode.sql';
 
   export default {
     journal,
@@ -16,7 +17,8 @@ m0001,
 m0002,
 m0003,
 m0004,
-m0005
+m0005,
+m0006
     }
   }
   

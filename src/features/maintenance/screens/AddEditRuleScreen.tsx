@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -7,6 +7,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { computeOdometerM } from '../../../domain/odometer';
 import type { MaintenanceRule, UnitSystem } from '../../../domain/types';
 import { distanceUnitLabel, distanceUnitToMeters, formatDistance, metersToDistanceUnit } from '../../../domain/units';
+import type { ThemeColors } from '../../../theme/colors';
+import { useTheme } from '../../../theme/useTheme';
 import { useBike } from '../../bikes/hooks/useBikes';
 import { useRides } from '../../rides/hooks/useRides';
 import { useSettings } from '../../settings/hooks/useSettings';
@@ -38,6 +40,8 @@ export default function AddEditRuleScreen() {
     ruleId?: string;
   }>();
   const isEditing = Boolean(ruleId);
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   const { data: bike, isLoading: isLoadingBike } = useBike(bikeId);
   const { data: rides, isLoading: isLoadingRides } = useRides(bikeId);
@@ -87,6 +91,8 @@ function RuleForm({
   const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const isEditing = Boolean(initialRule);
   const createRule = useCreateMaintenanceRule();
   const updateRule = useUpdateMaintenanceRule();
@@ -221,20 +227,32 @@ function RuleForm({
         value={action}
         onChangeText={setAction}
         placeholder={t('addEditRule.actionPlaceholder')}
+        styles={styles}
+        placeholderTextColor={colors.textDisabled}
       />
       <Field
         label={t('addEditRule.intervalLabel', { unit: distanceUnitLabel(unitSystem) })}
         value={intervalKm}
         onChangeText={setIntervalKm}
         keyboardType="decimal-pad"
+        styles={styles}
+        placeholderTextColor={colors.textDisabled}
       />
       <Field
         label={t('addEditRule.lastPerformedLabel', { unit: distanceUnitLabel(unitSystem) })}
         value={lastPerformedAtOdometerKm}
         onChangeText={setLastPerformedAtOdometerKm}
         keyboardType="decimal-pad"
+        styles={styles}
+        placeholderTextColor={colors.textDisabled}
       />
-      <Field label={t('common.notesOptional')} value={notes} onChangeText={setNotes} />
+      <Field
+        label={t('common.notesOptional')}
+        value={notes}
+        onChangeText={setNotes}
+        styles={styles}
+        placeholderTextColor={colors.textDisabled}
+      />
 
       <Pressable style={styles.primaryButton} onPress={handleSubmit} disabled={saving}>
         <Text style={styles.primaryButtonText}>
@@ -257,100 +275,108 @@ function Field(props: {
   onChangeText: (text: string) => void;
   placeholder?: string;
   keyboardType?: 'default' | 'decimal-pad';
+  styles: ReturnType<typeof createStyles>;
+  placeholderTextColor?: string;
 }) {
   return (
-    <View style={styles.field}>
-      <Text style={styles.label}>{props.label}</Text>
+    <View style={props.styles.field}>
+      <Text style={props.styles.label}>{props.label}</Text>
       <TextInput
-        style={styles.input}
+        style={props.styles.input}
         value={props.value}
         onChangeText={props.onChangeText}
         placeholder={props.placeholder}
+        placeholderTextColor={props.placeholderTextColor}
         keyboardType={props.keyboardType ?? 'default'}
       />
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  center: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  notFound: {
-    fontSize: 16,
-    color: '#666666',
-  },
-  content: {
-    padding: 20,
-  },
-  markDoneButton: {
-    marginBottom: 20,
-    backgroundColor: '#2f6f4f',
-    paddingVertical: 14,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  markDoneButtonText: {
-    color: '#ffffff',
-    fontWeight: '600',
-    fontSize: 16,
-  },
-  chipRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginBottom: 16,
-  },
-  chip: {
-    borderWidth: 1,
-    borderColor: '#dddddd',
-    borderRadius: 16,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    marginRight: 8,
-    marginBottom: 8,
-  },
-  chipText: {
-    fontSize: 13,
-    color: '#333333',
-  },
-  field: {
-    marginBottom: 16,
-  },
-  label: {
-    fontSize: 12,
-    color: '#888888',
-    marginBottom: 4,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#dddddd',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 15,
-  },
-  primaryButton: {
-    marginTop: 8,
-    backgroundColor: '#2f6f4f',
-    paddingVertical: 14,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  primaryButtonText: {
-    color: '#ffffff',
-    fontWeight: '600',
-    fontSize: 16,
-  },
-  archiveButton: {
-    marginTop: 12,
-    paddingVertical: 14,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  archiveButtonText: {
-    color: '#b00020',
-    fontWeight: '600',
-  },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    center: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colors.background,
+    },
+    notFound: {
+      fontSize: 16,
+      color: colors.textSecondary,
+    },
+    content: {
+      padding: 20,
+      backgroundColor: colors.background,
+    },
+    markDoneButton: {
+      marginBottom: 20,
+      backgroundColor: colors.primary,
+      paddingVertical: 14,
+      borderRadius: 8,
+      alignItems: 'center',
+    },
+    markDoneButtonText: {
+      color: colors.onPrimary,
+      fontWeight: '600',
+      fontSize: 16,
+    },
+    chipRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      marginBottom: 16,
+    },
+    chip: {
+      borderWidth: 1,
+      borderColor: colors.surfaceBorder,
+      borderRadius: 16,
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      marginRight: 8,
+      marginBottom: 8,
+    },
+    chipText: {
+      fontSize: 13,
+      color: colors.chipText,
+    },
+    field: {
+      marginBottom: 16,
+    },
+    label: {
+      fontSize: 12,
+      color: colors.textMuted,
+      marginBottom: 4,
+    },
+    input: {
+      borderWidth: 1,
+      borderColor: colors.surfaceBorder,
+      borderRadius: 8,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+      fontSize: 15,
+      color: colors.text,
+    },
+    primaryButton: {
+      marginTop: 8,
+      backgroundColor: colors.primary,
+      paddingVertical: 14,
+      borderRadius: 8,
+      alignItems: 'center',
+    },
+    primaryButtonText: {
+      color: colors.onPrimary,
+      fontWeight: '600',
+      fontSize: 16,
+    },
+    archiveButton: {
+      marginTop: 12,
+      paddingVertical: 14,
+      borderRadius: 8,
+      alignItems: 'center',
+    },
+    archiveButtonText: {
+      color: colors.danger,
+      fontWeight: '600',
+    },
+  });
+}

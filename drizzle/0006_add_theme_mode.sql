@@ -1,0 +1,1 @@
+ALTER TABLE `app_settings` ADD `theme_mode` text DEFAULT 'system' NOT NULL;

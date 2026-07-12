@@ -1,4 +1,5 @@
 import { Stack } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
@@ -8,6 +9,7 @@ import { db } from '../data/db';
 import migrations from '../../drizzle/migrations';
 import i18n from '../i18n';
 import { useSettings } from '../features/settings/hooks/useSettings';
+import { useTheme } from '../theme/useTheme';
 
 const queryClient = new QueryClient();
 
@@ -19,6 +21,24 @@ function LocaleSync() {
   }
 
   return null;
+}
+
+function ThemedNavigation() {
+  const { colors, isDark } = useTheme();
+
+  return (
+    <>
+      <StatusBar style={isDark ? 'light' : 'dark'} />
+      <Stack
+        screenOptions={{
+          headerStyle: { backgroundColor: colors.surface },
+          headerTintColor: colors.text,
+          headerShadowVisible: false,
+          contentStyle: { backgroundColor: colors.background },
+        }}
+      />
+    </>
+  );
 }
 
 export default function RootLayout() {
@@ -45,7 +65,7 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <QueryClientProvider client={queryClient}>
         <LocaleSync />
-        <Stack />
+        <ThemedNavigation />
       </QueryClientProvider>
     </SafeAreaProvider>
   );

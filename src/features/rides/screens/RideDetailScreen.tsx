@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Camera, GeoJSONSource, Layer, Map } from '@maplibre/maplibre-react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import * as Sharing from 'expo-sharing';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Alert, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -12,6 +12,8 @@ import { formatDistance, formatSpeed } from '../../../domain/units';
 import { readTrackPointsAsync } from '../../../../tasks/rideRecordingTask';
 import i18n from '../../../i18n';
 import { useSettings } from '../../settings/hooks/useSettings';
+import { type ThemeColors } from '../../../theme/colors';
+import { useTheme } from '../../../theme/useTheme';
 import { formatDuration } from '../format';
 import { useDeleteRide, useRide, useUpdateRide } from '../hooks/useRides';
 import { buildTrackGeo, type TrackGeo } from '../trackGeo';
@@ -27,6 +29,8 @@ export default function RideDetailScreen() {
   const updateRide = useUpdateRide();
   const deleteRide = useDeleteRide();
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   const [trackGeo, setTrackGeo] = useState<TrackGeo | null>(null);
   const [notes, setNotes] = useState('');
@@ -102,10 +106,10 @@ export default function RideDetailScreen() {
           headerRight: () => (
             <View style={styles.headerActions}>
               <Pressable onPress={handleShare} hitSlop={12} style={styles.headerButton}>
-                <Ionicons name="share-outline" size={22} color="#2f6f4f" />
+                <Ionicons name="share-outline" size={22} color={colors.primary} />
               </Pressable>
               <Pressable onPress={() => setMenuOpen(true)} hitSlop={12} style={styles.headerButton}>
-                <Ionicons name="ellipsis-vertical" size={22} color="#2f6f4f" />
+                <Ionicons name="ellipsis-vertical" size={22} color={colors.primary} />
               </Pressable>
             </View>
           ),
@@ -116,7 +120,7 @@ export default function RideDetailScreen() {
         <Pressable style={styles.menuOverlay} onPress={() => setMenuOpen(false)}>
           <View style={[styles.menu, { top: insets.top + 48 }]}>
             <Pressable style={styles.menuItem} onPress={handleDelete}>
-              <Ionicons name="trash-outline" size={18} color="#b00020" />
+              <Ionicons name="trash-outline" size={18} color={colors.danger} />
               <Text style={styles.menuItemText}>{t('rideDetail.deleteRide')}</Text>
             </Pressable>
           </View>
@@ -136,7 +140,7 @@ export default function RideDetailScreen() {
                 id="ride-track-line"
                 type="line"
                 layout={{ 'line-join': 'round', 'line-cap': 'round' }}
-                paint={{ 'line-color': '#2f6f4f', 'line-width': 4 }}
+                paint={{ 'line-color': colors.primary, 'line-width': 4 }}
               />
             </GeoJSONSource>
           </Map>
@@ -150,11 +154,11 @@ export default function RideDetailScreen() {
       </View>
 
       <View style={styles.card}>
-        <Stat label={t('rideDetail.distanceLabel')} value={formatDistance(ride.distanceM, unitSystem, 2)} />
-        <Stat label={t('rideDetail.durationLabel')} value={formatDuration(durationMs)} />
-        <Stat label={t('rideDetail.avgSpeedLabel')} value={formatSpeed(avgSpeedKmh, unitSystem)} />
-        <Stat label={t('rideDetail.movingTimeLabel')} value={formatDuration(ride.movingTimeMs)} />
-        <Stat label={t('rideDetail.pausedTimeLabel')} value={formatDuration(ride.pausedTimeMs)} />
+        <Stat styles={styles} label={t('rideDetail.distanceLabel')} value={formatDistance(ride.distanceM, unitSystem, 2)} />
+        <Stat styles={styles} label={t('rideDetail.durationLabel')} value={formatDuration(durationMs)} />
+        <Stat styles={styles} label={t('rideDetail.avgSpeedLabel')} value={formatSpeed(avgSpeedKmh, unitSystem)} />
+        <Stat styles={styles} label={t('rideDetail.movingTimeLabel')} value={formatDuration(ride.movingTimeMs)} />
+        <Stat styles={styles} label={t('rideDetail.pausedTimeLabel')} value={formatDuration(ride.pausedTimeMs)} />
       </View>
 
       <Text style={styles.label}>{t('common.notesLabel')}</Text>
@@ -162,6 +166,7 @@ export default function RideDetailScreen() {
         style={styles.notesInput}
         multiline
         placeholder={t('rideDetail.notesPlaceholder')}
+        placeholderTextColor={colors.textDisabled}
         value={notes}
         onChangeText={setNotes}
       />
@@ -172,7 +177,7 @@ export default function RideDetailScreen() {
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+function Stat({ label, value, styles }: { label: string; value: string; styles: ReturnType<typeof createStyles> }) {
   return (
     <View style={styles.stat}>
       <Text style={styles.statLabel}>{label}</Text>
@@ -181,110 +186,114 @@ function Stat({ label, value }: { label: string; value: string }) {
   );
 }
 
-const styles = StyleSheet.create({
-  center: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  content: {
-    padding: 20,
-  },
-  mapContainer: {
-    height: 260,
-    borderRadius: 12,
-    overflow: 'hidden',
-    marginBottom: 20,
-  },
-  map: {
-    flex: 1,
-  },
-  mapPlaceholder: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#f2f2f2',
-    padding: 20,
-  },
-  mapPlaceholderText: {
-    fontSize: 13,
-    color: '#888888',
-    textAlign: 'center',
-  },
-  card: {
-    backgroundColor: '#f2f2f2',
-    borderRadius: 12,
-    padding: 16,
-  },
-  stat: {
-    marginTop: 8,
-  },
-  statLabel: {
-    fontSize: 12,
-    color: '#888888',
-  },
-  statValue: {
-    fontSize: 18,
-    fontWeight: '700',
-  },
-  label: {
-    fontSize: 12,
-    color: '#888888',
-    marginTop: 20,
-    marginBottom: 6,
-  },
-  notesInput: {
-    backgroundColor: '#f2f2f2',
-    borderRadius: 10,
-    padding: 12,
-    fontSize: 14,
-    minHeight: 80,
-    textAlignVertical: 'top',
-  },
-  saveButton: {
-    marginTop: 12,
-    backgroundColor: '#f2f2f2',
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  saveButtonText: {
-    color: '#2f6f4f',
-    fontWeight: '600',
-  },
-  headerActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  headerButton: {
-    marginRight: 16,
-  },
-  menuOverlay: {
-    flex: 1,
-  },
-  menu: {
-    position: 'absolute',
-    right: 12,
-    backgroundColor: '#ffffff',
-    borderRadius: 10,
-    paddingVertical: 4,
-    minWidth: 160,
-    elevation: 4,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-  },
-  menuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-  },
-  menuItemText: {
-    marginLeft: 10,
-    fontSize: 15,
-    color: '#b00020',
-    fontWeight: '600',
-  },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    center: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    content: {
+      padding: 20,
+    },
+    mapContainer: {
+      height: 260,
+      borderRadius: 12,
+      overflow: 'hidden',
+      marginBottom: 20,
+    },
+    map: {
+      flex: 1,
+    },
+    mapPlaceholder: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colors.surface,
+      padding: 20,
+    },
+    mapPlaceholderText: {
+      fontSize: 13,
+      color: colors.textMuted,
+      textAlign: 'center',
+    },
+    card: {
+      backgroundColor: colors.surface,
+      borderRadius: 12,
+      padding: 16,
+    },
+    stat: {
+      marginTop: 8,
+    },
+    statLabel: {
+      fontSize: 12,
+      color: colors.textMuted,
+    },
+    statValue: {
+      fontSize: 18,
+      fontWeight: '700',
+      color: colors.text,
+    },
+    label: {
+      fontSize: 12,
+      color: colors.textMuted,
+      marginTop: 20,
+      marginBottom: 6,
+    },
+    notesInput: {
+      backgroundColor: colors.surface,
+      borderRadius: 10,
+      padding: 12,
+      fontSize: 14,
+      minHeight: 80,
+      textAlignVertical: 'top',
+      color: colors.text,
+    },
+    saveButton: {
+      marginTop: 12,
+      backgroundColor: colors.surface,
+      paddingVertical: 12,
+      borderRadius: 8,
+      alignItems: 'center',
+    },
+    saveButtonText: {
+      color: colors.primary,
+      fontWeight: '600',
+    },
+    headerActions: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    headerButton: {
+      marginRight: 16,
+    },
+    menuOverlay: {
+      flex: 1,
+    },
+    menu: {
+      position: 'absolute',
+      right: 12,
+      backgroundColor: colors.surface,
+      borderRadius: 10,
+      paddingVertical: 4,
+      minWidth: 160,
+      elevation: 4,
+      shadowColor: colors.shadow,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.2,
+      shadowRadius: 4,
+    },
+    menuItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 12,
+      paddingHorizontal: 16,
+    },
+    menuItemText: {
+      marginLeft: 10,
+      fontSize: 15,
+      color: colors.danger,
+      fontWeight: '600',
+    },
+  });
+}

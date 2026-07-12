@@ -9,7 +9,12 @@ const SETTINGS_ID = 'singleton';
 const DEFAULT_SETTINGS: AppSettings = {
   unitSystem: 'metric',
   locale: 'en',
+  themeMode: 'system',
 };
+
+function toAppSettings(row: { unitSystem: AppSettings['unitSystem']; locale: AppSettings['locale']; themeMode: AppSettings['themeMode'] }): AppSettings {
+  return { unitSystem: row.unitSystem, locale: row.locale, themeMode: row.themeMode };
+}
 
 export interface AppSettingsRepository {
   get(): Promise<AppSettings>;
@@ -20,13 +25,13 @@ export const appSettingsRepository: AppSettingsRepository = {
   async get() {
     const rows = await db.select().from(appSettings).where(eq(appSettings.id, SETTINGS_ID)).limit(1);
     if (rows[0]) {
-      return { unitSystem: rows[0].unitSystem, locale: rows[0].locale };
+      return toAppSettings(rows[0]);
     }
     const [created] = await db
       .insert(appSettings)
       .values({ id: SETTINGS_ID, ...DEFAULT_SETTINGS, updatedAt: new Date() })
       .returning();
-    return { unitSystem: created.unitSystem, locale: created.locale };
+    return toAppSettings(created);
   },
 
   async update(changes) {
@@ -39,6 +44,6 @@ export const appSettingsRepository: AppSettingsRepository = {
         set: { ...changes, updatedAt: new Date() },
       })
       .returning();
-    return { unitSystem: updated.unitSystem, locale: updated.locale };
+    return toAppSettings(updated);
   },
 };
