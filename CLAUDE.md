@@ -2,6 +2,17 @@
 
 Guidance for Claude Code when working in this repository.
 
+## Project context (keep current)
+
+`.claude/current-work.md` is the living project summary: what the app is today, the milestone
+ledger, open items, and current focus.
+
+- **At session start:** read it silently; mention it only if there is unfinished work.
+- **On every commit:** update it — what changed, current focus, next step — and include it in
+  the commit.
+- **On milestone/feature completion:** archive the detail in `.planning/archive/<name>/SUMMARY.md`
+  and keep only a one-line ledger entry in `current-work.md`. Never let it grow into a log.
+
 ## Project
 
 VeloLog — a local-first bike computer / maintenance tracker app. "Strava tracks you. VeloLog tracks your bike." See `docs/PROJECT_PLAN.md` for full context: vision, domain model, roadmap, non-goals.
@@ -29,7 +40,10 @@ src/
   data/          # drizzle schema, migrations, repository implementations
   services/      # location-task.ts (background tracking), notifications.ts
   features/      # bikes/, rides/, maintenance/ — screens + hooks per feature
-  app/           # expo-router routes
+  components/    # shared UI primitives (extracted when used by 3+ screens)
+  theme/         # ThemeColors palette + useTheme() (presentation, not domain)
+  i18n/          # i18next setup + en.json / sv.json resources
+  app/           # expo-router routes — logic-free stubs only
 ```
 
 1. All ride math and maintenance logic (GPS filtering, haversine accumulation, moving-time detection, component wear, rule due-status, odometer recompute) are **pure functions in `src/domain`** with unit tests. No React, Expo, or database imports there, ever.
@@ -47,6 +61,25 @@ Domain invariants worth remembering when touching ride/bike code:
 - Component wear and rule due-status are always *derived* from odometer — never stored counters that can drift.
 - Rides are append-only after completion (editable: notes, bike assignment; never GPS track data).
 - Rides are soft-deleted (`deletedAt`), never hard-deleted. Deletion triggers a recompute of bike odometer and rule due-status.
+
+## Building a feature
+
+Construction order: **domain → schema/repository → hooks → screen → route**. Each step has a scaffold template in `.claude/patterns/` — read the matching one before creating a new file of that kind:
+
+| Step | Location | Template |
+|---|---|---|
+| Domain logic + tests | `src/domain/<name>.ts` + `.test.ts` | `domain-module-template.md` |
+| Table + migration + repository | `src/data/` (`npx drizzle-kit generate`) | `repository-template.md` |
+| TanStack Query hooks | `src/features/<feature>/hooks/` | `hook-template.md` |
+| Screen + route stub | `src/features/<feature>/screens/` + `src/app/` | `screen-template.md` |
+
+Non-negotiables baked into those templates:
+
+- Every screen: i18n via `t()` (keys added to both `en.json` and `sv.json` in the same commit), `useTheme` + memoized `createStyles(colors)` factory (no inline styles, no raw hex), safe-area bottom padding on scrollables, loading + empty states, distance/speed through `formatDistance`/`formatSpeed` with the unit setting.
+- Page actions are header icons; extras behind a "⋮" overflow that opens a real anchored dropdown — never bottom buttons.
+- Route files are logic-free stubs that render the feature screen.
+- **Size guideline:** ~200 lines per file (excluding `createStyles`) is the "consider splitting" threshold — extract subcomponents or hooks instead of growing past it.
+- Shared UI primitives live in `src/components/` — check it before hand-rolling a card/button/form row; extract a primitive there when the same pattern appears on a third screen.
 
 ## Conventions
 

@@ -1,102 +1,57 @@
-# Current Work
+# Project Context
 
-## M5 — Polish & "Your Journey" (v0.2) — COMPLETE (2026-07-12)
+> Living summary — read at session start, update on every commit. Milestone detail lives in
+> `.planning/archive/<milestone>/SUMMARY.md`; keep this file to one line per completed milestone.
 
-All 4 phases done, all 4 issues closed (#35-#38), milestone closed. Units (km/mi) + Swedish/
-English i18n across every screen, a garage-wide Journey stats screen (distance, cost, CO₂ saved,
-calories, real-world distance milestone checklist), an onboarding screen for an empty garage,
-dark mode with a system/light/dark toggle (`src/theme/`), and a real app icon + splash screen —
-a "VL" wheel-monogram + map-pin + road mark, adapted from a user-provided reference logo into the
-app's existing brand green — replacing Expo's default placeholder art. `AppSettings` singleton
-repository backs units/locale/theme mode, consistent with the app's repository-pattern
-architecture. Verified live on an Android emulator: units/language/theme toggles, journey
-milestones, onboarding flow, and the new icon/splash screen all confirmed working. Full summary
-archived at `.planning/archive/m5-polish-your-journey/SUMMARY.md`. PR: #42.
+## What the app is today
 
-No active feature plan right now. Next up: M6 — v0.3 candidates (pick 2–3, not all): GPX
-export/import, distance charts, elevation gain, weather snapshot on ride save (first optional
-network dependency), ride photos.
+VeloLog v0.2 is feature-complete as an MVP: a local-first bike garage (bikes + components with
+derived wear), background GPS ride recording with a filtered pipeline and crash recovery, ride
+history with MapLibre track maps and bike statistics, mileage-driven maintenance rules with local
+notifications, and a polish layer — km/mi units, Swedish/English i18n, dark mode, journey stats,
+onboarding, real app icon + splash. 91 unit tests over `src/domain`. Android-first; iOS deferred.
 
----
+## Milestone ledger
 
-## M4 — Maintenance (v0.2) — COMPLETE (2026-07-12)
+| Milestone | Status | Detail |
+|---|---|---|
+| M0 — Spike 0: GPS de-risk | 5/7 done (2026-07-10) | `.planning/archive/spike-0-gps-derisk/STATE.md` |
+| M1 — Bike Garage (v0.1a) | ✅ 2026-07-10 · PR — | `.planning/archive/m1-bike-garage/SUMMARY.md` |
+| M2 — Ride Recording (v0.1b) | ✅ 2026-07-11 · PR #39 | `.planning/archive/m2-ride-recording/SUMMARY.md` |
+| M3 — Ride History & Stats (v0.1c) | ✅ 2026-07-11 · PR #40 | `.planning/archive/m3-ride-history/SUMMARY.md` |
+| M4 — Maintenance (v0.2) | ✅ 2026-07-12 · PR #41 | `.planning/archive/m4-maintenance/SUMMARY.md` |
+| M5 — Polish & "Your Journey" (v0.2) | ✅ 2026-07-12 · PR #42 | `.planning/archive/m5-polish-your-journey/SUMMARY.md` |
 
-All 3 phases done, all 6 issues closed (#29-#34), milestone closed. `MaintenanceRule` domain
-(due-status derivation, never a stored counter) with CRUD and sensible presets, local
-notifications via `expo-notifications` when a rule crosses into DueSoon/Overdue, "Mark as done"
-flow creating a `MaintenanceRecord` and resetting the rule's counter, per-component maintenance
-log, and a component replacement flow (retire old, install new at current odometer, migrate
-active rules with their counter reset). Also fixed a latent bug: `AddEditComponentScreen` was
-using the bike's starting odometer baseline instead of the actual ride-derived current odometer.
-Fully verified live end-to-end, including the milestone's signature exit criteria: recorded a
-real ride via mocked GPS that pushed a rule into DueSoon and confirmed the actual Android
-notification fired. Survived a severe emulator slowdown mid-session (fixed by fully restarting
-the AVD; all data was intact since SQLite persists independent of the emulator process). Full
-summary archived at `.planning/archive/m4-maintenance/SUMMARY.md`. PR: #41.
+## Open items (real device required)
 
-No active feature plan right now. Next up: M5 — Polish & "Your Journey" (v0.2): journey stats
-screen (distance equivalence, cost per km, CO₂ saved, calories), onboarding for first bike, units
-setting + Swedish/English i18n, app icon/splash/dark mode pass.
+- **#5** Deliberate force-kill-from-recent-apps test on a real device (emulator force-stop was
+  tested in M2, but not real-device OEM battery-killer behavior)
+- **#6** Open-road GPS accuracy route to compare against the residential route already recorded
 
----
+## Current focus — code quality & architecture pass (before M6)
 
-## M3 — Ride History & Statistics (v0.1c) — COMPLETE (2026-07-11)
+Decided 2026-07-12: with the MVP serving its purpose, next effort goes to maintainability and
+UX/UI rather than new features. Target architecture inspiration: GoDo mobile app (shared UI
+primitives, size discipline), while keeping VeloLog's stricter domain purity.
 
-All 3 phases done, all 4 issues closed (#25-#28), milestone closed. Ride list grouped by day,
-ride detail with MapLibre track polyline + full stats + editable notes, bike statistics screen,
-soft-delete with automatic odometer recomputation. Also fixed an app-wide bug found during live
-verification: no `SafeAreaProvider` anywhere, so bottom-of-screen content rendered underneath
-the Android edge-to-edge nav bar and was untappable — fixed across 6 screens. Ride detail's page
-actions (share, delete) ended up entirely in the header (share icon + "⋮" overflow dropdown) per
-live user feedback. Full summary archived at `.planning/archive/m3-ride-history/SUMMARY.md`.
-PR: #40.
+Done so far:
+- Feature-construction conventions written: CLAUDE.md "Building a feature" section +
+  `.claude/patterns/` scaffold templates (domain module, repository, hook, screen+route)
+- Decisions: shared primitives will live in `src/components/` (rule of three), soft ~200-line
+  file guideline (excluding `createStyles`)
 
-No active feature plan right now. Next up: M4 — Maintenance (v0.2): `MaintenanceRule` CRUD with
-sensible presets, due-status computation, local notifications, mark-as-done flow, maintenance
-log, component replacement.
+Next:
+1. Code review pass over `src/` (`/code-review`)
+2. Extract shared UI primitives into `src/components/` — the three Add/Edit form screens
+   (`AddEditBikeScreen` 272, `AddEditComponentScreen` 393, `AddEditRuleScreen` 382 lines)
+   duplicate form patterns; `BikeDetailScreen` (346) and `RideDetailScreen` (299) exceed the
+   size guideline
+3. UX/UI pass after the code is settled
+
+## After that
+
+M6 — v0.3 candidates (pick 2–3, not all): GPX export/import, distance charts, elevation gain,
+weather snapshot on ride save (first optional network dependency), ride photos.
 
 ---
-
-## M2 — Ride Recording (v0.1b) — COMPLETE (2026-07-11)
-
-All 5 phases done, all 11 issues closed (#14-#24) — **#21** (GPS filter optional auto-pause
-toggle) was closed same-day as a quick follow-up after the initial 5 phases (the toggle needed
-both a slow-segment check and a staleness fallback for genuine dead-stops, since a real stop
-produces no GPS points at all with `distanceInterval: 5`). GPS filtering pipeline, recording
-state machine, foreground recording screen with live stats, background continuation +
-crash/kill recovery (verified live: force-stopped the app mid-recording, confirmed correct
-rehydration), and the save flow (persists rides, fixed the bike detail screen to show the
-derived odometer/wear instead of the raw starting value). Full summary archived at
-`.planning/archive/m2-ride-recording/SUMMARY.md`. PR: #39.
-
-No active feature plan right now. Next up: M3 — Ride History & Statistics (v0.1c): ride list,
-ride detail with the recorded track on the map, bike statistics screen, soft-delete.
-
----
-
-## M1 — Bike Garage (v0.1a) — COMPLETE (2026-07-10)
-
-All 4 phases done, all 6 issues (#8-#13) closed, milestone closed. Scaffold (expo-router +
-Drizzle/expo-sqlite), repository layer, and full Bike + Component CRUD with derived wear.
-First real domain logic + unit test (`src/domain/wear.ts`). Full summary archived at
-`.planning/archive/m1-bike-garage/SUMMARY.md`.
-
----
-
-## Spike 0 — GPS de-risk (M0) — paused, resume needed
-
-5/7 issues closed (#1 EAS build, #2 background tracking, #3 30+ min recording, #4 battery
-~2.3%/hour — well under the <8-10%/hour target, #7 map rendering — resolved via the M2
-track-map dev screen, MapLibre picked). First successful field test: 39.4 min walk, 485
-points, no crashes, clean data.
-
-**Still open (needs a real device, not the emulator):**
-- **#5** Deliberate force-kill-from-recent-apps test on a real device (M2's emulator
-  force-stop test covers the new ride-recording flow's recovery logic, but not real-device
-  OEM battery-killer behavior, which is what this issue is actually about)
-- **#6** An open-road route to compare against the residential/office-area one already tested
-
-Full detail archived at `.planning/archive/spike-0-gps-derisk/STATE.md`.
-
----
-_Last updated: 2026-07-12 (M5 complete, all 4 issues closed, milestone closed; Spike 0's two real-device items still pending)._
+_Last updated: 2026-07-12 (conventions docs written; code review pass is next)._
