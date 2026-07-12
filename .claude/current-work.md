@@ -39,14 +39,19 @@ Done so far:
   `.claude/patterns/` scaffold templates (domain module, repository, hook, screen+route)
 - Decisions: shared primitives will live in `src/components/` (rule of three), soft ~200-line
   file guideline (excluding `createStyles`)
+- Full-codebase review done — findings tracked in issue #43 (A correctness / B conventions /
+  C maintainability / D minor)
+- A-batch fixed on `fix/code-review-correctness`: stop-vs-save ride-loss window (pointer now
+  cleared only after DB save, retry alert on failure), true file append instead of full rewrite,
+  transactional replace-component and mark-as-done, corrupt-JSON guards on recovery paths,
+  double-tap-Stop guard
 
 Next:
-1. Code review pass over `src/` (`/code-review`)
-2. Extract shared UI primitives into `src/components/` — the three Add/Edit form screens
-   (`AddEditBikeScreen` 272, `AddEditComponentScreen` 393, `AddEditRuleScreen` 382 lines)
-   duplicate form patterns; `BikeDetailScreen` (346) and `RideDetailScreen` (299) exceed the
-   size guideline
-3. UX/UI pass after the code is settled
+1. Issue #43 B-batch: i18n for notifications + enum labels, move `componentTypeValues` to
+   domain, move `tasks/` under `src/services/`
+2. Issue #43 C-batch: extract shared UI primitives into `src/components/` (Field ×3, Stat ×4,
+   buttons ×6...), centralize query keys, shared mutation-error feedback
+3. UX/UI pass after the code is settled (includes D3 BikeDetail header actions)
 
 ## After that
 

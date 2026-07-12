@@ -8,7 +8,8 @@
     "notesLabel": "Notes",
     "notesOptional": "Notes (optional)",
     "bikeNotFound": "Bike not found.",
-    "notFound": "Not found."
+    "notFound": "Not found.",
+    "retry": "Retry"
   },
   "bikeList": {
     "headerTitle": "My Bikes",
@@ -98,7 +99,9 @@
     "rideCompleteTitle": "Ride complete",
     "rideCompleteMessage": "Distance: {{distance}}\nDuration: {{duration}}\nAvg speed: {{speed}}",
     "discardConfirmTitle": "Discard this ride?",
-    "discardConfirmMessage": "The recorded track will not be saved."
+    "discardConfirmMessage": "The recorded track will not be saved.",
+    "saveFailedTitle": "Couldn't save ride",
+    "saveFailedMessage": "Your ride data is still safe on this device. Try saving again."
   },
   "rideList": {
     "headerTitle": "Rides",

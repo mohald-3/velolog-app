@@ -8,7 +8,8 @@
     "notesLabel": "Anteckningar",
     "notesOptional": "Anteckningar (valfritt)",
     "bikeNotFound": "Cykeln hittades inte.",
-    "notFound": "Hittades inte."
+    "notFound": "Hittades inte.",
+    "retry": "Försök igen"
   },
   "bikeList": {
     "headerTitle": "Mina cyklar",
@@ -98,7 +99,9 @@
     "rideCompleteTitle": "Tur klar",
     "rideCompleteMessage": "Distans: {{distance}}\nVaraktighet: {{duration}}\nMedelhastighet: {{speed}}",
     "discardConfirmTitle": "Kasta denna tur?",
-    "discardConfirmMessage": "Den inspelade rutten kommer inte att sparas."
+    "discardConfirmMessage": "Den inspelade rutten kommer inte att sparas.",
+    "saveFailedTitle": "Kunde inte spara turen",
+    "saveFailedMessage": "Din turdata är fortfarande säker på enheten. Försök spara igen."
   },
   "rideList": {
     "headerTitle": "Turer",
