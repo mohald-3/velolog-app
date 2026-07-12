@@ -1,6 +1,7 @@
 import * as ImagePicker from 'expo-image-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   Alert,
@@ -15,14 +16,21 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { Bike } from '../../../domain/types';
+import { distanceUnitLabel, distanceUnitToMeters, metersToDistanceUnit } from '../../../domain/units';
+import type { ThemeColors } from '../../../theme/colors';
+import { useTheme } from '../../../theme/useTheme';
+import { useSettings } from '../../settings/hooks/useSettings';
 import { useBike, useCreateBike, useUpdateBike } from '../hooks/useBikes';
 
 export default function AddEditBikeScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
   const isEditing = Boolean(id);
   const { data: existingBike, isLoading: isLoadingBike } = useBike(id);
+  const { data: settings, isLoading: isLoadingSettings } = useSettings();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
-  if (isEditing && isLoadingBike) {
+  if ((isEditing && isLoadingBike) || isLoadingSettings || !settings) {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" />
@@ -32,12 +40,30 @@ export default function AddEditBikeScreen() {
 
   // Keyed by the loaded bike's id (or 'new') so the form's local state is initialized fresh
   // from `initialBike` on mount, instead of syncing it in via a useEffect.
-  return <BikeForm key={existingBike?.id ?? 'new'} bikeId={id} initialBike={existingBike ?? null} />;
+  return (
+    <BikeForm
+      key={existingBike?.id ?? 'new'}
+      bikeId={id}
+      initialBike={existingBike ?? null}
+      unitSystem={settings.unitSystem}
+    />
+  );
 }
 
-function BikeForm({ bikeId, initialBike }: { bikeId?: string; initialBike: Bike | null }) {
+function BikeForm({
+  bikeId,
+  initialBike,
+  unitSystem,
+}: {
+  bikeId?: string;
+  initialBike: Bike | null;
+  unitSystem: 'metric' | 'imperial';
+}) {
+  const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const isEditing = Boolean(bikeId);
   const createBike = useCreateBike();
   const updateBike = useUpdateBike();
@@ -48,15 +74,15 @@ function BikeForm({ bikeId, initialBike }: { bikeId?: string; initialBike: Bike 
   const [year, setYear] = useState(initialBike?.year != null ? String(initialBike.year) : '');
   const [color, setColor] = useState(initialBike?.color ?? '');
   const [frameSize, setFrameSize] = useState(initialBike?.frameSize ?? '');
-  const [startingOdometerKm, setStartingOdometerKm] = useState(
-    initialBike ? String(initialBike.startingOdometerM / 1000) : '0'
+  const [startingOdometer, setStartingOdometer] = useState(
+    initialBike ? String(metersToDistanceUnit(initialBike.startingOdometerM, unitSystem)) : '0'
   );
   const [photoUri, setPhotoUri] = useState<string | null>(initialBike?.photoUri ?? null);
 
   const pickPhoto = async () => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) {
-      Alert.alert('Permission needed', 'Photo library access is required to add a bike photo.');
+      Alert.alert(t('addEditBike.permissionNeededTitle'), t('addEditBike.permissionNeededMessage'));
       return;
     }
 
@@ -72,19 +98,19 @@ function BikeForm({ bikeId, initialBike }: { bikeId?: string; initialBike: Bike 
 
   const handleSubmit = async () => {
     if (!name.trim()) {
-      Alert.alert('Name required', 'Give the bike a name before saving.');
+      Alert.alert(t('addEditBike.nameRequiredTitle'), t('addEditBike.nameRequiredMessage'));
       return;
     }
 
     const parsedYear = year.trim() ? Number(year) : null;
-    const parsedOdometerKm = startingOdometerKm.trim() ? Number(startingOdometerKm) : 0;
+    const parsedOdometer = startingOdometer.trim() ? Number(startingOdometer) : 0;
 
     if (parsedYear != null && Number.isNaN(parsedYear)) {
-      Alert.alert('Invalid year', 'Year must be a number.');
+      Alert.alert(t('addEditBike.invalidYearTitle'), t('addEditBike.invalidYearMessage'));
       return;
     }
-    if (Number.isNaN(parsedOdometerKm)) {
-      Alert.alert('Invalid odometer', 'Starting odometer must be a number.');
+    if (Number.isNaN(parsedOdometer)) {
+      Alert.alert(t('addEditBike.invalidOdometerTitle'), t('addEditBike.invalidOdometerMessage'));
       return;
     }
 
@@ -95,7 +121,7 @@ function BikeForm({ bikeId, initialBike }: { bikeId?: string; initialBike: Bike 
       year: parsedYear,
       color: color.trim() || null,
       frameSize: frameSize.trim() || null,
-      startingOdometerM: Math.round(parsedOdometerKm * 1000),
+      startingOdometerM: Math.round(distanceUnitToMeters(parsedOdometer, unitSystem)),
       photoUri,
     };
 
@@ -116,26 +142,45 @@ function BikeForm({ bikeId, initialBike }: { bikeId?: string; initialBike: Bike 
         {photoUri ? (
           <Image source={{ uri: photoUri }} style={styles.photo} />
         ) : (
-          <Text style={styles.photoPlaceholder}>Add photo</Text>
+          <Text style={styles.photoPlaceholder}>{t('addEditBike.addPhoto')}</Text>
         )}
       </Pressable>
 
-      <Field label="Name" value={name} onChangeText={setName} placeholder="e.g. Trek FX 2" />
-      <Field label="Brand" value={brand} onChangeText={setBrand} />
-      <Field label="Model" value={model} onChangeText={setModel} />
-      <Field label="Year" value={year} onChangeText={setYear} keyboardType="number-pad" />
-      <Field label="Color" value={color} onChangeText={setColor} />
-      <Field label="Frame size" value={frameSize} onChangeText={setFrameSize} />
       <Field
-        label="Starting odometer (km)"
-        value={startingOdometerKm}
-        onChangeText={setStartingOdometerKm}
+        label={t('addEditBike.nameLabel')}
+        value={name}
+        onChangeText={setName}
+        placeholder={t('addEditBike.namePlaceholder')}
+        placeholderTextColor={colors.textDisabled}
+        styles={styles}
+      />
+      <Field label={t('addEditBike.brandLabel')} value={brand} onChangeText={setBrand} styles={styles} />
+      <Field label={t('addEditBike.modelLabel')} value={model} onChangeText={setModel} styles={styles} />
+      <Field
+        label={t('addEditBike.yearLabel')}
+        value={year}
+        onChangeText={setYear}
+        keyboardType="number-pad"
+        styles={styles}
+      />
+      <Field label={t('addEditBike.colorLabel')} value={color} onChangeText={setColor} styles={styles} />
+      <Field
+        label={t('addEditBike.frameSizeLabel')}
+        value={frameSize}
+        onChangeText={setFrameSize}
+        styles={styles}
+      />
+      <Field
+        label={t('addEditBike.startingOdometerLabel', { unit: distanceUnitLabel(unitSystem) })}
+        value={startingOdometer}
+        onChangeText={setStartingOdometer}
         keyboardType="decimal-pad"
+        styles={styles}
       />
 
       <Pressable style={styles.primaryButton} onPress={handleSubmit} disabled={saving}>
         <Text style={styles.primaryButtonText}>
-          {saving ? 'Saving...' : isEditing ? 'Save changes' : 'Add bike'}
+          {saving ? t('common.saving') : isEditing ? t('common.saveChanges') : t('addEditBike.addBike')}
         </Text>
       </Pressable>
     </ScrollView>
@@ -147,73 +192,81 @@ function Field(props: {
   value: string;
   onChangeText: (text: string) => void;
   placeholder?: string;
+  placeholderTextColor?: string;
   keyboardType?: 'default' | 'number-pad' | 'decimal-pad';
+  styles: ReturnType<typeof createStyles>;
 }) {
   return (
-    <View style={styles.field}>
-      <Text style={styles.label}>{props.label}</Text>
+    <View style={props.styles.field}>
+      <Text style={props.styles.label}>{props.label}</Text>
       <TextInput
-        style={styles.input}
+        style={props.styles.input}
         value={props.value}
         onChangeText={props.onChangeText}
         placeholder={props.placeholder}
+        placeholderTextColor={props.placeholderTextColor}
         keyboardType={props.keyboardType ?? 'default'}
       />
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  center: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  content: {
-    padding: 20,
-  },
-  photoPicker: {
-    height: 160,
-    borderRadius: 12,
-    backgroundColor: '#f2f2f2',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 20,
-    overflow: 'hidden',
-  },
-  photo: {
-    width: '100%',
-    height: '100%',
-  },
-  photoPlaceholder: {
-    color: '#999999',
-  },
-  field: {
-    marginBottom: 16,
-  },
-  label: {
-    fontSize: 12,
-    color: '#888888',
-    marginBottom: 4,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#dddddd',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 15,
-  },
-  primaryButton: {
-    marginTop: 8,
-    backgroundColor: '#2f6f4f',
-    paddingVertical: 14,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  primaryButtonText: {
-    color: '#ffffff',
-    fontWeight: '600',
-    fontSize: 16,
-  },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    center: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colors.background,
+    },
+    content: {
+      padding: 20,
+      backgroundColor: colors.background,
+    },
+    photoPicker: {
+      height: 160,
+      borderRadius: 12,
+      backgroundColor: colors.surface,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: 20,
+      overflow: 'hidden',
+    },
+    photo: {
+      width: '100%',
+      height: '100%',
+    },
+    photoPlaceholder: {
+      color: colors.textDisabled,
+    },
+    field: {
+      marginBottom: 16,
+    },
+    label: {
+      fontSize: 12,
+      color: colors.textMuted,
+      marginBottom: 4,
+    },
+    input: {
+      borderWidth: 1,
+      borderColor: colors.surfaceBorder,
+      borderRadius: 8,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+      fontSize: 15,
+      color: colors.text,
+    },
+    primaryButton: {
+      marginTop: 8,
+      backgroundColor: colors.primary,
+      paddingVertical: 14,
+      borderRadius: 8,
+      alignItems: 'center',
+    },
+    primaryButtonText: {
+      color: colors.onPrimary,
+      fontWeight: '600',
+      fontSize: 16,
+    },
+  });
+}

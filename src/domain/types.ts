@@ -189,3 +189,20 @@ export interface RideUpdate {
   bikeId?: string;
   notes?: string | null;
 }
+
+export type UnitSystem = 'metric' | 'imperial';
+export type Locale = 'en' | 'sv';
+export type ThemeMode = 'system' | 'light' | 'dark';
+
+/** Singleton app-wide preferences. Always exactly one row — see appSettingsRepository. */
+export interface AppSettings {
+  unitSystem: UnitSystem;
+  locale: Locale;
+  themeMode: ThemeMode;
+}
+
+export interface AppSettingsUpdate {
+  unitSystem?: UnitSystem;
+  locale?: Locale;
+  themeMode?: ThemeMode;
+}

@@ -2,12 +2,18 @@ import { Ionicons } from '@expo/vector-icons';
 import { Camera, GeoJSONSource, Layer, Map } from '@maplibre/maplibre-react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import * as Sharing from 'expo-sharing';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Alert, Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { speedKmh } from '../../../domain/gps-filter';
+import { formatDistance, formatSpeed } from '../../../domain/units';
 import { readTrackPointsAsync } from '../../../../tasks/rideRecordingTask';
+import i18n from '../../../i18n';
+import { useSettings } from '../../settings/hooks/useSettings';
+import { type ThemeColors } from '../../../theme/colors';
+import { useTheme } from '../../../theme/useTheme';
 import { formatDuration } from '../format';
 import { useDeleteRide, useRide, useUpdateRide } from '../hooks/useRides';
 import { buildTrackGeo, type TrackGeo } from '../trackGeo';
@@ -15,12 +21,16 @@ import { buildTrackGeo, type TrackGeo } from '../trackGeo';
 const MAP_STYLE_URL = 'https://tiles.openfreemap.org/styles/liberty';
 
 export default function RideDetailScreen() {
+  const { t } = useTranslation();
   const { rideId } = useLocalSearchParams<{ id: string; rideId: string }>();
   const router = useRouter();
   const { data: ride, isLoading } = useRide(rideId);
+  const { data: settings, isLoading: isLoadingSettings } = useSettings();
   const updateRide = useUpdateRide();
   const deleteRide = useDeleteRide();
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   const [trackGeo, setTrackGeo] = useState<TrackGeo | null>(null);
   const [notes, setNotes] = useState('');
@@ -48,7 +58,7 @@ export default function RideDetailScreen() {
     };
   }, [ride]);
 
-  if (isLoading || !ride) {
+  if (isLoading || isLoadingSettings || !ride || !settings) {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" />
@@ -56,13 +66,14 @@ export default function RideDetailScreen() {
     );
   }
 
+  const unitSystem = settings.unitSystem;
   const durationMs = ride.endedAt.getTime() - ride.startedAt.getTime();
   const avgSpeedKmh = speedKmh(ride.distanceM, ride.movingTimeMs);
 
   const handleShare = async () => {
     const available = await Sharing.isAvailableAsync();
     if (!available) {
-      Alert.alert('Sharing unavailable', `Track file is at: ${ride.trackUri}`);
+      Alert.alert(t('rideDetail.sharingUnavailableTitle'), t('rideDetail.sharingUnavailableMessage', { uri: ride.trackUri }));
       return;
     }
     await Sharing.shareAsync(ride.trackUri);
@@ -74,10 +85,10 @@ export default function RideDetailScreen() {
 
   const handleDelete = () => {
     setMenuOpen(false);
-    Alert.alert('Delete this ride?', 'This ride will be removed and your odometer recalculated.', [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert(t('rideDetail.deleteConfirmTitle'), t('rideDetail.deleteConfirmMessage'), [
+      { text: t('common.cancel'), style: 'cancel' },
       {
-        text: 'Delete',
+        text: t('common.delete'),
         style: 'destructive',
         onPress: async () => {
           await deleteRide.mutateAsync({ id: ride.id, bikeId: ride.bikeId, distanceM: ride.distanceM });
@@ -91,14 +102,14 @@ export default function RideDetailScreen() {
     <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 20 + insets.bottom }]}>
       <Stack.Screen
         options={{
-          title: ride.startedAt.toLocaleDateString(),
+          title: ride.startedAt.toLocaleDateString(i18n.language),
           headerRight: () => (
             <View style={styles.headerActions}>
               <Pressable onPress={handleShare} hitSlop={12} style={styles.headerButton}>
-                <Ionicons name="share-outline" size={22} color="#2f6f4f" />
+                <Ionicons name="share-outline" size={22} color={colors.primary} />
               </Pressable>
               <Pressable onPress={() => setMenuOpen(true)} hitSlop={12} style={styles.headerButton}>
-                <Ionicons name="ellipsis-vertical" size={22} color="#2f6f4f" />
+                <Ionicons name="ellipsis-vertical" size={22} color={colors.primary} />
               </Pressable>
             </View>
           ),
@@ -109,8 +120,8 @@ export default function RideDetailScreen() {
         <Pressable style={styles.menuOverlay} onPress={() => setMenuOpen(false)}>
           <View style={[styles.menu, { top: insets.top + 48 }]}>
             <Pressable style={styles.menuItem} onPress={handleDelete}>
-              <Ionicons name="trash-outline" size={18} color="#b00020" />
-              <Text style={styles.menuItemText}>Delete ride</Text>
+              <Ionicons name="trash-outline" size={18} color={colors.danger} />
+              <Text style={styles.menuItemText}>{t('rideDetail.deleteRide')}</Text>
             </Pressable>
           </View>
         </Pressable>
@@ -129,43 +140,44 @@ export default function RideDetailScreen() {
                 id="ride-track-line"
                 type="line"
                 layout={{ 'line-join': 'round', 'line-cap': 'round' }}
-                paint={{ 'line-color': '#2f6f4f', 'line-width': 4 }}
+                paint={{ 'line-color': colors.primary, 'line-width': 4 }}
               />
             </GeoJSONSource>
           </Map>
         ) : (
           <View style={styles.mapPlaceholder}>
             <Text style={styles.mapPlaceholderText}>
-              {trackGeo.status === 'empty' ? 'No track recorded for this ride.' : 'Not enough points to draw a track.'}
+              {trackGeo.status === 'empty' ? t('rideDetail.noTrack') : t('rideDetail.notEnoughPoints')}
             </Text>
           </View>
         )}
       </View>
 
       <View style={styles.card}>
-        <Stat label="Distance" value={`${(ride.distanceM / 1000).toFixed(2)} km`} />
-        <Stat label="Duration" value={formatDuration(durationMs)} />
-        <Stat label="Avg speed" value={`${avgSpeedKmh.toFixed(1)} km/h`} />
-        <Stat label="Moving time" value={formatDuration(ride.movingTimeMs)} />
-        <Stat label="Paused time" value={formatDuration(ride.pausedTimeMs)} />
+        <Stat styles={styles} label={t('rideDetail.distanceLabel')} value={formatDistance(ride.distanceM, unitSystem, 2)} />
+        <Stat styles={styles} label={t('rideDetail.durationLabel')} value={formatDuration(durationMs)} />
+        <Stat styles={styles} label={t('rideDetail.avgSpeedLabel')} value={formatSpeed(avgSpeedKmh, unitSystem)} />
+        <Stat styles={styles} label={t('rideDetail.movingTimeLabel')} value={formatDuration(ride.movingTimeMs)} />
+        <Stat styles={styles} label={t('rideDetail.pausedTimeLabel')} value={formatDuration(ride.pausedTimeMs)} />
       </View>
 
-      <Text style={styles.label}>Notes</Text>
+      <Text style={styles.label}>{t('common.notesLabel')}</Text>
       <TextInput
         style={styles.notesInput}
         multiline
-        placeholder="Add a note about this ride..."
+        placeholder={t('rideDetail.notesPlaceholder')}
+        placeholderTextColor={colors.textDisabled}
         value={notes}
         onChangeText={setNotes}
       />
       <Pressable style={styles.saveButton} onPress={handleSaveNotes}>
-        <Text style={styles.saveButtonText}>Save notes</Text>
+        <Text style={styles.saveButtonText}>{t('rideDetail.saveNotes')}</Text>
       </Pressable>
     </ScrollView>
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+function Stat({ label, value, styles }: { label: string; value: string; styles: ReturnType<typeof createStyles> }) {
   return (
     <View style={styles.stat}>
       <Text style={styles.statLabel}>{label}</Text>
@@ -174,110 +186,114 @@ function Stat({ label, value }: { label: string; value: string }) {
   );
 }
 
-const styles = StyleSheet.create({
-  center: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  content: {
-    padding: 20,
-  },
-  mapContainer: {
-    height: 260,
-    borderRadius: 12,
-    overflow: 'hidden',
-    marginBottom: 20,
-  },
-  map: {
-    flex: 1,
-  },
-  mapPlaceholder: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#f2f2f2',
-    padding: 20,
-  },
-  mapPlaceholderText: {
-    fontSize: 13,
-    color: '#888888',
-    textAlign: 'center',
-  },
-  card: {
-    backgroundColor: '#f2f2f2',
-    borderRadius: 12,
-    padding: 16,
-  },
-  stat: {
-    marginTop: 8,
-  },
-  statLabel: {
-    fontSize: 12,
-    color: '#888888',
-  },
-  statValue: {
-    fontSize: 18,
-    fontWeight: '700',
-  },
-  label: {
-    fontSize: 12,
-    color: '#888888',
-    marginTop: 20,
-    marginBottom: 6,
-  },
-  notesInput: {
-    backgroundColor: '#f2f2f2',
-    borderRadius: 10,
-    padding: 12,
-    fontSize: 14,
-    minHeight: 80,
-    textAlignVertical: 'top',
-  },
-  saveButton: {
-    marginTop: 12,
-    backgroundColor: '#f2f2f2',
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  saveButtonText: {
-    color: '#2f6f4f',
-    fontWeight: '600',
-  },
-  headerActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  headerButton: {
-    marginRight: 16,
-  },
-  menuOverlay: {
-    flex: 1,
-  },
-  menu: {
-    position: 'absolute',
-    right: 12,
-    backgroundColor: '#ffffff',
-    borderRadius: 10,
-    paddingVertical: 4,
-    minWidth: 160,
-    elevation: 4,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-  },
-  menuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-  },
-  menuItemText: {
-    marginLeft: 10,
-    fontSize: 15,
-    color: '#b00020',
-    fontWeight: '600',
-  },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    center: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    content: {
+      padding: 20,
+    },
+    mapContainer: {
+      height: 260,
+      borderRadius: 12,
+      overflow: 'hidden',
+      marginBottom: 20,
+    },
+    map: {
+      flex: 1,
+    },
+    mapPlaceholder: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colors.surface,
+      padding: 20,
+    },
+    mapPlaceholderText: {
+      fontSize: 13,
+      color: colors.textMuted,
+      textAlign: 'center',
+    },
+    card: {
+      backgroundColor: colors.surface,
+      borderRadius: 12,
+      padding: 16,
+    },
+    stat: {
+      marginTop: 8,
+    },
+    statLabel: {
+      fontSize: 12,
+      color: colors.textMuted,
+    },
+    statValue: {
+      fontSize: 18,
+      fontWeight: '700',
+      color: colors.text,
+    },
+    label: {
+      fontSize: 12,
+      color: colors.textMuted,
+      marginTop: 20,
+      marginBottom: 6,
+    },
+    notesInput: {
+      backgroundColor: colors.surface,
+      borderRadius: 10,
+      padding: 12,
+      fontSize: 14,
+      minHeight: 80,
+      textAlignVertical: 'top',
+      color: colors.text,
+    },
+    saveButton: {
+      marginTop: 12,
+      backgroundColor: colors.surface,
+      paddingVertical: 12,
+      borderRadius: 8,
+      alignItems: 'center',
+    },
+    saveButtonText: {
+      color: colors.primary,
+      fontWeight: '600',
+    },
+    headerActions: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    headerButton: {
+      marginRight: 16,
+    },
+    menuOverlay: {
+      flex: 1,
+    },
+    menu: {
+      position: 'absolute',
+      right: 12,
+      backgroundColor: colors.surface,
+      borderRadius: 10,
+      paddingVertical: 4,
+      minWidth: 160,
+      elevation: 4,
+      shadowColor: colors.shadow,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.2,
+      shadowRadius: 4,
+    },
+    menuItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 12,
+      paddingHorizontal: 16,
+    },
+    menuItemText: {
+      marginLeft: 10,
+      fontSize: 15,
+      color: colors.danger,
+      fontWeight: '600',
+    },
+  });
+}

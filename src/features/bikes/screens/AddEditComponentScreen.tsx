@@ -1,13 +1,18 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import type { Component, ComponentType } from '../../../domain/types';
+import type { Component, ComponentType, UnitSystem } from '../../../domain/types';
+import type { ThemeColors } from '../../../theme/colors';
+import { useTheme } from '../../../theme/useTheme';
 import { componentTypeValues } from '../../../data/schema';
 import { computeOdometerM } from '../../../domain/odometer';
+import { distanceUnitLabel, distanceUnitToMeters, formatDistance, metersToDistanceUnit } from '../../../domain/units';
 import { useMaintenanceRules } from '../../maintenance/hooks/useMaintenanceRules';
 import { useRides } from '../../rides/hooks/useRides';
+import { useSettings } from '../../settings/hooks/useSettings';
 import { useBike } from '../hooks/useBikes';
 import {
   useComponent,
@@ -28,8 +33,12 @@ export default function AddEditComponentScreen() {
   const { data: bike, isLoading: isLoadingBike } = useBike(bikeId);
   const { data: rides, isLoading: isLoadingRides } = useRides(bikeId);
   const { data: existingComponent, isLoading: isLoadingComponent } = useComponent(componentId);
+  const { data: settings, isLoading: isLoadingSettings } = useSettings();
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
-  if (isLoadingBike || isLoadingRides || (isEditing && isLoadingComponent)) {
+  if (isLoadingBike || isLoadingRides || (isEditing && isLoadingComponent) || isLoadingSettings || !settings) {
     return (
       <View style={styles.center}>
         <ActivityIndicator size="large" />
@@ -40,7 +49,7 @@ export default function AddEditComponentScreen() {
   if (!bike) {
     return (
       <View style={styles.center}>
-        <Text style={styles.notFound}>Bike not found.</Text>
+        <Text style={styles.notFound}>{t('common.bikeNotFound')}</Text>
       </View>
     );
   }
@@ -51,6 +60,7 @@ export default function AddEditComponentScreen() {
       bikeId={bikeId}
       currentOdometerM={computeOdometerM(bike, rides ?? [])}
       initialComponent={existingComponent ?? null}
+      unitSystem={settings.unitSystem}
     />
   );
 }
@@ -59,14 +69,19 @@ function ComponentForm({
   bikeId,
   currentOdometerM,
   initialComponent,
+  unitSystem,
 }: {
   bikeId: string;
   currentOdometerM: number;
   initialComponent: Component | null;
+  unitSystem: UnitSystem;
 }) {
   const router = useRouter();
+  const { t } = useTranslation();
   const { data: rules } = useMaintenanceRules(initialComponent?.id);
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const isEditing = Boolean(initialComponent);
   const createComponent = useCreateComponent();
   const updateComponent = useUpdateComponent();
@@ -75,46 +90,49 @@ function ComponentForm({
 
   const [type, setType] = useState<ComponentType>(initialComponent?.type ?? 'Chain');
   const [name, setName] = useState(initialComponent?.name ?? '');
-  const [installedAtOdometerKm, setInstalledAtOdometerKm] = useState(
-    String((initialComponent?.installedAtOdometerM ?? currentOdometerM) / 1000)
+  const [installedAtOdometerDisplay, setInstalledAtOdometerDisplay] = useState(
+    String(metersToDistanceUnit(initialComponent?.installedAtOdometerM ?? currentOdometerM, unitSystem))
   );
   const [installedDate, setInstalledDate] = useState(
     toDateInputValue(initialComponent?.installedDate ?? new Date())
   );
-  const [expectedLifetimeKm, setExpectedLifetimeKm] = useState(
-    initialComponent?.expectedLifetimeKm != null ? String(initialComponent.expectedLifetimeKm) : ''
+  const [expectedLifetimeDisplay, setExpectedLifetimeDisplay] = useState(
+    initialComponent?.expectedLifetimeKm != null
+      ? String(metersToDistanceUnit(initialComponent.expectedLifetimeKm * 1000, unitSystem))
+      : ''
   );
   const [notes, setNotes] = useState(initialComponent?.notes ?? '');
 
   const handleSubmit = async () => {
     if (!name.trim()) {
-      Alert.alert('Name required', 'Give the component a name before saving.');
+      Alert.alert(t('addEditComponent.nameRequiredTitle'), t('addEditComponent.nameRequiredMessage'));
       return;
     }
 
-    const parsedOdometerKm = installedAtOdometerKm.trim() ? Number(installedAtOdometerKm) : NaN;
+    const parsedOdometerDisplay = installedAtOdometerDisplay.trim() ? Number(installedAtOdometerDisplay) : NaN;
     const parsedDate = new Date(installedDate);
-    const parsedLifetimeKm = expectedLifetimeKm.trim() ? Number(expectedLifetimeKm) : null;
+    const parsedLifetimeDisplay = expectedLifetimeDisplay.trim() ? Number(expectedLifetimeDisplay) : null;
 
-    if (Number.isNaN(parsedOdometerKm)) {
-      Alert.alert('Invalid odometer', 'Installed-at odometer must be a number.');
+    if (Number.isNaN(parsedOdometerDisplay)) {
+      Alert.alert(t('addEditComponent.invalidOdometerTitle'), t('addEditComponent.invalidOdometerMessage'));
       return;
     }
     if (Number.isNaN(parsedDate.getTime())) {
-      Alert.alert('Invalid date', 'Installed date must be in YYYY-MM-DD format.');
+      Alert.alert(t('addEditComponent.invalidDateTitle'), t('addEditComponent.invalidDateMessage'));
       return;
     }
-    if (parsedLifetimeKm != null && Number.isNaN(parsedLifetimeKm)) {
-      Alert.alert('Invalid lifetime', 'Expected lifetime must be a number.');
+    if (parsedLifetimeDisplay != null && Number.isNaN(parsedLifetimeDisplay)) {
+      Alert.alert(t('addEditComponent.invalidLifetimeTitle'), t('addEditComponent.invalidLifetimeMessage'));
       return;
     }
 
     const values = {
       type,
       name: name.trim(),
-      installedAtOdometerM: Math.round(parsedOdometerKm * 1000),
+      installedAtOdometerM: Math.round(distanceUnitToMeters(parsedOdometerDisplay, unitSystem)),
       installedDate: parsedDate,
-      expectedLifetimeKm: parsedLifetimeKm,
+      expectedLifetimeKm:
+        parsedLifetimeDisplay != null ? distanceUnitToMeters(parsedLifetimeDisplay, unitSystem) / 1000 : null,
       notes: notes.trim() || null,
     };
 
@@ -129,12 +147,16 @@ function ComponentForm({
   const handleReplace = () => {
     if (!initialComponent) return;
     Alert.alert(
-      'Replace this component?',
-      `${initialComponent.name} will be retired and a new ${initialComponent.type} installed at ${(currentOdometerM / 1000).toFixed(1)} km. Active maintenance rules move to the new component with their counter reset.`,
+      t('addEditComponent.replaceConfirmTitle'),
+      t('addEditComponent.replaceConfirmMessage', {
+        name: initialComponent.name,
+        type: initialComponent.type,
+        odometer: formatDistance(currentOdometerM, unitSystem, 1),
+      }),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: 'Replace',
+          text: t('addEditComponent.replaceComponent'),
           onPress: async () => {
             await replaceComponent.mutateAsync({ oldComponent: initialComponent, currentOdometerM });
             router.back();
@@ -146,24 +168,28 @@ function ComponentForm({
 
   const handleRetire = () => {
     if (!initialComponent) return;
-    Alert.alert('Retire this component?', `${initialComponent.name} will be marked as retired.`, [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Retire',
-        style: 'destructive',
-        onPress: async () => {
-          await retireComponent.mutateAsync({ id: initialComponent.id, bikeId });
-          router.back();
+    Alert.alert(
+      t('addEditComponent.retireConfirmTitle'),
+      t('addEditComponent.retireConfirmMessage', { name: initialComponent.name }),
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('addEditComponent.retireComponent'),
+          style: 'destructive',
+          onPress: async () => {
+            await retireComponent.mutateAsync({ id: initialComponent.id, bikeId });
+            router.back();
+          },
         },
-      },
-    ]);
+      ]
+    );
   };
 
   const saving = createComponent.isPending || updateComponent.isPending;
 
   return (
     <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 20 + insets.bottom }]}>
-      <Text style={styles.label}>Type</Text>
+      <Text style={styles.label}>{t('addEditComponent.typeLabel')}</Text>
       <View style={styles.chipRow}>
         {componentTypeValues.map((value) => (
           <Pressable
@@ -176,29 +202,38 @@ function ComponentForm({
         ))}
       </View>
 
-      <Field label="Name" value={name} onChangeText={setName} placeholder="e.g. Chain" />
       <Field
-        label="Installed at odometer (km)"
-        value={installedAtOdometerKm}
-        onChangeText={setInstalledAtOdometerKm}
-        keyboardType="decimal-pad"
+        label={t('addEditComponent.nameLabel')}
+        value={name}
+        onChangeText={setName}
+        placeholder={t('addEditComponent.namePlaceholder')}
+        styles={styles}
       />
       <Field
-        label="Installed date (YYYY-MM-DD)"
+        label={t('addEditComponent.installedAtOdometerLabel', { unit: distanceUnitLabel(unitSystem) })}
+        value={installedAtOdometerDisplay}
+        onChangeText={setInstalledAtOdometerDisplay}
+        keyboardType="decimal-pad"
+        styles={styles}
+      />
+      <Field
+        label={t('addEditComponent.installedDateLabel')}
         value={installedDate}
         onChangeText={setInstalledDate}
+        styles={styles}
       />
       <Field
-        label="Expected lifetime (km, optional)"
-        value={expectedLifetimeKm}
-        onChangeText={setExpectedLifetimeKm}
+        label={t('addEditComponent.expectedLifetimeLabel', { unit: distanceUnitLabel(unitSystem) })}
+        value={expectedLifetimeDisplay}
+        onChangeText={setExpectedLifetimeDisplay}
         keyboardType="decimal-pad"
+        styles={styles}
       />
-      <Field label="Notes (optional)" value={notes} onChangeText={setNotes} />
+      <Field label={t('common.notesOptional')} value={notes} onChangeText={setNotes} styles={styles} />
 
       <Pressable style={styles.primaryButton} onPress={handleSubmit} disabled={saving}>
         <Text style={styles.primaryButtonText}>
-          {saving ? 'Saving...' : isEditing ? 'Save changes' : 'Add component'}
+          {saving ? t('common.saving') : isEditing ? t('common.saveChanges') : t('addEditComponent.addComponent')}
         </Text>
       </Pressable>
 
@@ -208,7 +243,8 @@ function ComponentForm({
           onPress={() => router.push(`/bikes/${bikeId}/components/${initialComponent.id}/rules`)}
         >
           <Text style={styles.secondaryButtonText}>
-            Maintenance Rules{rules && rules.length > 0 ? ` (${rules.length})` : ''}
+            {t('addEditComponent.maintenanceRules')}
+            {rules && rules.length > 0 ? ` (${rules.length})` : ''}
           </Text>
         </Pressable>
       )}
@@ -218,21 +254,21 @@ function ComponentForm({
           style={styles.secondaryButton}
           onPress={() => router.push(`/bikes/${bikeId}/components/${initialComponent.id}/log`)}
         >
-          <Text style={styles.secondaryButtonText}>Maintenance Log</Text>
+          <Text style={styles.secondaryButtonText}>{t('addEditComponent.maintenanceLog')}</Text>
         </Pressable>
       )}
 
       {isEditing && (
         <Pressable style={styles.secondaryButton} onPress={handleReplace} disabled={replaceComponent.isPending}>
           <Text style={styles.secondaryButtonText}>
-            {replaceComponent.isPending ? 'Replacing...' : 'Replace component'}
+            {replaceComponent.isPending ? t('addEditComponent.replacing') : t('addEditComponent.replaceComponent')}
           </Text>
         </Pressable>
       )}
 
       {isEditing && (
         <Pressable style={styles.retireButton} onPress={handleRetire}>
-          <Text style={styles.retireButtonText}>Retire component</Text>
+          <Text style={styles.retireButtonText}>{t('addEditComponent.retireComponent')}</Text>
         </Pressable>
       )}
     </ScrollView>
@@ -245,12 +281,13 @@ function Field(props: {
   onChangeText: (text: string) => void;
   placeholder?: string;
   keyboardType?: 'default' | 'decimal-pad';
+  styles: ReturnType<typeof createStyles>;
 }) {
   return (
-    <View style={styles.field}>
-      <Text style={styles.label}>{props.label}</Text>
+    <View style={props.styles.field}>
+      <Text style={props.styles.label}>{props.label}</Text>
       <TextInput
-        style={styles.input}
+        style={props.styles.input}
         value={props.value}
         onChangeText={props.onChangeText}
         placeholder={props.placeholder}
@@ -260,92 +297,97 @@ function Field(props: {
   );
 }
 
-const styles = StyleSheet.create({
-  center: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  notFound: {
-    fontSize: 16,
-    color: '#666666',
-  },
-  content: {
-    padding: 20,
-  },
-  chipRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginBottom: 16,
-  },
-  chip: {
-    borderWidth: 1,
-    borderColor: '#dddddd',
-    borderRadius: 16,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    marginRight: 8,
-    marginBottom: 8,
-  },
-  chipSelected: {
-    backgroundColor: '#2f6f4f',
-    borderColor: '#2f6f4f',
-  },
-  chipText: {
-    fontSize: 13,
-    color: '#333333',
-  },
-  chipTextSelected: {
-    color: '#ffffff',
-  },
-  field: {
-    marginBottom: 16,
-  },
-  label: {
-    fontSize: 12,
-    color: '#888888',
-    marginBottom: 4,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#dddddd',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 15,
-  },
-  primaryButton: {
-    marginTop: 8,
-    backgroundColor: '#2f6f4f',
-    paddingVertical: 14,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  primaryButtonText: {
-    color: '#ffffff',
-    fontWeight: '600',
-    fontSize: 16,
-  },
-  secondaryButton: {
-    marginTop: 12,
-    backgroundColor: '#f2f2f2',
-    paddingVertical: 14,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  secondaryButtonText: {
-    color: '#2f6f4f',
-    fontWeight: '600',
-    fontSize: 16,
-  },
-  retireButton: {
-    marginTop: 12,
-    paddingVertical: 14,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  retireButtonText: {
-    color: '#b00020',
-    fontWeight: '600',
-  },
-});
+function createStyles(colors: ThemeColors) {
+  return StyleSheet.create({
+    center: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colors.background,
+    },
+    notFound: {
+      fontSize: 16,
+      color: colors.textSecondary,
+    },
+    content: {
+      padding: 20,
+      backgroundColor: colors.background,
+    },
+    chipRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      marginBottom: 16,
+    },
+    chip: {
+      borderWidth: 1,
+      borderColor: colors.surfaceBorder,
+      borderRadius: 16,
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      marginRight: 8,
+      marginBottom: 8,
+    },
+    chipSelected: {
+      backgroundColor: colors.primary,
+      borderColor: colors.primary,
+    },
+    chipText: {
+      fontSize: 13,
+      color: colors.chipText,
+    },
+    chipTextSelected: {
+      color: colors.onPrimary,
+    },
+    field: {
+      marginBottom: 16,
+    },
+    label: {
+      fontSize: 12,
+      color: colors.textMuted,
+      marginBottom: 4,
+    },
+    input: {
+      borderWidth: 1,
+      borderColor: colors.surfaceBorder,
+      borderRadius: 8,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+      fontSize: 15,
+      color: colors.text,
+    },
+    primaryButton: {
+      marginTop: 8,
+      backgroundColor: colors.primary,
+      paddingVertical: 14,
+      borderRadius: 8,
+      alignItems: 'center',
+    },
+    primaryButtonText: {
+      color: colors.onPrimary,
+      fontWeight: '600',
+      fontSize: 16,
+    },
+    secondaryButton: {
+      marginTop: 12,
+      backgroundColor: colors.surface,
+      paddingVertical: 14,
+      borderRadius: 8,
+      alignItems: 'center',
+    },
+    secondaryButtonText: {
+      color: colors.primary,
+      fontWeight: '600',
+      fontSize: 16,
+    },
+    retireButton: {
+      marginTop: 12,
+      paddingVertical: 14,
+      borderRadius: 8,
+      alignItems: 'center',
+    },
+    retireButtonText: {
+      color: colors.danger,
+      fontWeight: '600',
+    },
+  });
+}

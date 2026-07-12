@@ -94,3 +94,12 @@ export const rides = sqliteTable('rides', {
   createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
   updatedAt: integer('updated_at', { mode: 'timestamp_ms' }).notNull(),
 });
+
+// Singleton row, id is always 'singleton' — see appSettingsRepository.
+export const appSettings = sqliteTable('app_settings', {
+  id: text('id').primaryKey(),
+  unitSystem: text('unit_system', { enum: ['metric', 'imperial'] }).notNull().default('metric'),
+  locale: text('locale', { enum: ['en', 'sv'] }).notNull().default('en'),
+  themeMode: text('theme_mode', { enum: ['system', 'light', 'dark'] }).notNull().default('system'),
+  updatedAt: integer('updated_at', { mode: 'timestamp_ms' }).notNull(),
+});
