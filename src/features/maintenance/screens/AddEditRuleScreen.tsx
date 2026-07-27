@@ -1,4 +1,4 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -7,7 +7,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Chip, FormField, LoadingState } from '../../../components';
 import { computeOdometerM } from '../../../domain/odometer';
 import type { MaintenanceRule, UnitSystem } from '../../../domain/types';
-import { distanceUnitLabel, distanceUnitToMeters, formatDistance, metersToDistanceUnit } from '../../../domain/units';
+import {
+  distanceUnitLabel,
+  distanceUnitToMeters,
+  formatDistance,
+  formatDistanceInput,
+} from '../../../domain/units';
 import type { ThemeColors } from '../../../theme/colors';
 import { useTheme } from '../../../theme/useTheme';
 import { useBike } from '../../bikes/hooks/useBikes';
@@ -98,10 +103,10 @@ function RuleForm({
 
   const [action, setAction] = useState(initialRule?.action ?? '');
   const [intervalDisplay, setIntervalDisplay] = useState(
-    initialRule ? String(metersToDistanceUnit(initialRule.intervalM, unitSystem)) : ''
+    initialRule ? formatDistanceInput(initialRule.intervalM, unitSystem) : ''
   );
   const [lastPerformedDisplay, setLastPerformedDisplay] = useState(
-    String(metersToDistanceUnit(initialRule?.lastPerformedAtOdometerM ?? currentOdometerM, unitSystem))
+    formatDistanceInput(initialRule?.lastPerformedAtOdometerM ?? currentOdometerM, unitSystem)
   );
   const [notes, setNotes] = useState(initialRule?.notes ?? '');
 
@@ -180,6 +185,7 @@ function RuleForm({
 
   return (
     <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 20 + insets.bottom }]}>
+      <Stack.Screen options={{ title: t(isEditing ? 'addEditRule.editTitle' : 'addEditRule.addTitle') }} />
       {isEditing && (
         <Button
           title={markAsDone.isPending ? t('common.saving') : t('addEditRule.markAsDone')}
@@ -200,7 +206,7 @@ function RuleForm({
                 onPress={() => {
                   setAction(preset.action);
                   if (preset.intervalKm != null) {
-                    setIntervalDisplay(String(metersToDistanceUnit(preset.intervalKm * 1000, unitSystem)));
+                    setIntervalDisplay(formatDistanceInput(preset.intervalKm * 1000, unitSystem));
                   }
                 }}
               />

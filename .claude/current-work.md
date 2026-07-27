@@ -47,10 +47,12 @@ Done (all merged to main 2026-07-13 — PRs #44, #46, #47):
 - Live emulator verification of the whole arc passed (record → stop → save, forms, badges,
   translated labels, discard flow)
 
-Next (planned 2026-07-13, resume here):
-1. **UX/UI pass — plan ready in `.planning/STATE.md`, 4 phases: quick D-fixes → header
-   actions/OverflowMenu → wear visibility (D2 + progress display) → visual sweep.** Run
-   `/execute` to start Phase 1. (D5 already done via the C1 conversion.)
+Next (active as of 2026-07-27, resume here):
+1. **UX/UI pass — Phase 1 complete:** duration hours, effect-based locale sync, translated
+   Add/Edit form titles, and rounded distance form values are implemented and verified
+   (typecheck, lint with one pre-existing warning, 102 tests). Android development-client startup
+   and troubleshooting are documented in `docs/DEVELOPMENT.md`. Phase 2 is next: shared
+   `OverflowMenu` plus header actions for BikeDetail and AddEditComponentScreen.
 2. Real-device field ride: cold-start #45 scenario + Spike 0's two open items (#5 kill test,
    #6 open-road accuracy)
 3. Then M6 (v0.3 candidates — pick 2–3)
@@ -61,4 +63,4 @@ M6 — v0.3 candidates (pick 2–3, not all): GPX export/import, distance charts
 weather snapshot on ride save (first optional network dependency), ride photos.
 
 ---
-_Last updated: 2026-07-12 (conventions docs written; code review pass is next)._
+_Last updated: 2026-07-27 (UX/UI pass Phase 1 complete; Phase 2 is next)._

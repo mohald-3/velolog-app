@@ -2,6 +2,7 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
 import { MutationCache, QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { ActivityIndicator, Alert, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
@@ -25,10 +26,13 @@ const queryClient = new QueryClient({
 
 function LocaleSync() {
   const { data: settings } = useSettings();
+  const locale = settings?.locale;
 
-  if (settings && i18n.language !== settings.locale) {
-    i18n.changeLanguage(settings.locale);
-  }
+  useEffect(() => {
+    if (locale && i18n.language !== locale) {
+      void i18n.changeLanguage(locale);
+    }
+  }, [locale]);
 
   return null;
 }

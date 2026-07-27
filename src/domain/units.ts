@@ -15,6 +15,12 @@ export function metersToDistanceUnit(m: number, unitSystem: UnitSystem): number 
   return unitSystem === 'imperial' ? metersToMiles(m) : metersToKm(m);
 }
 
+/** Converts meters to an editable distance value with no more than two decimal places. */
+export function formatDistanceInput(m: number, unitSystem: UnitSystem): string {
+  const value = metersToDistanceUnit(m, unitSystem);
+  return String(Math.round((value + Number.EPSILON) * 100) / 100);
+}
+
 export function distanceUnitLabel(unitSystem: UnitSystem): string {
   return unitSystem === 'imperial' ? 'mi' : 'km';
 }

@@ -1,5 +1,5 @@
 import * as ImagePicker from 'expo-image-picker';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert, Image, Pressable, ScrollView, StyleSheet, Text } from 'react-native';
@@ -7,7 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button, FormField, LoadingState } from '../../../components';
 import type { Bike } from '../../../domain/types';
-import { distanceUnitLabel, distanceUnitToMeters, metersToDistanceUnit } from '../../../domain/units';
+import { distanceUnitLabel, distanceUnitToMeters, formatDistanceInput } from '../../../domain/units';
 import type { ThemeColors } from '../../../theme/colors';
 import { useTheme } from '../../../theme/useTheme';
 import { useSettings } from '../../settings/hooks/useSettings';
@@ -60,7 +60,7 @@ function BikeForm({
   const [color, setColor] = useState(initialBike?.color ?? '');
   const [frameSize, setFrameSize] = useState(initialBike?.frameSize ?? '');
   const [startingOdometer, setStartingOdometer] = useState(
-    initialBike ? String(metersToDistanceUnit(initialBike.startingOdometerM, unitSystem)) : '0'
+    initialBike ? formatDistanceInput(initialBike.startingOdometerM, unitSystem) : '0'
   );
   const [photoUri, setPhotoUri] = useState<string | null>(initialBike?.photoUri ?? null);
 
@@ -121,6 +121,7 @@ function BikeForm({
 
   return (
     <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 20 + insets.bottom }]}>
+      <Stack.Screen options={{ title: t(isEditing ? 'addEditBike.editTitle' : 'addEditBike.addTitle') }} />
       <Pressable style={styles.photoPicker} onPress={pickPhoto}>
         {photoUri ? (
           <Image source={{ uri: photoUri }} style={styles.photo} />

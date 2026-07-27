@@ -3,6 +3,7 @@ import {
   distanceUnitLabel,
   distanceUnitToMeters,
   formatDistance,
+  formatDistanceInput,
   formatSpeed,
   metersToDistanceUnit,
   metersToKm,
@@ -30,6 +31,17 @@ describe('metersToDistanceUnit', () => {
 
   it('uses miles for imperial', () => {
     expect(metersToDistanceUnit(1609.344, 'imperial')).toBeCloseTo(1, 5);
+  });
+});
+
+describe('formatDistanceInput', () => {
+  it('rounds metric display values to at most two decimal places', () => {
+    expect(formatDistanceInput(220.11187862751427, 'metric')).toBe('0.22');
+    expect(formatDistanceInput(12_000, 'metric')).toBe('12');
+  });
+
+  it('rounds imperial display values to at most two decimal places', () => {
+    expect(formatDistanceInput(5_000, 'imperial')).toBe('3.11');
   });
 });
 

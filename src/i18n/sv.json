@@ -18,6 +18,8 @@
     "devLink": "GPS-testskärm"
   },
   "addEditBike": {
+    "addTitle": "Lägg till cykel",
+    "editTitle": "Redigera cykel",
     "addPhoto": "Lägg till foto",
     "nameLabel": "Namn",
     "namePlaceholder": "t.ex. Trek FX 2",
@@ -55,6 +57,8 @@
     "archiveConfirmMessage": "{{name}} kommer att döljas från ditt aktiva garage."
   },
   "addEditComponent": {
+    "addTitle": "Lägg till komponent",
+    "editTitle": "Redigera komponent",
     "typeLabel": "Typ",
     "nameLabel": "Namn",
     "namePlaceholder": "t.ex. Kedja",
@@ -146,6 +150,8 @@
     "dueIn": "Om {{amount}}"
   },
   "addEditRule": {
+    "addTitle": "Lägg till underhållsregel",
+    "editTitle": "Redigera underhållsregel",
     "presetLabel": "Förval",
     "presetLubeChain": "Smörj kedja",
     "presetReplaceChain": "Byt kedja",

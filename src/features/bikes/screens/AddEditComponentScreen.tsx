@@ -1,4 +1,4 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -9,7 +9,12 @@ import { componentTypeValues, type Component, type ComponentType, type UnitSyste
 import type { ThemeColors } from '../../../theme/colors';
 import { useTheme } from '../../../theme/useTheme';
 import { computeOdometerM } from '../../../domain/odometer';
-import { distanceUnitLabel, distanceUnitToMeters, formatDistance, metersToDistanceUnit } from '../../../domain/units';
+import {
+  distanceUnitLabel,
+  distanceUnitToMeters,
+  formatDistance,
+  formatDistanceInput,
+} from '../../../domain/units';
 import { useMaintenanceRules } from '../../maintenance/hooks/useMaintenanceRules';
 import { useRides } from '../../rides/hooks/useRides';
 import { useSettings } from '../../settings/hooks/useSettings';
@@ -87,14 +92,14 @@ function ComponentForm({
   const [type, setType] = useState<ComponentType>(initialComponent?.type ?? 'Chain');
   const [name, setName] = useState(initialComponent?.name ?? '');
   const [installedAtOdometerDisplay, setInstalledAtOdometerDisplay] = useState(
-    String(metersToDistanceUnit(initialComponent?.installedAtOdometerM ?? currentOdometerM, unitSystem))
+    formatDistanceInput(initialComponent?.installedAtOdometerM ?? currentOdometerM, unitSystem)
   );
   const [installedDate, setInstalledDate] = useState(
     toDateInputValue(initialComponent?.installedDate ?? new Date())
   );
   const [expectedLifetimeDisplay, setExpectedLifetimeDisplay] = useState(
     initialComponent?.expectedLifetimeKm != null
-      ? String(metersToDistanceUnit(initialComponent.expectedLifetimeKm * 1000, unitSystem))
+      ? formatDistanceInput(initialComponent.expectedLifetimeKm * 1000, unitSystem)
       : ''
   );
   const [notes, setNotes] = useState(initialComponent?.notes ?? '');
@@ -183,6 +188,9 @@ function ComponentForm({
 
   return (
     <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 20 + insets.bottom }]}>
+      <Stack.Screen
+        options={{ title: t(isEditing ? 'addEditComponent.editTitle' : 'addEditComponent.addTitle') }}
+      />
       <Text style={styles.label}>{t('addEditComponent.typeLabel')}</Text>
       <View style={styles.chipRow}>
         {componentTypeValues.map((value) => (

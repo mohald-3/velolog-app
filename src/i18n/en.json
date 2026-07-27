@@ -18,6 +18,8 @@
     "devLink": "GPS spike test screen"
   },
   "addEditBike": {
+    "addTitle": "Add bike",
+    "editTitle": "Edit bike",
     "addPhoto": "Add photo",
     "nameLabel": "Name",
     "namePlaceholder": "e.g. Trek FX 2",
@@ -55,6 +57,8 @@
     "archiveConfirmMessage": "{{name}} will be hidden from your active garage."
   },
   "addEditComponent": {
+    "addTitle": "Add component",
+    "editTitle": "Edit component",
     "typeLabel": "Type",
     "nameLabel": "Name",
     "namePlaceholder": "e.g. Chain",
@@ -146,6 +150,8 @@
     "dueIn": "Due in {{amount}}"
   },
   "addEditRule": {
+    "addTitle": "Add maintenance rule",
+    "editTitle": "Edit maintenance rule",
     "presetLabel": "Preset",
     "presetLubeChain": "Lube chain",
     "presetReplaceChain": "Replace chain",

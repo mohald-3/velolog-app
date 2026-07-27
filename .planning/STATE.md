@@ -1,7 +1,7 @@
 # Feature: UX/UI Pass (post-v0.2 polish)
 
 > Created: 2026-07-13
-> Status: Planned — ready to execute Phase 1
+> Status: In progress — Phase 1 complete, ready to execute Phase 2
 > Milestone: unplanned (post-v0.2 polish, before M6) — D-items tracked in issue #43
 
 ## Goal
@@ -11,11 +11,11 @@ actions, honest formatting, useful wear display) before starting M6.
 
 ## Requirements
 
-- [ ] D1: `formatDuration` shows hours (a 2h ride must not read "120:00")
-- [ ] D4: `LocaleSync` changes language in an effect, not during render
-- [ ] D6: all three Add/Edit form screens set a `Stack.Screen` title (they currently show the
+- [x] D1: `formatDuration` shows hours (a 2h ride must not read "120:00")
+- [x] D4: `LocaleSync` changes language in an effect, not during render
+- [x] D6: all three Add/Edit form screens set a `Stack.Screen` title (they currently show the
       raw route path, e.g. `bikes/[id]/components/[compon…`)
-- [ ] D7: form inputs seeded from `metersToDistanceUnit` are rounded for display (shared
+- [x] D7: form inputs seeded from `metersToDistanceUnit` are rounded for display (shared
       helper in `units.ts`), not `0.22011187862751427`
 - [ ] D3: BikeDetail page actions (Edit, Archive) move to header icons + "⋮" overflow dropdown
       per the header-actions convention; overflow menu extracted as a shared primitive
@@ -29,11 +29,11 @@ actions, honest formatting, useful wear display) before starting M6.
 ## Roadmap
 
 ### Phase 1: Quick D-item fixes — small
-- [ ] D1: add hours segment to `formatDuration` (`src/features/rides/format.ts`) + tests
-- [ ] D4: move `LocaleSync`'s `i18n.changeLanguage` into a `useEffect` (`src/app/_layout.tsx`)
-- [ ] D6: `Stack.Screen` titles on AddEditBikeScreen, AddEditComponentScreen,
+- [x] D1: add hours segment to `formatDuration` (`src/features/rides/format.ts`) + tests
+- [x] D4: move `LocaleSync`'s `i18n.changeLanguage` into a `useEffect` (`src/app/_layout.tsx`)
+- [x] D6: `Stack.Screen` titles on AddEditBikeScreen, AddEditComponentScreen,
       AddEditRuleScreen (add/edit variants, translated, en+sv)
-- [ ] D7: display-rounding helper in `src/domain/units.ts` (+ tests); use it wherever form
+- [x] D7: display-rounding helper in `src/domain/units.ts` (+ tests); use it wherever form
       state is seeded from `metersToDistanceUnit`
 
 ### Phase 2: Header actions + overflow menu — medium
@@ -61,14 +61,14 @@ actions, honest formatting, useful wear display) before starting M6.
 ## Current Position
 
 ```
-Phase: 1 of 4
-Task:  0 of 4
+Phase: 2 of 4
+Task:  0 of 3
 Status: Ready to execute
 ```
 
 ## Progress
 
-[░░░░░░░░░░░░░░░░░░░░] 0/4 phases
+[█████░░░░░░░░░░░░░░░] 1/4 phases
 
 ## Decisions
 
@@ -77,9 +77,11 @@ Status: Ready to execute
 | 2026-07-13 | D-items grouped into a UX pass rather than fixed piecemeal | They're all presentation-layer; one pass with a final visual sweep beats seven micro-PRs |
 | 2026-07-13 | D2 includes *showing* wear vs. lifetime, not just the unit migration | Migrating a field nobody sees would be churn; the progress display is what makes it worth it |
 | 2026-07-13 | OverflowMenu becomes a shared primitive in Phase 2 | Rule of three: RideDetail has one, BikeDetail (D3) and the component form need one |
+| 2026-07-27 | Editable converted distances use at most two decimal places | Keeps metric and imperial form values readable without padding insignificant zeros |
 
 ## Session Log
 
 | Date | Session | What happened |
 |------|---------|---------------|
 | 2026-07-13 | Planning | Created plan with 4 phases after the v0.2 quality pass (#44/#46/#47) merged. D5 found already fixed by the C1 conversion; D6 found to affect all 3 form screens, not just one. |
+| 2026-07-27 | Phase 1 | Completed D1, D4, D6, and D7. Typecheck passed, lint passed with one pre-existing i18next warning, and all 102 tests passed. |
