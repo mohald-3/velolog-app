@@ -4,10 +4,10 @@ import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import * as Sharing from 'expo-sharing';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Alert, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Button, Card, FormField, LoadingState, StatRow } from '../../../components';
+import { Button, Card, FormField, LoadingState, OverflowMenu, StatRow } from '../../../components';
 import { speedKmh } from '../../../domain/gps-filter';
 import { formatDistance, formatSpeed } from '../../../domain/units';
 import { readTrackPointsAsync } from '../../../services/rideRecordingTask';
@@ -81,7 +81,6 @@ export default function RideDetailScreen() {
   };
 
   const handleDelete = () => {
-    setMenuOpen(false);
     Alert.alert(t('rideDetail.deleteConfirmTitle'), t('rideDetail.deleteConfirmMessage'), [
       { text: t('common.cancel'), style: 'cancel' },
       {
@@ -114,16 +113,18 @@ export default function RideDetailScreen() {
         }}
       />
 
-      <Modal visible={menuOpen} transparent animationType="fade" onRequestClose={() => setMenuOpen(false)}>
-        <Pressable style={styles.menuOverlay} onPress={() => setMenuOpen(false)}>
-          <View style={[styles.menu, { top: insets.top + 48 }]}>
-            <Pressable style={styles.menuItem} onPress={handleDelete}>
-              <Ionicons name="trash-outline" size={18} color={colors.danger} />
-              <Text style={styles.menuItemText}>{t('rideDetail.deleteRide')}</Text>
-            </Pressable>
-          </View>
-        </Pressable>
-      </Modal>
+      <OverflowMenu
+        visible={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        items={[
+          {
+            label: t('rideDetail.deleteRide'),
+            icon: 'trash-outline',
+            destructive: true,
+            onPress: handleDelete,
+          },
+        ]}
+      />
 
       <View style={styles.mapContainer}>
         {!trackGeo ? (
@@ -216,34 +217,6 @@ function createStyles(colors: ThemeColors) {
     },
     headerButton: {
       marginRight: 16,
-    },
-    menuOverlay: {
-      flex: 1,
-    },
-    menu: {
-      position: 'absolute',
-      right: 12,
-      backgroundColor: colors.surface,
-      borderRadius: 10,
-      paddingVertical: 4,
-      minWidth: 160,
-      elevation: 4,
-      shadowColor: colors.shadow,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.2,
-      shadowRadius: 4,
-    },
-    menuItem: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingVertical: 12,
-      paddingHorizontal: 16,
-    },
-    menuItemText: {
-      marginLeft: 10,
-      fontSize: 15,
-      color: colors.danger,
-      fontWeight: '600',
     },
   });
 }

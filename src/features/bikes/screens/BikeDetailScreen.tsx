@@ -1,10 +1,11 @@
+import { Ionicons } from '@expo/vector-icons';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Button, Card, LoadingState } from '../../../components';
+import { Button, Card, LoadingState, OverflowMenu } from '../../../components';
 import type { Component, UnitSystem } from '../../../domain/types';
 import { computeDueInfo, worstDueStatus, type DueStatus } from '../../../domain/maintenance';
 import { computeOdometerM } from '../../../domain/odometer';
@@ -30,6 +31,7 @@ export default function BikeDetailScreen() {
   const { data: rides } = useRides(id);
   const { data: settings, isLoading: isLoadingSettings } = useSettings();
   const archiveBike = useArchiveBike();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   if (isLoading || isLoadingSettings || !settings) {
     return <LoadingState />;
@@ -59,7 +61,45 @@ export default function BikeDetailScreen() {
 
   return (
     <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 20 + insets.bottom }]}>
-      <Stack.Screen options={{ title: bike.name }} />
+      <Stack.Screen
+        options={{
+          title: bike.name,
+          headerRight: () => (
+            <View style={styles.headerActions}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={t('bikeDetail.edit')}
+                hitSlop={12}
+                style={styles.headerButton}
+                onPress={() => router.push(`/bikes/${bike.id}/edit`)}
+              >
+                <Ionicons name="create-outline" size={22} color={colors.primary} />
+              </Pressable>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={t('common.moreActions')}
+                hitSlop={12}
+                style={styles.headerButton}
+                onPress={() => setMenuOpen(true)}
+              >
+                <Ionicons name="ellipsis-vertical" size={22} color={colors.primary} />
+              </Pressable>
+            </View>
+          ),
+        }}
+      />
+      <OverflowMenu
+        visible={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        items={[
+          {
+            label: t('bikeDetail.archiveBike'),
+            icon: 'archive-outline',
+            destructive: true,
+            onPress: handleArchive,
+          },
+        ]}
+      />
       {bike.photoUri && <Image source={{ uri: bike.photoUri }} style={styles.photo} />}
 
       <Text style={styles.title}>{bike.name}</Text>
@@ -119,18 +159,6 @@ export default function BikeDetailScreen() {
         title={t('bikeDetail.statistics')}
         onPress={() => router.push(`/bikes/${bike.id}/stats`)}
         variant="secondary"
-        style={styles.stackedButton}
-      />
-      <Button
-        title={t('bikeDetail.edit')}
-        onPress={() => router.push(`/bikes/${bike.id}/edit`)}
-        variant="secondary"
-        style={styles.stackedButton}
-      />
-      <Button
-        title={t('bikeDetail.archiveBike')}
-        onPress={handleArchive}
-        variant="ghostDanger"
         style={styles.stackedButton}
       />
     </ScrollView>
@@ -313,6 +341,13 @@ function createStyles(colors: ThemeColors) {
     },
     stackedButton: {
       marginTop: 12,
+    },
+    headerActions: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    headerButton: {
+      marginRight: 16,
     },
   });
 }

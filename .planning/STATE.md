@@ -1,7 +1,7 @@
 # Feature: UX/UI Pass (post-v0.2 polish)
 
 > Created: 2026-07-13
-> Status: In progress — Phase 1 complete, ready to execute Phase 2
+> Status: In progress — Phase 2 complete, ready to execute Phase 3
 > Milestone: unplanned (post-v0.2 polish, before M6) — D-items tracked in issue #43
 
 ## Goal
@@ -17,7 +17,7 @@ actions, honest formatting, useful wear display) before starting M6.
       raw route path, e.g. `bikes/[id]/components/[compon…`)
 - [x] D7: form inputs seeded from `metersToDistanceUnit` are rounded for display (shared
       helper in `units.ts`), not `0.22011187862751427`
-- [ ] D3: BikeDetail page actions (Edit, Archive) move to header icons + "⋮" overflow dropdown
+- [x] D3: BikeDetail page actions (Edit, Archive) move to header icons + "⋮" overflow dropdown
       per the header-actions convention; overflow menu extracted as a shared primitive
 - [ ] D2: `expectedLifetimeKm` migrated to meters (`expectedLifetimeM`) for unit consistency,
       and wear vs. lifetime actually displayed (progress on component rows) — the field is
@@ -37,13 +37,13 @@ actions, honest formatting, useful wear display) before starting M6.
       state is seeded from `metersToDistanceUnit`
 
 ### Phase 2: Header actions + overflow menu — medium
-- [ ] Extract `OverflowMenu` into `src/components/` from RideDetailScreen's inline Modal menu
-- [ ] BikeDetail (D3): Edit → header icon, Archive → "⋮" overflow; drop the bottom
+- [x] Extract `OverflowMenu` into `src/components/` from RideDetailScreen's inline Modal menu
+- [x] BikeDetail (D3): Edit → header icon, Archive → "⋮" overflow; drop the bottom
       Edit/Archive buttons; Start Ride stays as the primary CTA, View Rides/Statistics stay
       as navigation
-- [ ] AddEditComponentScreen: move Replace/Retire behind "⋮" overflow (destructive actions),
+- [x] AddEditComponentScreen: move Replace/Retire behind "⋮" overflow (destructive actions),
       keep Rules/Log as navigation buttons
-- [ ] Live-verify menus on emulator (anchored dropdown, not a shortcut to the action)
+- [x] Live-verify menus on emulator (anchored dropdown, not a shortcut to the action)
 
 ### Phase 3: Component wear visibility — medium
 - [ ] D2: schema migration `expected_lifetime_km` → `expected_lifetime_m` (integer meters),
@@ -61,14 +61,14 @@ actions, honest formatting, useful wear display) before starting M6.
 ## Current Position
 
 ```
-Phase: 2 of 4
+Phase: 3 of 4
 Task:  0 of 3
 Status: Ready to execute
 ```
 
 ## Progress
 
-[█████░░░░░░░░░░░░░░░] 1/4 phases
+[██████████░░░░░░░░░░] 2/4 phases
 
 ## Decisions
 
@@ -85,3 +85,4 @@ Status: Ready to execute
 |------|---------|---------------|
 | 2026-07-13 | Planning | Created plan with 4 phases after the v0.2 quality pass (#44/#46/#47) merged. D5 found already fixed by the C1 conversion; D6 found to affect all 3 form screens, not just one. |
 | 2026-07-27 | Phase 1 | Completed D1, D4, D6, and D7. Typecheck passed, lint passed with one pre-existing i18next warning, and all 102 tests passed. |
+| 2026-07-27 | Phase 2 | Extracted the shared `OverflowMenu`; moved Bike Edit/Archive and component Replace/Retire into header actions. Typecheck, lint, and 102 tests passed; both menus were live-verified on the emulator. |

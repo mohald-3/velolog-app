@@ -1,10 +1,11 @@
+import { Ionicons } from '@expo/vector-icons';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Button, Chip, FormField, LoadingState } from '../../../components';
+import { Button, Chip, FormField, LoadingState, OverflowMenu } from '../../../components';
 import { componentTypeValues, type Component, type ComponentType, type UnitSystem } from '../../../domain/types';
 import type { ThemeColors } from '../../../theme/colors';
 import { useTheme } from '../../../theme/useTheme';
@@ -103,6 +104,7 @@ function ComponentForm({
       : ''
   );
   const [notes, setNotes] = useState(initialComponent?.notes ?? '');
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const handleSubmit = () => {
     if (!name.trim()) {
@@ -189,7 +191,43 @@ function ComponentForm({
   return (
     <ScrollView contentContainerStyle={[styles.content, { paddingBottom: 20 + insets.bottom }]}>
       <Stack.Screen
-        options={{ title: t(isEditing ? 'addEditComponent.editTitle' : 'addEditComponent.addTitle') }}
+        options={{
+          title: t(isEditing ? 'addEditComponent.editTitle' : 'addEditComponent.addTitle'),
+          headerRight: isEditing
+            ? () => (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={t('common.moreActions')}
+                  hitSlop={12}
+                  style={styles.headerButton}
+                  onPress={() => setMenuOpen(true)}
+                >
+                  <Ionicons name="ellipsis-vertical" size={22} color={colors.primary} />
+                </Pressable>
+              )
+            : undefined,
+        }}
+      />
+      <OverflowMenu
+        visible={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        items={[
+          {
+            label: replaceComponent.isPending
+              ? t('addEditComponent.replacing')
+              : t('addEditComponent.replaceComponent'),
+            icon: 'swap-horizontal-outline',
+            disabled: replaceComponent.isPending || retireComponent.isPending,
+            onPress: handleReplace,
+          },
+          {
+            label: t('addEditComponent.retireComponent'),
+            icon: 'archive-outline',
+            destructive: true,
+            disabled: replaceComponent.isPending || retireComponent.isPending,
+            onPress: handleRetire,
+          },
+        ]}
       />
       <Text style={styles.label}>{t('addEditComponent.typeLabel')}</Text>
       <View style={styles.chipRow}>
@@ -253,24 +291,6 @@ function ComponentForm({
         />
       )}
 
-      {isEditing && (
-        <Button
-          title={replaceComponent.isPending ? t('addEditComponent.replacing') : t('addEditComponent.replaceComponent')}
-          onPress={handleReplace}
-          disabled={replaceComponent.isPending}
-          variant="secondary"
-          style={styles.stackedButton}
-        />
-      )}
-
-      {isEditing && (
-        <Button
-          title={t('addEditComponent.retireComponent')}
-          onPress={handleRetire}
-          variant="ghostDanger"
-          style={styles.stackedButton}
-        />
-      )}
     </ScrollView>
   );
 }
@@ -306,6 +326,9 @@ function createStyles(colors: ThemeColors) {
     },
     stackedButton: {
       marginTop: 12,
+    },
+    headerButton: {
+      marginRight: 16,
     },
   });
 }

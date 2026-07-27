@@ -48,11 +48,11 @@ Done (all merged to main 2026-07-13 — PRs #44, #46, #47):
   translated labels, discard flow)
 
 Next (active as of 2026-07-27, resume here):
-1. **UX/UI pass — Phase 1 complete:** duration hours, effect-based locale sync, translated
-   Add/Edit form titles, and rounded distance form values are implemented and verified
-   (typecheck, lint with one pre-existing warning, 102 tests). Android development-client startup
-   and troubleshooting are documented in `docs/DEVELOPMENT.md`. Phase 2 is next: shared
-   `OverflowMenu` plus header actions for BikeDetail and AddEditComponentScreen.
+1. **UX/UI pass — Phases 1–2 complete:** quick formatting/title/locale fixes are done, and the
+   shared `OverflowMenu` now powers anchored header actions on Ride Detail, Bike Detail, and Edit
+   Component. Typecheck, lint with one pre-existing warning, 102 tests, and live emulator menu
+   checks pass. Android startup help is in `docs/DEVELOPMENT.md`. Phase 3 is next:
+   `expectedLifetimeKm` → meters plus visible component wear progress.
 2. Real-device field ride: cold-start #45 scenario + Spike 0's two open items (#5 kill test,
    #6 open-road accuracy)
 3. Then M6 (v0.3 candidates — pick 2–3)
@@ -63,4 +63,4 @@ M6 — v0.3 candidates (pick 2–3, not all): GPX export/import, distance charts
 weather snapshot on ride save (first optional network dependency), ride photos.
 
 ---
-_Last updated: 2026-07-27 (UX/UI pass Phase 1 complete; Phase 2 is next)._
+_Last updated: 2026-07-27 (UX/UI pass Phase 2 complete; Phase 3 is next)._
