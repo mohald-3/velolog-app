@@ -47,16 +47,15 @@ Done (all merged to main 2026-07-13 — PRs #44, #46, #47):
 - Live emulator verification of the whole arc passed (record → stop → save, forms, badges,
   translated labels, discard flow)
 
+Done:
+- **UX/UI pass:** ✅ 2026-07-27 — formatting/title/locale polish, shared header overflow menus,
+  metre-based component lifetime with visible wear progress, and a full light/dark emulator
+  sweep. See `.planning/archive/ux-ui-pass/SUMMARY.md`.
+
 Next (active as of 2026-07-27, resume here):
-1. **UX/UI pass — Phases 1–3 complete:** quick formatting/title/locale fixes are done, and the
-   shared `OverflowMenu` now powers anchored header actions on Ride Detail, Bike Detail, and Edit
-   Component. Component expected lifetime now uses metres throughout, with tested color-coded
-   wear percentage/progress on Bike Detail. Migration startup and the new UI pass live emulator
-   verification. Android startup help is in `docs/DEVELOPMENT.md`. Phase 4 is next: full
-   light/dark visual sweep, inconsistency fixes, and final verification.
-2. Real-device field ride: cold-start #45 scenario + Spike 0's two open items (#5 kill test,
+1. Real-device field ride: cold-start #45 scenario + Spike 0's two open items (#5 kill test,
    #6 open-road accuracy)
-3. Then M6 (v0.3 candidates — pick 2–3)
+2. Then M6 (v0.3 candidates — pick 2–3)
 
 ## After that
 
@@ -64,4 +63,4 @@ M6 — v0.3 candidates (pick 2–3, not all): GPX export/import, distance charts
 weather snapshot on ride save (first optional network dependency), ride photos.
 
 ---
-_Last updated: 2026-07-27 (UX/UI pass Phase 3 complete; Phase 4 is next)._
+_Last updated: 2026-07-27 (UX/UI pass complete; real-device field ride is next)._
