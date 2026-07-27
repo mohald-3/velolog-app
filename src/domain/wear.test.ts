@@ -1,4 +1,4 @@
-import { computeComponentWearM } from './wear';
+import { computeComponentWearM, computeWearPercent } from './wear';
 
 describe('computeComponentWearM', () => {
   it('returns the distance ridden since install', () => {
@@ -15,5 +15,23 @@ describe('computeComponentWearM', () => {
 
   it('handles a zero starting odometer', () => {
     expect(computeComponentWearM(2500, 0)).toBe(2500);
+  });
+});
+
+describe('computeWearPercent', () => {
+  it('returns the percentage of expected lifetime consumed', () => {
+    expect(computeWearPercent(2500, 10000)).toBe(25);
+  });
+
+  it('retains values above 100 for components past their expected lifetime', () => {
+    expect(computeWearPercent(12500, 10000)).toBe(125);
+  });
+
+  it('clamps negative wear to zero', () => {
+    expect(computeWearPercent(-500, 10000)).toBe(0);
+  });
+
+  it.each([0, -100])('returns zero for a non-positive lifetime (%s)', (lifetimeM) => {
+    expect(computeWearPercent(500, lifetimeM)).toBe(0);
   });
 });

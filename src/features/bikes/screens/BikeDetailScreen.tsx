@@ -10,7 +10,7 @@ import type { Component, UnitSystem } from '../../../domain/types';
 import { computeDueInfo, worstDueStatus, type DueStatus } from '../../../domain/maintenance';
 import { computeOdometerM } from '../../../domain/odometer';
 import { formatDistance } from '../../../domain/units';
-import { computeComponentWearM } from '../../../domain/wear';
+import { computeComponentWearM, computeWearPercent } from '../../../domain/wear';
 import type { ThemeColors } from '../../../theme/colors';
 import { useTheme } from '../../../theme/useTheme';
 import { useMaintenanceRules } from '../../maintenance/hooks/useMaintenanceRules';
@@ -199,7 +199,18 @@ function ComponentRow({
 }) {
   const { t } = useTranslation();
   const router = useRouter();
-  const wearLabel = formatDistance(computeComponentWearM(currentOdometerM, component.installedAtOdometerM), unitSystem, 0);
+  const wearM = computeComponentWearM(currentOdometerM, component.installedAtOdometerM);
+  const wearLabel = formatDistance(wearM, unitSystem, 0);
+  const wearPercent =
+    component.expectedLifetimeM != null && component.expectedLifetimeM > 0
+      ? computeWearPercent(wearM, component.expectedLifetimeM)
+      : null;
+  const wearColor =
+    wearPercent == null || wearPercent < 80
+      ? colors.primary
+      : wearPercent < 100
+        ? colors.warning
+        : colors.danger;
   const { data: rules } = useMaintenanceRules(component.id);
   const status = worstDueStatus((rules ?? []).map((rule) => computeDueInfo(rule, currentOdometerM).status));
   const statusColors: Record<DueStatus, string> = {
@@ -213,7 +224,7 @@ function ComponentRow({
       style={styles.componentRow}
       onPress={() => router.push(`/bikes/${bikeId}/components/${component.id}/edit`)}
     >
-      <View>
+      <View style={styles.componentInfo}>
         <View style={styles.componentNameRow}>
           <Text style={styles.componentName}>{component.name}</Text>
           {status && status !== 'OK' && (
@@ -222,7 +233,27 @@ function ComponentRow({
         </View>
         <Text style={styles.componentType}>{t(`componentType.${component.type}`)}</Text>
       </View>
-      <Text style={styles.componentWear}>{wearLabel}</Text>
+      <View style={styles.componentMetrics}>
+        <Text style={[styles.componentWear, { color: wearColor }]}>{wearLabel}</Text>
+        {wearPercent != null && (
+          <>
+            <Text style={[styles.componentLifetime, { color: wearColor }]}>
+              {t('bikeDetail.lifetimeUsed', { percent: Math.round(wearPercent) })}
+            </Text>
+            <View style={styles.progressTrack}>
+              <View
+                style={[
+                  styles.progressFill,
+                  {
+                    backgroundColor: wearColor,
+                    width: `${Math.min(100, wearPercent)}%`,
+                  },
+                ]}
+              />
+            </View>
+          </>
+        )}
+      </View>
     </Pressable>
   );
 }
@@ -315,6 +346,10 @@ function createStyles(colors: ThemeColors) {
       flexDirection: 'row',
       alignItems: 'center',
     },
+    componentInfo: {
+      flex: 1,
+      marginRight: 12,
+    },
     componentName: {
       fontSize: 15,
       fontWeight: '600',
@@ -334,7 +369,27 @@ function createStyles(colors: ThemeColors) {
     componentWear: {
       fontSize: 14,
       fontWeight: '600',
-      color: colors.primary,
+      textAlign: 'right',
+    },
+    componentMetrics: {
+      width: 130,
+      alignItems: 'stretch',
+    },
+    componentLifetime: {
+      marginTop: 2,
+      fontSize: 11,
+      textAlign: 'right',
+    },
+    progressTrack: {
+      height: 6,
+      marginTop: 5,
+      overflow: 'hidden',
+      borderRadius: 3,
+      backgroundColor: colors.surfaceBorder,
+    },
+    progressFill: {
+      height: '100%',
+      borderRadius: 3,
     },
     startRideButton: {
       marginTop: 24,

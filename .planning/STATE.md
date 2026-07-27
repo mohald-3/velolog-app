@@ -1,7 +1,7 @@
 # Feature: UX/UI Pass (post-v0.2 polish)
 
 > Created: 2026-07-13
-> Status: In progress — Phase 2 complete, ready to execute Phase 3
+> Status: In progress — Phase 3 complete, ready to execute Phase 4
 > Milestone: unplanned (post-v0.2 polish, before M6) — D-items tracked in issue #43
 
 ## Goal
@@ -19,7 +19,7 @@ actions, honest formatting, useful wear display) before starting M6.
       helper in `units.ts`), not `0.22011187862751427`
 - [x] D3: BikeDetail page actions (Edit, Archive) move to header icons + "⋮" overflow dropdown
       per the header-actions convention; overflow menu extracted as a shared primitive
-- [ ] D2: `expectedLifetimeKm` migrated to meters (`expectedLifetimeM`) for unit consistency,
+- [x] D2: `expectedLifetimeKm` migrated to meters (`expectedLifetimeM`) for unit consistency,
       and wear vs. lifetime actually displayed (progress on component rows) — the field is
       currently collected but never shown
 - [ ] Visual sweep: light + dark emulator pass over all screens, inconsistencies fixed
@@ -46,12 +46,12 @@ actions, honest formatting, useful wear display) before starting M6.
 - [x] Live-verify menus on emulator (anchored dropdown, not a shortcut to the action)
 
 ### Phase 3: Component wear visibility — medium
-- [ ] D2: schema migration `expected_lifetime_km` → `expected_lifetime_m` (integer meters),
+- [x] D2: schema migration `expected_lifetime_km` → `expected_lifetime_m` (integer meters),
       domain type + repositories + form conversion updated
-- [ ] `computeWearPercent` (or similar) in `src/domain/wear.ts` + unit tests
-- [ ] BikeDetail component rows show wear progress vs. expected lifetime when set
+- [x] `computeWearPercent` (or similar) in `src/domain/wear.ts` + unit tests
+- [x] BikeDetail component rows show wear progress vs. expected lifetime when set
       (bar or percentage; color shifts via existing OK/DueSoon/Overdue palette)
-- [ ] Live-verify with a component that has a lifetime set
+- [x] Live-verify with a component that has a lifetime set
 
 ### Phase 4: Visual sweep + live verification — small/medium
 - [ ] Emulator pass over every screen in light AND dark mode; screenshot record
@@ -61,14 +61,14 @@ actions, honest formatting, useful wear display) before starting M6.
 ## Current Position
 
 ```
-Phase: 3 of 4
+Phase: 4 of 4
 Task:  0 of 3
 Status: Ready to execute
 ```
 
 ## Progress
 
-[██████████░░░░░░░░░░] 2/4 phases
+[███████████████░░░░░] 3/4 phases
 
 ## Decisions
 
@@ -78,6 +78,7 @@ Status: Ready to execute
 | 2026-07-13 | D2 includes *showing* wear vs. lifetime, not just the unit migration | Migrating a field nobody sees would be churn; the progress display is what makes it worth it |
 | 2026-07-13 | OverflowMenu becomes a shared primitive in Phase 2 | Rule of three: RideDetail has one, BikeDetail (D3) and the component form need one |
 | 2026-07-27 | Editable converted distances use at most two decimal places | Keeps metric and imperial form values readable without padding insignificant zeros |
+| 2026-07-27 | Lifetime migration uses separate add-column and data-copy migrations | Expo SQLite crashed natively on a two-statement custom migration. Single-statement migrations run safely; the legacy physical column remains unused while all app code and migration metadata use metres. |
 
 ## Session Log
 
@@ -86,3 +87,4 @@ Status: Ready to execute
 | 2026-07-13 | Planning | Created plan with 4 phases after the v0.2 quality pass (#44/#46/#47) merged. D5 found already fixed by the C1 conversion; D6 found to affect all 3 form screens, not just one. |
 | 2026-07-27 | Phase 1 | Completed D1, D4, D6, and D7. Typecheck passed, lint passed with one pre-existing i18next warning, and all 102 tests passed. |
 | 2026-07-27 | Phase 2 | Extracted the shared `OverflowMenu`; moved Bike Edit/Archive and component Replace/Retire into header actions. Typecheck, lint, and 102 tests passed; both menus were live-verified on the emulator. |
+| 2026-07-27 | Phase 3 | Migrated component lifetime to metres using two safe migrations, added tested wear percentages, and displayed color-coded percentage/progress on component rows. Migration startup and a lifetime-bearing component were live-verified on the emulator. |

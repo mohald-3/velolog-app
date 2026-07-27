@@ -99,8 +99,8 @@ function ComponentForm({
     toDateInputValue(initialComponent?.installedDate ?? new Date())
   );
   const [expectedLifetimeDisplay, setExpectedLifetimeDisplay] = useState(
-    initialComponent?.expectedLifetimeKm != null
-      ? formatDistanceInput(initialComponent.expectedLifetimeKm * 1000, unitSystem)
+    initialComponent?.expectedLifetimeM != null
+      ? formatDistanceInput(initialComponent.expectedLifetimeM, unitSystem)
       : ''
   );
   const [notes, setNotes] = useState(initialComponent?.notes ?? '');
@@ -134,8 +134,8 @@ function ComponentForm({
       name: name.trim(),
       installedAtOdometerM: Math.round(distanceUnitToMeters(parsedOdometerDisplay, unitSystem)),
       installedDate: parsedDate,
-      expectedLifetimeKm:
-        parsedLifetimeDisplay != null ? distanceUnitToMeters(parsedLifetimeDisplay, unitSystem) / 1000 : null,
+      expectedLifetimeM:
+        parsedLifetimeDisplay != null ? Math.round(distanceUnitToMeters(parsedLifetimeDisplay, unitSystem)) : null,
       notes: notes.trim() || null,
     };
 

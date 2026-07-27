@@ -50,6 +50,20 @@
       "when": 1783871071050,
       "tag": "0006_add_theme_mode",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1785173534154,
+      "tag": "0007_component-lifetime-meters",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1785173782271,
+      "tag": "0008_migrate-component-lifetime-values",
+      "breakpoints": true
     }
   ]
 }

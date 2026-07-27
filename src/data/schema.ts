@@ -34,7 +34,7 @@ export const components = sqliteTable('components', {
   name: text('name').notNull(),
   installedAtOdometerM: integer('installed_at_odometer_m').notNull(),
   installedDate: integer('installed_date', { mode: 'timestamp_ms' }).notNull(),
-  expectedLifetimeKm: integer('expected_lifetime_km'),
+  expectedLifetimeM: integer('expected_lifetime_m'),
   notes: text('notes'),
   isRetired: integer('is_retired', { mode: 'boolean' }).notNull().default(false),
   createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),

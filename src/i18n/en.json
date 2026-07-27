@@ -53,8 +53,9 @@
     "viewRides": "View Rides",
     "statistics": "Statistics",
     "edit": "Edit",
-    "archiveBike": "Archive bike",
-    "archiveConfirmTitle": "Archive this bike?",
+      "archiveBike": "Archive bike",
+      "lifetimeUsed": "{{percent}}% of expected life",
+      "archiveConfirmTitle": "Archive this bike?",
     "archiveConfirmMessage": "{{name}} will be hidden from your active garage."
   },
   "addEditComponent": {

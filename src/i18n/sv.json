@@ -53,8 +53,9 @@
     "viewRides": "Visa turer",
     "statistics": "Statistik",
     "edit": "Redigera",
-    "archiveBike": "Arkivera cykel",
-    "archiveConfirmTitle": "Arkivera denna cykel?",
+      "archiveBike": "Arkivera cykel",
+      "lifetimeUsed": "{{percent}} % av förväntad livslängd",
+      "archiveConfirmTitle": "Arkivera denna cykel?",
     "archiveConfirmMessage": "{{name}} kommer att döljas från ditt aktiva garage."
   },
   "addEditComponent": {

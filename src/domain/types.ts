@@ -73,7 +73,7 @@ export interface Component {
   name: string;
   installedAtOdometerM: number;
   installedDate: Date;
-  expectedLifetimeKm: number | null;
+  expectedLifetimeM: number | null;
   notes: string | null;
   isRetired: boolean;
   createdAt: Date;
@@ -86,7 +86,7 @@ export interface NewComponent {
   name: string;
   installedAtOdometerM: number;
   installedDate: Date;
-  expectedLifetimeKm?: number | null;
+  expectedLifetimeM?: number | null;
   notes?: string | null;
 }
 
@@ -95,7 +95,7 @@ export interface ComponentUpdate {
   name?: string;
   installedAtOdometerM?: number;
   installedDate?: Date;
-  expectedLifetimeKm?: number | null;
+  expectedLifetimeM?: number | null;
   notes?: string | null;
   isRetired?: boolean;
 }
