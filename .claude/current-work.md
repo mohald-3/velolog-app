@@ -1,5 +1,8 @@
 # Project Context
 
+Repository overview: `README.md` documents the product, features, architecture, local setup,
+privacy model, and roadmap for developers and portfolio visitors.
+
 > Living summary — read at session start, update on every commit. Milestone detail lives in
 > `.planning/archive/<milestone>/SUMMARY.md`; keep this file to one line per completed milestone.
 
