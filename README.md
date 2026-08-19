@@ -2,7 +2,7 @@
 
 **An Android-first bike computer and maintenance tracker built with React Native, Expo, and SQLite.**
 
-> Strava tracks you. VeloLog tracks your bike.
+> VeloLog adds the story of your bike.
 
 ---
 
