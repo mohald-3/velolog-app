@@ -9,6 +9,7 @@ import {
   speedKmh,
 } from '../../../domain/gps-filter';
 import type { RawGpsPoint } from '../../../domain/gps-filter';
+import { computeElevationGainM } from '../../../domain/elevation';
 import { initialRecordingState, recordingReducer } from '../../../domain/recording';
 import {
   discardRideRecordingAsync,
@@ -54,6 +55,7 @@ export interface RideSummary {
   movingTimeMs: number;
   pausedTimeMs: number;
   trackUri: string;
+  elevationGainM: number | null;
 }
 
 function computeLiveStats(points: RawGpsPoint[]): LiveRideStats {
@@ -243,6 +245,7 @@ export function useRideRecorder(bikeId: string) {
         movingTimeMs: moving.movingTimeMs,
         pausedTimeMs: moving.pausedTimeMs,
         trackUri,
+        elevationGainM: computeElevationGainM(finalPoints),
       };
     } finally {
       stoppingRef.current = false;

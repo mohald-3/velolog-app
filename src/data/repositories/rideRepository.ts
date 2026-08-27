@@ -10,6 +10,7 @@ export interface RideRepository {
   getById(id: string): Promise<Ride | null>;
   create(input: NewRide): Promise<Ride>;
   update(id: string, changes: RideUpdate): Promise<Ride>;
+  updateElevationGain(id: string, elevationGainM: number | null): Promise<Ride>;
   softDelete(id: string): Promise<void>;
 }
 
@@ -58,6 +59,18 @@ export const rideRepository: RideRepository = {
     const [updated] = await db
       .update(rides)
       .set({ ...changes, updatedAt: new Date() })
+      .where(eq(rides.id, id))
+      .returning();
+    if (!updated) {
+      throw new Error(`Ride not found: ${id}`);
+    }
+    return updated;
+  },
+
+  async updateElevationGain(id, elevationGainM) {
+    const [updated] = await db
+      .update(rides)
+      .set({ elevationGainM, updatedAt: new Date() })
       .where(eq(rides.id, id))
       .returning();
     if (!updated) {

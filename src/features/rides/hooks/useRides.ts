@@ -5,6 +5,7 @@ import { rideRepository } from '../../../data/repositories/rideRepository';
 import { computeOdometerM } from '../../../domain/odometer';
 import type { NewRide, RideUpdate } from '../../../domain/types';
 import { checkMaintenanceNotifications } from '../../../services/notifications';
+import { computeTrackElevationGainAsync } from '../../../services/rideElevation';
 import { queryKeys } from '../../queryKeys';
 
 /** Notifies on any maintenance rule that crossed into a more urgent due-status as a result of
@@ -57,6 +58,20 @@ export function useUpdateRide() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id, changes }: { id: string; changes: RideUpdate }) => rideRepository.update(id, changes),
+    onSuccess: (updated) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.rides(updated.bikeId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.ride(updated.id) });
+    },
+  });
+}
+
+export function useRecomputeRideElevation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, trackUri }: { id: string; trackUri: string }) => {
+      const elevationGainM = await computeTrackElevationGainAsync(trackUri);
+      return rideRepository.updateElevationGain(id, elevationGainM);
+    },
     onSuccess: (updated) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.rides(updated.bikeId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.ride(updated.id) });

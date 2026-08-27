@@ -9,14 +9,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button, Card, FormField, LoadingState, OverflowMenu, StatRow } from '../../../components';
 import { speedKmh } from '../../../domain/gps-filter';
-import { formatDistance, formatSpeed } from '../../../domain/units';
+import { formatDistance, formatElevation, formatSpeed } from '../../../domain/units';
 import { readTrackPointsAsync } from '../../../services/rideRecordingTask';
 import i18n from '../../../i18n';
 import { useSettings } from '../../settings/hooks/useSettings';
 import { type ThemeColors } from '../../../theme/colors';
 import { useTheme } from '../../../theme/useTheme';
 import { formatDuration } from '../format';
-import { useDeleteRide, useRide, useUpdateRide } from '../hooks/useRides';
+import { useDeleteRide, useRecomputeRideElevation, useRide, useUpdateRide } from '../hooks/useRides';
 import { buildTrackGeo, type TrackGeo } from '../trackGeo';
 
 const MAP_STYLE_URL = 'https://tiles.openfreemap.org/styles/liberty';
@@ -28,6 +28,7 @@ export default function RideDetailScreen() {
   const { data: ride, isLoading } = useRide(rideId);
   const { data: settings, isLoading: isLoadingSettings } = useSettings();
   const updateRide = useUpdateRide();
+  const recomputeElevation = useRecomputeRideElevation();
   const deleteRide = useDeleteRide();
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
@@ -117,6 +118,19 @@ export default function RideDetailScreen() {
         visible={menuOpen}
         onClose={() => setMenuOpen(false)}
         items={[
+          ...(ride.elevationGainM == null
+            ? [
+                {
+                  label: recomputeElevation.isPending
+                    ? t('rideDetail.calculatingElevation')
+                    : t('rideDetail.calculateElevation'),
+                  icon: 'trending-up-outline' as const,
+                  disabled: recomputeElevation.isPending,
+                  onPress: () =>
+                    recomputeElevation.mutate({ id: ride.id, trackUri: ride.trackUri }),
+                },
+              ]
+            : []),
           {
             label: t('rideDetail.deleteRide'),
             icon: 'trash-outline',
@@ -158,6 +172,14 @@ export default function RideDetailScreen() {
         <StatRow label={t('rideDetail.avgSpeedLabel')} value={formatSpeed(avgSpeedKmh, unitSystem)} />
         <StatRow label={t('rideDetail.movingTimeLabel')} value={formatDuration(ride.movingTimeMs)} />
         <StatRow label={t('rideDetail.pausedTimeLabel')} value={formatDuration(ride.pausedTimeMs)} />
+        <StatRow
+          label={t('rideDetail.elevationGainLabel')}
+          value={
+            ride.elevationGainM == null
+              ? t('rideDetail.elevationUnavailable')
+              : formatElevation(ride.elevationGainM, unitSystem)
+          }
+        />
       </Card>
 
       <FormField

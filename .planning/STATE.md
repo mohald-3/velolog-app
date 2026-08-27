@@ -1,7 +1,7 @@
 # Feature: M6 — Ride Insights & Portability (v0.3)
 
 > Created: 2026-08-27
-> Status: In progress — Phase 2 ready
+> Status: In progress — Phase 3 ready
 > Milestone: M6 (v0.3)
 > GitHub milestone: [M6 - Ride Insights & Portability (v0.3)](https://github.com/mohald-3/velolog-app/milestone/7)
 > GitHub project: [VeloLog Project](https://github.com/users/mohald-3/projects/18/views/1)
@@ -136,7 +136,7 @@ Issue: [#53](https://github.com/mohald-3/velolog-app/issues/53)
 ## Current Position
 
 ```
-Phase: 2 of 6
+Phase: 3 of 6
 Task:  0 of 3
 Status: Ready to execute
 ```
@@ -175,3 +175,5 @@ Status: Ready to execute
 | 2026-08-27 | GitHub setup | Created milestone 7 and issues #48–#53; added them to project 18. |
 | 2026-08-27 | Phase 1 | Started issue #48 on `feat/48-m6-contracts-spikes-migration`. |
 | 2026-08-27 | Phase 1 complete | Contracts, migration, dependency spikes, and EAS Android SVG verification passed. |
+| 2026-08-27 | Phase 2 | Started issue #49 on `feat/49-elevation-pipeline`. |
+| 2026-08-27 | Phase 2 complete | Altitude capture, elevation persistence/recompute, and localized ride-detail states verified. |
