@@ -1,4 +1,5 @@
 import { parseGpx, serializeGpx } from './gpx';
+import { summarizeGpxImport } from './gpx-import';
 
 describe('serializeGpx', () => {
   const point = { ts: Date.UTC(2026, 7, 27, 6), lat: 59.1, lon: 18.2, accuracyM: 4 };
@@ -25,6 +26,22 @@ describe('serializeGpx', () => {
 });
 
 describe('parseGpx', () => {
+  it('round-trips a VeloLog export through parsing and summary derivation', () => {
+    const xml = serializeGpx({ name: 'Round trip', points: [
+      { ts: 1000, lat: 59, lon: 18, accuracyM: null, altitudeM: 10 },
+      { ts: 11_000, lat: 59.001, lon: 18.001, accuracyM: null, altitudeM: 15 },
+      { ts: 21_000, lat: 59.002, lon: 18.002, accuracyM: null, altitudeM: 20 },
+    ] });
+    const parsed = parseGpx(xml);
+    const summary = summarizeGpxImport(parsed);
+    expect(parsed.name).toBe('Round trip');
+    expect(summary.points).toHaveLength(3);
+    expect(summary.startedAt.getTime()).toBe(1000);
+    expect(summary.endedAt.getTime()).toBe(21_000);
+    expect(summary.distanceM).toBeGreaterThan(200);
+    expect(summary.elevationGainM).toBe(10);
+  });
+
   it('normalizes namespaced GPX 1.1 tracks and preserves segment boundaries', () => {
     const parsed = parseGpx(`<?xml version="1.0"?>
       <gpx xmlns="http://www.topografix.com/GPX/1/1" version="1.1"><trk><name> Tour </name>
