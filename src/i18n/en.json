@@ -132,6 +132,16 @@
     "bikeLabel": "Bike",
     "saveRide": "Save imported ride"
   },
+  "rideInsights": {
+    "headerTitle": "Distance Insights",
+    "viewInsights": "View distance insights",
+    "weekly": "Weekly",
+    "monthly": "Monthly",
+    "allBikes": "All bikes",
+    "rangeTotal": "Range total",
+    "emptyText": "No ride distance in this period.",
+    "accessibleSummary": "Distance by period"
+  },
   "rideDetail": {
     "distanceLabel": "Distance",
     "durationLabel": "Duration",

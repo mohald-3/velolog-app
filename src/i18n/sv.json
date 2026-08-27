@@ -132,6 +132,16 @@
     "bikeLabel": "Cykel",
     "saveRide": "Spara importerad tur"
   },
+  "rideInsights": {
+    "headerTitle": "Distansinsikter",
+    "viewInsights": "Visa distansinsikter",
+    "weekly": "Veckovis",
+    "monthly": "Månadsvis",
+    "allBikes": "Alla cyklar",
+    "rangeTotal": "Totalt för perioden",
+    "emptyText": "Ingen cyklad distans under perioden.",
+    "accessibleSummary": "Distans per period"
+  },
   "rideDetail": {
     "distanceLabel": "Distans",
     "durationLabel": "Varaktighet",

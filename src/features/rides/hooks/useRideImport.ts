@@ -31,6 +31,7 @@ export function useSaveGpxImport() {
     onSuccess: (created) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.rides(created.bikeId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.journey });
+      queryClient.invalidateQueries({ queryKey: queryKeys.rideTrends });
       void notifyOnOdometerChange(created.bikeId, created.distanceM);
     },
   });

@@ -66,9 +66,13 @@ Done:
   ride-detail presentation, including safe handling of legacy tracks.
 - **M6 Phase 3 (#50):** deterministic offline GPX 1.1 export through Android sharing; manual
   interoperability coverage is deferred to M6 issue #58.
+- **M6 Phase 4 (#51):** tolerant offline GPX import with review, missing-time fallback, safe
+  canonical persistence, and normal ride side effects; Android coverage is deferred to #60.
+- **M6 Phase 5 (#52):** local weekly/monthly distance insights with gap filling, bike filters,
+  unit-aware SVG visualization, and textual accessibility; device coverage is deferred to #61.
 
 Next:
-1. Review M6 Phase 4 (#51), verify the Android picker/review/save flow, and prepare its PR.
+1. Execute M6 Phase 6 (#53): integration checks, deferred device verification, and release readiness.
 
 ## After that
 
@@ -76,4 +80,4 @@ M6 — v0.3 planned scope: GPX export/import, distance charts, and elevation gai
 and ride photos remain deferred candidates.
 
 ---
-_Last updated: 2026-08-28 (M6 Phase 4 implementation complete; review/device verification next)._
+_Last updated: 2026-08-28 (M6 Phase 5 complete; Phase 6 is next)._

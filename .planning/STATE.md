@@ -116,14 +116,16 @@ Manual verification: [#58](https://github.com/mohald-3/velolog-app/issues/58) (b
 
 Detail: `.planning/M6-PHASE-4.md`
 Issue: [#51](https://github.com/mohald-3/velolog-app/issues/51)
+Manual verification: [#60](https://github.com/mohald-3/velolog-app/issues/60) (before M6 release)
 
 ### Phase 5: Distance insights — medium
 
-- [ ] Implement/test week/month aggregation and gap filling.
-- [ ] Add repository/hook support and an accessible filtered insights screen.
+- [x] Implement/test week/month aggregation and gap filling.
+- [x] Add repository/hook support and an accessible filtered insights screen.
 
 Detail: `.planning/M6-PHASE-5.md`
 Issue: [#52](https://github.com/mohald-3/velolog-app/issues/52)
+Manual verification: [#61](https://github.com/mohald-3/velolog-app/issues/61) (before M6 release)
 
 ### Phase 6: Integration and release readiness — medium
 
@@ -137,14 +139,14 @@ Issue: [#53](https://github.com/mohald-3/velolog-app/issues/53)
 ## Current Position
 
 ```
-Phase: 4 of 6
-Task:  3 of 3
-Status: Implementation complete; device verification pending
+Phase: 6 of 6
+Task:  0 of 3
+Status: Phase 5 complete; Phase 6 ready
 ```
 
 ## Progress
 
-[██████████░░░░░░░░░░] 3/6 phases
+[█████████████████░░░] 5/6 phases
 
 ## Risks and Mitigations
 
@@ -181,3 +183,6 @@ Status: Implementation complete; device verification pending
 | 2026-08-28 | Phase 3 implementation | GPX serialization, offline cache export, native sharing hook, and translated ride action completed; Android interoperability check remains. |
 | 2026-08-28 | Phase 3 complete | Deferred Android share-sheet and independent-app verification to M6 issue #58; Phase 4 is ready. |
 | 2026-08-28 | Phase 4 implementation | Tolerant GPX import, missing-time fallback, review UI, canonical persistence, and normal ride side effects completed; device verification remains. |
+| 2026-08-28 | Phase 4 complete | Deferred Android picker and persistence verification to M6 issue #60. |
+| 2026-08-28 | Phase 5 implementation | Local weekly/monthly aggregation, accessible SVG chart, filters, and Journey entry point completed; visual/device verification remains. |
+| 2026-08-28 | Phase 5 complete | Deferred Android visual and accessibility verification to M6 issue #61; Phase 6 is ready. |
