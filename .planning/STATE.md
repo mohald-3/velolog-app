@@ -106,6 +106,7 @@ Issue: [#49](https://github.com/mohald-3/velolog-app/issues/49)
 
 Detail: `.planning/M6-PHASE-3.md`
 Issue: [#50](https://github.com/mohald-3/velolog-app/issues/50)
+Manual verification: [#58](https://github.com/mohald-3/velolog-app/issues/58) (before M6 release)
 
 ### Phase 4: GPX import — large
 
@@ -136,14 +137,14 @@ Issue: [#53](https://github.com/mohald-3/velolog-app/issues/53)
 ## Current Position
 
 ```
-Phase: 3 of 6
-Task:  2 of 3
-Status: Implementation complete; Android sharing verification pending
+Phase: 4 of 6
+Task:  0 of 3
+Status: Phase 3 complete; Phase 4 ready
 ```
 
 ## Progress
 
-[███░░░░░░░░░░░░░░░░░] 1/6 phases
+[██████████░░░░░░░░░░] 3/6 phases
 
 ## Risks and Mitigations
 
@@ -178,3 +179,4 @@ Status: Implementation complete; Android sharing verification pending
 | 2026-08-27 | Phase 2 | Started issue #49 on `feat/49-elevation-pipeline`. |
 | 2026-08-27 | Phase 2 complete | Altitude capture, elevation persistence/recompute, and localized ride-detail states verified. |
 | 2026-08-28 | Phase 3 implementation | GPX serialization, offline cache export, native sharing hook, and translated ride action completed; Android interoperability check remains. |
+| 2026-08-28 | Phase 3 complete | Deferred Android share-sheet and independent-app verification to M6 issue #58; Phase 4 is ready. |

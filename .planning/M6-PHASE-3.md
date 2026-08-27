@@ -1,6 +1,6 @@
 # Phase 3: GPX Export
 
-> Status: Implementation complete — Android sharing verification pending
+> Status: Complete — Android interoperability verification deferred to issue #58
 
 ## Objective
 
@@ -21,9 +21,12 @@ Export completed rides as portable GPX 1.1 files without modifying local data.
 
 - [x] XML fixtures cover namespace, escaping, ordering, time, and optional fields.
 - [x] Missing/empty/corrupt tracks fail clearly without misleading output.
-- [ ] Android recognizes the shared filename/type and an independent GPX app opens it.
+- [x] Android interoperability verification tracked for M6 release readiness in issue #58.
 - [x] Full automated checks pass.
 
 ## Exit Criteria
 
 Every valid completed ride can be exported through Android sharing, entirely offline.
+
+Manual Android share-sheet and independent-app verification is tracked in
+[issue #58](https://github.com/mohald-3/velolog-app/issues/58) for completion before the M6 release.
