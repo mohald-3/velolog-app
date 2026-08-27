@@ -116,6 +116,22 @@
     "emptyText": "Inga turer inspelade än.",
     "avgSuffix": "snitt"
   },
+  "rideImport": {
+    "headerTitle": "Importera GPX",
+    "importGpx": "Importera GPX",
+    "chooseFile": "Välj GPX-fil",
+    "chooseAnother": "Välj en annan fil",
+    "invalidTitle": "Kunde inte importera GPX",
+    "invalidMessage": "Kontrollera att filen är ett giltigt GPX-spår under 10 MiB och försök igen.",
+    "missingTimeTitle": "Turtid behövs",
+    "dateLabel": "Startdatum",
+    "durationMinutesLabel": "Varaktighet (minuter)",
+    "applyTime": "Använd turtid",
+    "invalidTimeTitle": "Ogiltig turtid",
+    "invalidTimeMessage": "Ange ett giltigt datum och en varaktighet större än noll.",
+    "bikeLabel": "Cykel",
+    "saveRide": "Spara importerad tur"
+  },
   "rideDetail": {
     "distanceLabel": "Distans",
     "durationLabel": "Varaktighet",

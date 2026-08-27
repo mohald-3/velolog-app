@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -41,7 +42,14 @@ export default function RideListScreen() {
 
   return (
     <View style={styles.container}>
-      <Stack.Screen options={{ title: t('rideList.headerTitle') }} />
+      <Stack.Screen options={{
+        title: t('rideList.headerTitle'),
+        headerRight: () => (
+          <Pressable accessibilityLabel={t('rideImport.importGpx')} hitSlop={12} onPress={() => router.push(`/bikes/${bikeId}/rides/import`)}>
+            <Ionicons name="add" size={24} color={colors.primary} />
+          </Pressable>
+        ),
+      }} />
       {groups.length === 0 ? (
         <View style={styles.center}>
           <Text style={styles.emptyText}>{t('rideList.emptyText')}</Text>

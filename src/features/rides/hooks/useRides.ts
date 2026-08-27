@@ -11,7 +11,7 @@ import { queryKeys } from '../../queryKeys';
 /** Notifies on any maintenance rule that crossed into a more urgent due-status as a result of
  * this bike's odometer changing by `distanceDeltaM` (positive for a new ride, negative for a
  * deleted one). */
-async function notifyOnOdometerChange(bikeId: string, distanceDeltaM: number): Promise<void> {
+export async function notifyOnOdometerChange(bikeId: string, distanceDeltaM: number): Promise<void> {
   const [bike, rides] = await Promise.all([
     bikeRepository.getById(bikeId),
     rideRepository.list({ bikeId }),

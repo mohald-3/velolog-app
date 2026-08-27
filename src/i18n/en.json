@@ -116,6 +116,22 @@
     "emptyText": "No rides recorded yet.",
     "avgSuffix": "avg"
   },
+  "rideImport": {
+    "headerTitle": "Import GPX",
+    "importGpx": "Import GPX",
+    "chooseFile": "Choose GPX file",
+    "chooseAnother": "Choose another file",
+    "invalidTitle": "Couldn't import GPX",
+    "invalidMessage": "Check that the file is a valid GPX track under 10 MiB and try again.",
+    "missingTimeTitle": "Ride time needed",
+    "dateLabel": "Start date",
+    "durationMinutesLabel": "Duration (minutes)",
+    "applyTime": "Apply ride time",
+    "invalidTimeTitle": "Invalid ride time",
+    "invalidTimeMessage": "Enter a valid date and a duration greater than zero.",
+    "bikeLabel": "Bike",
+    "saveRide": "Save imported ride"
+  },
   "rideDetail": {
     "distanceLabel": "Distance",
     "durationLabel": "Duration",

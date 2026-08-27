@@ -110,9 +110,9 @@ Manual verification: [#58](https://github.com/mohald-3/velolog-app/issues/58) (b
 
 ### Phase 4: GPX import — large
 
-- [ ] Implement/test tolerant parsing and normalized summaries.
-- [ ] Add document selection, review/preview, validation, and safe save.
-- [ ] Reuse ride invalidation, odometer, and maintenance behavior.
+- [x] Implement/test tolerant parsing and normalized summaries.
+- [x] Add document selection, review/preview, validation, and safe save.
+- [x] Reuse ride invalidation, odometer, and maintenance behavior.
 
 Detail: `.planning/M6-PHASE-4.md`
 Issue: [#51](https://github.com/mohald-3/velolog-app/issues/51)
@@ -138,8 +138,8 @@ Issue: [#53](https://github.com/mohald-3/velolog-app/issues/53)
 
 ```
 Phase: 4 of 6
-Task:  0 of 3
-Status: Phase 3 complete; Phase 4 ready
+Task:  3 of 3
+Status: Implementation complete; device verification pending
 ```
 
 ## Progress
@@ -180,3 +180,4 @@ Status: Phase 3 complete; Phase 4 ready
 | 2026-08-27 | Phase 2 complete | Altitude capture, elevation persistence/recompute, and localized ride-detail states verified. |
 | 2026-08-28 | Phase 3 implementation | GPX serialization, offline cache export, native sharing hook, and translated ride action completed; Android interoperability check remains. |
 | 2026-08-28 | Phase 3 complete | Deferred Android share-sheet and independent-app verification to M6 issue #58; Phase 4 is ready. |
+| 2026-08-28 | Phase 4 implementation | Tolerant GPX import, missing-time fallback, review UI, canonical persistence, and normal ride side effects completed; device verification remains. |
