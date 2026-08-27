@@ -13,7 +13,7 @@ VeloLog v0.2 is feature-complete as an MVP: a local-first bike garage (bikes + c
 derived wear), background GPS ride recording with a filtered pipeline and crash recovery, ride
 history with MapLibre track maps and bike statistics, mileage-driven maintenance rules with local
 notifications, and a polish layer — km/mi units, Swedish/English i18n, dark mode, journey stats,
-onboarding, real app icon + splash. 127 unit tests across domain and ride formatting modules.
+onboarding, real app icon + splash. 129 unit tests across domain, service, and ride formatting modules.
 Android-first; iOS deferred.
 
 ## Milestone ledger
@@ -55,9 +55,14 @@ Done:
 - **Real-device GPS validation:** ✅ 2026-08-04 — cold-start #45 scenario, deliberate
   force-kill behavior (#5), and open-road accuracy comparison (#6) all passed.
 
+Done:
+- **M6 Phase 1 (#48):** shared contracts, elevation algorithm, migration, and native dependency
+  validation.
+- **M6 Phase 2 (#49):** altitude capture, elevation-gain persistence/recomputation, and localized
+  ride-detail presentation, including safe handling of legacy tracks.
+
 Next:
-1. Execute M6 Phase 2 (#49): altitude capture, elevation-gain persistence/recomputation, and ride
-   detail presentation. Phase 1 (#48) is complete on `feat/48-m6-contracts-spikes-migration`.
+1. Execute M6 Phase 3 (#50): offline GPX export and Android sharing.
 
 ## After that
 
@@ -65,4 +70,4 @@ M6 — v0.3 planned scope: GPX export/import, distance charts, and elevation gai
 and ride photos remain deferred candidates.
 
 ---
-_Last updated: 2026-08-27 (M6 detailed plan created; Phase 1 is next)._
+_Last updated: 2026-08-27 (M6 Phase 2 complete; Phase 3 is next)._

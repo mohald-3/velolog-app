@@ -55,6 +55,7 @@ export default function RecordRideScreen() {
         movingTimeMs: summary.movingTimeMs,
         pausedTimeMs: summary.pausedTimeMs,
         trackUri: summary.trackUri,
+        elevationGainM: summary.elevationGainM,
       });
     } catch {
       // The track file and active-ride pointer are still on disk — nothing is lost yet.

@@ -5,6 +5,7 @@ import * as Location from 'expo-location';
 import * as TaskManager from 'expo-task-manager';
 
 import type { RawGpsPoint } from '../domain/gps-filter';
+import { locationToRawGpsPoint } from './locationPoint';
 
 export const RIDE_RECORDING_TASK_NAME = 'velolog-ride-recording-task';
 
@@ -42,12 +43,7 @@ TaskManager.defineTask(RIDE_RECORDING_TASK_NAME, async ({ data, error }) => {
   // Each batch ends with a trailing newline so appends never need to know whether the file is
   // empty — the reader splits on '\n' and drops blank lines.
   const lines = locations
-    .map((loc): RawGpsPoint => ({
-      ts: loc.timestamp,
-      lat: loc.coords.latitude,
-      lon: loc.coords.longitude,
-      accuracyM: loc.coords.accuracy,
-    }))
+    .map((loc): RawGpsPoint => locationToRawGpsPoint(loc))
     .map((point) => `${JSON.stringify(point)}\n`)
     .join('');
 
