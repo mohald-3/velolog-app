@@ -56,6 +56,10 @@ Done:
   force-kill behavior (#5), and open-road accuracy comparison (#6) all passed.
 
 Done:
+- **Project documentation:** application-flow and developer-guide Word documents added, with
+  the archived GPS spike and project roadmap reconciled to completed real-device validation.
+
+Done:
 - **M6 Phase 1 (#48):** shared contracts, elevation algorithm, migration, and native dependency
   validation.
 - **M6 Phase 2 (#49):** altitude capture, elevation-gain persistence/recomputation, and localized
@@ -70,4 +74,4 @@ M6 — v0.3 planned scope: GPX export/import, distance charts, and elevation gai
 and ride photos remain deferred candidates.
 
 ---
-_Last updated: 2026-08-27 (M6 Phase 2 complete; Phase 3 is next)._
+_Last updated: 2026-08-28 (project documentation added; M6 Phase 3 is next)._

@@ -141,8 +141,8 @@ Rules (these go verbatim into CLAUDE.md):
 - [x] Background tracking with Android foreground service notification
 - [x] Record a real 30+ min outdoor ride; log raw points
 - [x] Measure battery drain per hour — ~2.3%/hour, well under target
-- [ ] Test app-killed / screen-off / phone-locked scenarios — screen-lock survival looks good; deliberate force-kill test still open (needs a real outdoor ride)
-- [ ] Evaluate accuracy: urban vs open road — one route measured so far; contrasting open-road route still open
+- [x] Test app-killed / screen-off / phone-locked scenarios — validated on a real device, including a deliberate force-kill test
+- [x] Evaluate accuracy: urban vs open road — residential and open-road routes compared successfully
 - [x] Pick maps library by rendering the recorded track — MapLibre
 
 **Exit criteria:** a real ride recorded start-to-finish with screen off, < ~8–10% battery/hour, track visually sane on a map. If this fails, the whole plan is re-evaluated — that is the point of doing it first.
@@ -279,6 +279,6 @@ Deliberately unplanned in detail now. The mobile repository interfaces from M1 a
 
 1. ~~Open decisions~~ Both resolved: MapLibre + OpenFreeMap (fallback react-native-maps), soft-delete for rides. Platform: **Android-first**; iOS deferred until after M3.
 2. ~~Create repo + GitHub Project board, import milestones as issues~~ Done.
-3. ~~Start Spike 0~~ Done — background GPS proven (~2.3%/hour battery). Two real-device items remain open: deliberate force-kill test, and an open-road (vs. residential) accuracy comparison — both need an actual outdoor ride.
+3. ~~Start Spike 0~~ Done — background GPS proven (~2.3%/hour battery); deliberate force-kill behavior and open-road accuracy were subsequently validated on a real device.
 4. ~~M1–M5 (v0.1a through v0.2)~~ All shipped — see `.planning/archive/*/SUMMARY.md` per milestone.
-5. **Next up:** M6 (v0.3 candidates — pick 2–3: GPX export/import, distance charts, elevation gain, weather snapshot, ride photos), and/or closing out Spike 0's two open real-device items.
+5. **In progress:** M6 delivers elevation gain, GPX export/import, and distance charts; weather snapshots and ride photos are deferred.
