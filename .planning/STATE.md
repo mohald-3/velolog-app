@@ -1,7 +1,7 @@
 # Feature: M6 — Ride Insights & Portability (v0.3)
 
 > Created: 2026-08-27
-> Status: In progress — Phase 3 ready
+> Status: In progress — Phase 6 device verification remaining
 > Milestone: M6 (v0.3)
 > GitHub milestone: [M6 - Ride Insights & Portability (v0.3)](https://github.com/mohald-3/velolog-app/milestone/7)
 > GitHub project: [VeloLog Project](https://github.com/users/mohald-3/projects/18/views/1)
@@ -15,13 +15,13 @@ reliable elevation gain, exchange rides as GPX files, and visualize distance tre
 
 ### Included
 
-- [ ] Record altitude for new GPS points and derive smoothed elevation gain for completed rides.
-- [ ] Backfill elevation gain on demand for existing tracks that already contain usable altitude.
-- [ ] Export an individual completed ride as standards-compatible GPX 1.1 through the native share sheet.
-- [ ] Import GPX tracks from local device storage into a review flow, then save them as completed rides assigned to a selected bike.
-- [ ] Show weekly and monthly distance charts, with all-bikes and per-bike filtering.
-- [ ] Keep all calculations and file interchange usable without connectivity.
-- [ ] Translate all new UI in English and Swedish and support metric/imperial units plus light/dark themes.
+- [x] Record altitude for new GPS points and derive smoothed elevation gain for completed rides.
+- [x] Backfill elevation gain on demand for existing tracks that already contain usable altitude.
+- [x] Export an individual completed ride as standards-compatible GPX 1.1 through the native share sheet.
+- [x] Import GPX tracks from local device storage into a review flow, then save them as completed rides assigned to a selected bike.
+- [x] Show weekly and monthly distance charts, with all-bikes and per-bike filtering.
+- [x] Keep all calculations and file interchange usable without connectivity.
+- [x] Translate all new UI in English and Swedish and support metric/imperial units plus light/dark themes.
 
 ### Deferred
 
@@ -92,9 +92,9 @@ Issue: [#48](https://github.com/mohald-3/velolog-app/issues/48)
 
 ### Phase 2: Elevation pipeline — medium
 
-- [ ] Capture altitude and implement/test filtered elevation gain.
-- [ ] Persist gain for recorded/imported rides and recompute eligible legacy rides.
-- [ ] Show localized elevation on ride detail.
+- [x] Capture altitude and implement/test filtered elevation gain.
+- [x] Persist gain for recorded/imported rides and recompute eligible legacy rides.
+- [x] Show localized elevation on ride detail.
 
 Detail: `.planning/M6-PHASE-2.md`
 Issue: [#49](https://github.com/mohald-3/velolog-app/issues/49)
@@ -140,8 +140,8 @@ Issue: [#53](https://github.com/mohald-3/velolog-app/issues/53)
 
 ```
 Phase: 6 of 6
-Task:  0 of 3
-Status: Phase 5 complete; Phase 6 ready
+Task:  1 of 3
+Status: Automated audit complete; awaiting #58, #60, and #61
 ```
 
 ## Progress
@@ -186,3 +186,4 @@ Status: Phase 5 complete; Phase 6 ready
 | 2026-08-28 | Phase 4 complete | Deferred Android picker and persistence verification to M6 issue #60. |
 | 2026-08-28 | Phase 5 implementation | Local weekly/monthly aggregation, accessible SVG chart, filters, and Journey entry point completed; visual/device verification remains. |
 | 2026-08-28 | Phase 5 complete | Deferred Android visual and accessibility verification to M6 issue #61; Phase 6 is ready. |
+| 2026-08-28 | Phase 6 automated audit | Typecheck/lint/149 tests, translation parity, architecture, secrets, migrations, and M6 diff passed; device tickets #58/#60/#61 remain before archival. |

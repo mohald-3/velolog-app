@@ -72,7 +72,8 @@ Done:
   unit-aware SVG visualization, and textual accessibility; device coverage is deferred to #61.
 
 Next:
-1. Execute M6 Phase 6 (#53): integration checks, deferred device verification, and release readiness.
+1. Complete M6 device verification issues #58, #60, and #61, then archive the milestone under
+   `.planning/archive/m6-ride-insights-portability/SUMMARY.md` and close #53.
 
 ## After that
 
@@ -80,4 +81,4 @@ M6 — v0.3 planned scope: GPX export/import, distance charts, and elevation gai
 and ride photos remain deferred candidates.
 
 ---
-_Last updated: 2026-08-28 (M6 Phase 5 complete; Phase 6 is next)._
+_Last updated: 2026-08-28 (Phase 6 automated audit passed; device verification #58/#60/#61 remains)._
