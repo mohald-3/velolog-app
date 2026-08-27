@@ -66,7 +66,7 @@ Done:
   ride-detail presentation, including safe handling of legacy tracks.
 
 Next:
-1. Execute M6 Phase 3 (#50): offline GPX export and Android sharing.
+1. Verify M6 Phase 3 (#50) Android sharing and independent GPX-app interoperability, then merge.
 
 ## After that
 
@@ -74,4 +74,4 @@ M6 — v0.3 planned scope: GPX export/import, distance charts, and elevation gai
 and ride photos remain deferred candidates.
 
 ---
-_Last updated: 2026-08-28 (project documentation added; M6 Phase 3 is next)._
+_Last updated: 2026-08-28 (M6 Phase 3 implementation complete; Android sharing verification pending)._

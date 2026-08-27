@@ -126,6 +126,8 @@
     "elevationUnavailable": "Inte tillgängligt",
     "calculateElevation": "Beräkna höjdmeter",
     "calculatingElevation": "Beräknar höjdmeter...",
+    "exportGpx": "Exportera GPX",
+    "exportingGpx": "Exporterar GPX...",
     "notesLabel": "Anteckningar",
     "notesPlaceholder": "Lägg till en anteckning om denna tur...",
     "saveNotes": "Spara anteckningar",
