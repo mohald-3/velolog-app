@@ -126,6 +126,8 @@
     "elevationUnavailable": "Unavailable",
     "calculateElevation": "Calculate elevation",
     "calculatingElevation": "Calculating elevation...",
+    "exportGpx": "Export GPX",
+    "exportingGpx": "Exporting GPX...",
     "notesLabel": "Notes",
     "notesPlaceholder": "Add a note about this ride...",
     "saveNotes": "Save notes",

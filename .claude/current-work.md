@@ -64,9 +64,11 @@ Done:
   validation.
 - **M6 Phase 2 (#49):** altitude capture, elevation-gain persistence/recomputation, and localized
   ride-detail presentation, including safe handling of legacy tracks.
+- **M6 Phase 3 (#50):** deterministic offline GPX 1.1 export through Android sharing; manual
+  interoperability coverage is deferred to M6 issue #58.
 
 Next:
-1. Execute M6 Phase 3 (#50): offline GPX export and Android sharing.
+1. Execute M6 Phase 4 (#51): GPX import, review, and safe persistence.
 
 ## After that
 
@@ -74,4 +76,4 @@ M6 — v0.3 planned scope: GPX export/import, distance charts, and elevation gai
 and ride photos remain deferred candidates.
 
 ---
-_Last updated: 2026-08-28 (project documentation added; M6 Phase 3 is next)._
+_Last updated: 2026-08-28 (M6 Phase 3 complete; Phase 4 is next)._

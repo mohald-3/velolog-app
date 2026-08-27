@@ -1,7 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Camera, GeoJSONSource, Layer, Map } from '@maplibre/maplibre-react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import * as Sharing from 'expo-sharing';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -16,6 +15,7 @@ import { useSettings } from '../../settings/hooks/useSettings';
 import { type ThemeColors } from '../../../theme/colors';
 import { useTheme } from '../../../theme/useTheme';
 import { formatDuration } from '../format';
+import { useRideExport } from '../hooks/useRideExport';
 import { useDeleteRide, useRecomputeRideElevation, useRide, useUpdateRide } from '../hooks/useRides';
 import { buildTrackGeo, type TrackGeo } from '../trackGeo';
 
@@ -30,6 +30,7 @@ export default function RideDetailScreen() {
   const updateRide = useUpdateRide();
   const recomputeElevation = useRecomputeRideElevation();
   const deleteRide = useDeleteRide();
+  const exportRide = useRideExport();
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
@@ -68,15 +69,6 @@ export default function RideDetailScreen() {
   const durationMs = ride.endedAt.getTime() - ride.startedAt.getTime();
   const avgSpeedKmh = speedKmh(ride.distanceM, ride.movingTimeMs);
 
-  const handleShare = async () => {
-    const available = await Sharing.isAvailableAsync();
-    if (!available) {
-      Alert.alert(t('rideDetail.sharingUnavailableTitle'), t('rideDetail.sharingUnavailableMessage', { uri: ride.trackUri }));
-      return;
-    }
-    await Sharing.shareAsync(ride.trackUri);
-  };
-
   const handleSaveNotes = () => {
     updateRide.mutate({ id: ride.id, changes: { notes: notes.trim() || null } });
   };
@@ -103,9 +95,6 @@ export default function RideDetailScreen() {
           title: ride.startedAt.toLocaleDateString(i18n.language),
           headerRight: () => (
             <View style={styles.headerActions}>
-              <Pressable onPress={handleShare} hitSlop={12} style={styles.headerButton}>
-                <Ionicons name="share-outline" size={22} color={colors.primary} />
-              </Pressable>
               <Pressable onPress={() => setMenuOpen(true)} hitSlop={12} style={styles.headerButton}>
                 <Ionicons name="ellipsis-vertical" size={22} color={colors.primary} />
               </Pressable>
@@ -118,6 +107,12 @@ export default function RideDetailScreen() {
         visible={menuOpen}
         onClose={() => setMenuOpen(false)}
         items={[
+          {
+            label: exportRide.isPending ? t('rideDetail.exportingGpx') : t('rideDetail.exportGpx'),
+            icon: 'share-outline',
+            disabled: exportRide.isPending,
+            onPress: () => exportRide.mutate({ ride, dialogTitle: t('rideDetail.exportGpx') }),
+          },
           ...(ride.elevationGainM == null
             ? [
                 {
