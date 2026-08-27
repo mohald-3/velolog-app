@@ -34,6 +34,8 @@ function makeRide(overrides: Partial<Ride> = {}): Ride {
     movingTimeMs: 0,
     pausedTimeMs: 0,
     trackUri: 'file://track',
+    elevationGainM: null,
+    source: 'recorded',
     notes: null,
     deletedAt: null,
     createdAt: new Date(),

@@ -19,18 +19,12 @@ onboarding, real app icon + splash. 91 unit tests over `src/domain`. Android-fir
 
 | Milestone | Status | Detail |
 |---|---|---|
-| M0 — Spike 0: GPS de-risk | 5/7 done (2026-07-10) | `.planning/archive/spike-0-gps-derisk/STATE.md` |
+| M0 — Spike 0: GPS de-risk | ✅ 2026-08-04 | `.planning/archive/spike-0-gps-derisk/STATE.md` |
 | M1 — Bike Garage (v0.1a) | ✅ 2026-07-10 · PR — | `.planning/archive/m1-bike-garage/SUMMARY.md` |
 | M2 — Ride Recording (v0.1b) | ✅ 2026-07-11 · PR #39 | `.planning/archive/m2-ride-recording/SUMMARY.md` |
 | M3 — Ride History & Stats (v0.1c) | ✅ 2026-07-11 · PR #40 | `.planning/archive/m3-ride-history/SUMMARY.md` |
 | M4 — Maintenance (v0.2) | ✅ 2026-07-12 · PR #41 | `.planning/archive/m4-maintenance/SUMMARY.md` |
 | M5 — Polish & "Your Journey" (v0.2) | ✅ 2026-07-12 · PR #42 | `.planning/archive/m5-polish-your-journey/SUMMARY.md` |
-
-## Open items (real device required)
-
-- **#5** Deliberate force-kill-from-recent-apps test on a real device (emulator force-stop was
-  tested in M2, but not real-device OEM battery-killer behavior)
-- **#6** Open-road GPS accuracy route to compare against the residential route already recorded
 
 ## Current focus — code quality & architecture pass (before M6)
 
@@ -56,15 +50,18 @@ Done:
   metre-based component lifetime with visible wear progress, and a full light/dark emulator
   sweep. See `.planning/archive/ux-ui-pass/SUMMARY.md`.
 
-Next (active as of 2026-07-27, resume here):
-1. Real-device field ride: cold-start #45 scenario + Spike 0's two open items (#5 kill test,
-   #6 open-road accuracy)
-2. Then M6 (v0.3 candidates — pick 2–3)
+Done:
+- **Real-device GPS validation:** ✅ 2026-08-04 — cold-start #45 scenario, deliberate
+  force-kill behavior (#5), and open-road accuracy comparison (#6) all passed.
+
+Next:
+1. Execute M6 Phase 2 (#49): altitude capture, elevation-gain persistence/recomputation, and ride
+   detail presentation. Phase 1 (#48) is complete on `feat/48-m6-contracts-spikes-migration`.
 
 ## After that
 
-M6 — v0.3 candidates (pick 2–3, not all): GPX export/import, distance charts, elevation gain,
-weather snapshot on ride save (first optional network dependency), ride photos.
+M6 — v0.3 planned scope: GPX export/import, distance charts, and elevation gain. Weather snapshot
+and ride photos remain deferred candidates.
 
 ---
-_Last updated: 2026-07-27 (UX/UI pass complete; real-device field ride is next)._
+_Last updated: 2026-08-27 (M6 detailed plan created; Phase 1 is next)._
