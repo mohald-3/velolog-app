@@ -1,6 +1,6 @@
 # Phase 4: GPX Import
 
-> Status: Implementation complete — device verification pending
+> Status: Complete — Android flow verification deferred to issue #60
 
 ## Objective
 
@@ -32,3 +32,6 @@ Import third-party GPX through a safe review/save flow that produces a normal Ve
 ## Exit Criteria
 
 A representative external GPX saves offline and behaves exactly like a recorded completed ride.
+
+Android picker and end-to-end persistence verification is tracked in
+[issue #60](https://github.com/mohald-3/velolog-app/issues/60) for completion before the M6 release.

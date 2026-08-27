@@ -1,10 +1,10 @@
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Card, LoadingState, StatRow } from '../../../components';
+import { Button, Card, LoadingState, StatRow } from '../../../components';
 import type { MilestoneProgress } from '../../../domain/journey';
 import type { UnitSystem } from '../../../domain/types';
 import { distanceUnitLabel, formatDistance, metersToDistanceUnit } from '../../../domain/units';
@@ -15,6 +15,7 @@ import { useJourneyStats } from '../hooks/useJourneyStats';
 
 export default function JourneyStatsScreen() {
   const { t } = useTranslation();
+  const router = useRouter();
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
   const styles = useMemo(() => createStyles(colors), [colors]);
@@ -32,6 +33,7 @@ export default function JourneyStatsScreen() {
       <View style={styles.center}>
         <Stack.Screen options={{ title: t('journey.headerTitle') }} />
         <Text style={styles.emptyText}>{t('journey.emptyText')}</Text>
+        <Button title={t('rideInsights.viewInsights')} onPress={() => router.push('/rides/insights')} style={styles.insightsButton} />
       </View>
     );
   }
@@ -55,6 +57,7 @@ export default function JourneyStatsScreen() {
         <StatRow label={t('journey.co2Saved')} value={`${stats.co2SavedKg.toFixed(1)} kg`} />
         <StatRow label={t('journey.calories')} value={`${stats.caloriesBurned.toFixed(0)} kcal`} />
       </Card>
+      <Button title={t('rideInsights.viewInsights')} onPress={() => router.push('/rides/insights')} variant="secondary" style={styles.insightsButton} />
 
       <Text style={styles.sectionTitle}>{t('journey.milestonesTitle')}</Text>
       <Card>
@@ -104,6 +107,7 @@ function createStyles(colors: ThemeColors) {
       color: colors.textMuted,
       textAlign: 'center',
     },
+    insightsButton: { marginTop: 20 },
     content: {
       padding: 20,
       backgroundColor: colors.background,

@@ -12,6 +12,7 @@ export const queryKeys = {
 
   rides: (bikeId: string) => ['bikes', bikeId, 'rides'] as const,
   ride: (id: string) => ['rides', id] as const,
+  rideTrends: ['ride-trends'] as const,
 
   maintenanceRules: (componentId: string) => ['components', componentId, 'maintenanceRules'] as const,
   maintenanceRule: (id: string) => ['maintenanceRules', id] as const,

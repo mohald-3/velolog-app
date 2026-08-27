@@ -49,6 +49,7 @@ export function useCreateRide() {
     onSuccess: (created) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.rides(created.bikeId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.journey });
+      queryClient.invalidateQueries({ queryKey: queryKeys.rideTrends });
       void notifyOnOdometerChange(created.bikeId, created.distanceM);
     },
   });
@@ -61,6 +62,7 @@ export function useUpdateRide() {
     onSuccess: (updated) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.rides(updated.bikeId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.ride(updated.id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.rideTrends });
     },
   });
 }
@@ -87,6 +89,7 @@ export function useDeleteRide() {
       queryClient.invalidateQueries({ queryKey: queryKeys.rides(bikeId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.ride(id) });
       queryClient.invalidateQueries({ queryKey: queryKeys.journey });
+      queryClient.invalidateQueries({ queryKey: queryKeys.rideTrends });
       void notifyOnOdometerChange(bikeId, -distanceM);
     },
   });
