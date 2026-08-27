@@ -1,7 +1,7 @@
 # Feature: Spike 0 — GPS de-risk
 
 > Created: 2026-07-08
-> Status: Phase 1 complete — Phase 2 requires a real Android device
+> Status: Complete — real-device validation passed
 > Milestone: M0 - Spike 0: GPS de-risk
 
 ## Goal
@@ -18,11 +18,11 @@ product code.
 - [x] Record a real 30+ min outdoor ride; log raw points — 2026-07-10 walk, see analysis below
 - [x] Measure battery drain per hour — ~1.5% over 39.4 min = ~2.3%/hour, well under the
       <8-10%/hour target
-- [ ] Test app-killed / screen-off / phone-locked scenarios — screen-lock survival looks good
-      from the walk (see below), but no deliberate force-kill-from-recent-apps test yet
-- [ ] Evaluate accuracy: urban vs open road — have one route so far (residential/office area,
-      accuracy 3-22m, median 4.6m); still need an open-road comparison
-- [ ] Pick maps library by rendering the recorded track
+- [x] Test app-killed / screen-off / phone-locked scenarios — deliberate force-kill behavior
+      subsequently validated on a real device
+- [x] Evaluate accuracy: urban vs open road — open-road comparison subsequently completed
+      successfully
+- [x] Pick maps library by rendering the recorded track — MapLibre selected
 
 (Issues #1-#7 in the `mohald-3/velolog-app` repo, milestone M0.)
 
@@ -42,7 +42,7 @@ product code.
       (id `7d4f16da-d37f-475c-a30f-40a5f9b2c541`)
 - [x] typecheck / lint / test all green locally
 
-### Phase 2: Real-device field test — medium (NEXT, manual)
+### Phase 2: Real-device field test — medium (DONE)
 - [x] `eas build --profile development --platform android` — build `9462890c-5fe9-43c5-8cb6-e5c445df7be9`,
       finished 2026-07-08, installed successfully (had to enable "install unknown apps" for the
       browser used to download it). **Superseded — see below.**
@@ -59,11 +59,9 @@ product code.
 - [x] Grant foreground location, then background ("Allow all the time")
 - [x] Start tracking, walk 30+ min outdoors (39.4 min, 2026-07-10) — first successful field test
 - [x] Note battery % before/after, compute %/hour — ~1.5%/39.4min = ~2.3%/hour
-- [ ] Mid-ride: explicitly force-kill the app from recent apps, confirm the task keeps logging /
-      log survives on reopen (walk showed screen-lock survival via two 30-50s stopped-still gaps,
-      but that's not the same as a deliberate kill test)
-- [ ] Try one urban ride and one open-road ride, compare accuracy visually — have one data point
-      so far, need a contrasting route
+- [x] Mid-ride: explicitly force-kill the app from recent apps, confirm the task keeps logging /
+      log survives on reopen — passed on a real device
+- [x] Try one urban ride and one open-road ride, compare accuracy visually — comparison passed
 - [x] Pulled `spike-track.ndjson` via "Share log file" and analyzed it (see Session Log below) —
       still want to actually render it on a map, not just stats, before picking MapLibre vs
       react-native-maps
@@ -81,14 +79,14 @@ movement, more frequent fixes) draws somewhat more.
 ## Current Position
 
 ```
-Phase: 2 of 2
-Task:  5 of 6 (build, permissions, walk, and battery done; kill-test + urban/open-road remain)
-Status: 4/7 GitHub issues closed — narrower gaps remain (manual)
+Phase: 2 of 2 complete
+Task:  6 of 6
+Status: 7/7 Spike 0 requirements complete
 ```
 
 ## Progress
 
-[█████████████████░░░] ~5/6 of Phase 2 complete
+[████████████████████] Phase 2 complete
 
 ## Decisions
 
@@ -111,3 +109,4 @@ Status: 4/7 GitHub issues closed — narrower gaps remain (manual)
 | 2026-07-10 | Crash + fix | Preview build crashed on Start tracking. Connected phone via `adb`, captured `logcat`, root-caused to a missing `RECEIVE_BOOT_COMPLETED` permission (expo-location schedules a persisted JobScheduler job). Fixed in `app.json`, rebuilt `preview` — build `134fc1d4-131c-4c47-bb30-2444ecc5b726`. Waiting on user to reinstall and retry. |
 | 2026-07-10 | First successful field test | User walked 39.4 min with the fixed preview build. 485 points logged, no crashes, no out-of-order timestamps, no implausible jumps, accuracy median 4.6m, speed consistent with walking pace. Two 30-50s gaps matched the user stopping (not a tracking failure) — consistent with the 5m distanceInterval throttle. Battery %, an explicit force-kill test, and an open-road (vs. this residential/office route) comparison are still open before Spike 0's exit criteria are fully met. |
 | 2026-07-10 | Battery result + board update | User reported ~1.5% battery used over the 39.4 min walk (~2.3%/hour, well under the <8-10%/hour target). Closed GitHub issues #1, #2, #3, #4 with evidence in the comments; added progress comments to #5, #6, #7 (still open — kill-test, open-road route, map render). Milestone M0 now 4/7 closed. |
+| 2026-08-04 | Final real-device validation | User confirmed the cold-start scenario, deliberate force-kill behavior, and open-road accuracy comparison all work perfectly. Spike 0 is complete. |
