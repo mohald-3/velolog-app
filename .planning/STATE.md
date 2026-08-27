@@ -75,7 +75,7 @@ reliable elevation gain, exchange rides as GPX files, and visualize distance tre
 | 2026-08-27 | Use local calendar chart buckets | Trends match user-visible dates, including DST boundaries. |
 | 2026-08-27 | Select a chart dependency after a Phase 1 spike | Expo 57 compatibility and accessibility must be verified first. |
 | 2026-08-27 | Use `fast-xml-parser` 5.11 for GPX XML | Pure JavaScript, typed, namespace removal and forced-array paths passed GPX 1.0/1.1 Jest smoke tests. |
-| 2026-08-27 | Use Expo-compatible `react-native-svg` 15.15.4 for a small owned bar chart | Avoids a full chart framework and its Skia/Reanimated coupling; native rendering still requires a rebuilt dev client check. |
+| 2026-08-27 | Use Expo-compatible `react-native-svg` 15.15.4 for a small owned bar chart | Avoids a full chart framework and its Skia/Reanimated coupling; verified in a rebuilt EAS Android dev client. |
 | 2026-08-27 | Limit GPX import to 10 MiB and 100,000 points | Ample for long rides while bounding whole-document XML parsing memory. |
 
 ## Roadmap

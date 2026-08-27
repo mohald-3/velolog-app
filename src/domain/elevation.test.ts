@@ -53,6 +53,29 @@ describe('computeElevationGainM', () => {
     expect(computeElevationGainM(points)).toBeNull();
   });
 
+  it('does not count the altitude difference across a long sample gap', () => {
+    const points = track([100, 102, 104, 200, 202, 204]);
+    points[3].ts = 600_000;
+    points[4].ts = 601_000;
+    points[5].ts = 602_000;
+    expect(computeElevationGainM(points)).toBe(8);
+  });
+
+  it('returns null when long gaps leave no run with three usable samples', () => {
+    const points = track([100, 104, 200, 204]);
+    points[2].ts = 600_000;
+    points[3].ts = 601_000;
+    expect(computeElevationGainM(points)).toBeNull();
+  });
+
+  it('does not smooth across out-of-order samples', () => {
+    const points = track([100, 104, 108, 200, 204, 208]);
+    points[3].ts = 500;
+    points[4].ts = 1_500;
+    points[5].ts = 2_500;
+    expect(computeElevationGainM(points)).toBe(16);
+  });
+
   it('allows thresholds to be tuned explicitly', () => {
     expect(
       computeElevationGainM(track([100, 101, 102, 103]), { minElevationChangeM: 1 })

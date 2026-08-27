@@ -13,7 +13,8 @@ VeloLog v0.2 is feature-complete as an MVP: a local-first bike garage (bikes + c
 derived wear), background GPS ride recording with a filtered pipeline and crash recovery, ride
 history with MapLibre track maps and bike statistics, mileage-driven maintenance rules with local
 notifications, and a polish layer — km/mi units, Swedish/English i18n, dark mode, journey stats,
-onboarding, real app icon + splash. 91 unit tests over `src/domain`. Android-first; iOS deferred.
+onboarding, real app icon + splash. 127 unit tests across domain and ride formatting modules.
+Android-first; iOS deferred.
 
 ## Milestone ledger
 
