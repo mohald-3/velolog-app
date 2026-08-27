@@ -38,6 +38,14 @@ export function formatDistance(m: number, unitSystem: UnitSystem, fractionDigits
 }
 
 const KM_PER_MILE = 1.609344;
+const FEET_PER_METER = 3.28084;
+
+/** Formats vertical distance in metres or feet. Elevation is intentionally not shown in km/mi. */
+export function formatElevation(m: number, unitSystem: UnitSystem, fractionDigits = 0): string {
+  const value = unitSystem === 'imperial' ? m * FEET_PER_METER : m;
+  const unit = unitSystem === 'imperial' ? 'ft' : 'm';
+  return `${value.toFixed(fractionDigits)} ${unit}`;
+}
 
 /** Converts a km/h speed value to the given unit system's speed unit (km/h or mph). */
 export function convertSpeed(kmh: number, unitSystem: UnitSystem): number {

@@ -157,6 +157,9 @@ export interface NewMaintenanceRecord {
   notes?: string | null;
 }
 
+export const rideSourceValues = ['recorded', 'gpx'] as const;
+export type RideSource = (typeof rideSourceValues)[number];
+
 /** A ride is only persisted once completed — the in-progress track lives on disk during
  * recording (see tasks/locationTask.ts) and becomes a Ride row on save. Append-only after
  * that: everything but `bikeId` and `notes` is fixed, and the GPS track itself is never
@@ -171,6 +174,10 @@ export interface Ride {
   pausedTimeMs: number;
   /** file URI of the recorded NDJSON track log for this ride */
   trackUri: string;
+  /** Track-derived summary; null means altitude data was unavailable or insufficient. */
+  elevationGainM: number | null;
+  /** How this immutable completed track entered VeloLog. */
+  source: RideSource;
   notes: string | null;
   deletedAt: Date | null;
   createdAt: Date;
@@ -185,6 +192,8 @@ export interface NewRide {
   movingTimeMs: number;
   pausedTimeMs: number;
   trackUri: string;
+  elevationGainM?: number | null;
+  source?: RideSource;
   notes?: string | null;
 }
 

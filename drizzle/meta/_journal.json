@@ -64,6 +64,13 @@
       "when": 1785173782271,
       "tag": "0008_migrate-component-lifetime-values",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1787795110852,
+      "tag": "0009_material_snowbird",
+      "breakpoints": true
     }
   ]
 }

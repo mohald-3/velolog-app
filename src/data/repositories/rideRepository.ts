@@ -44,6 +44,8 @@ export const rideRepository: RideRepository = {
         movingTimeMs: input.movingTimeMs,
         pausedTimeMs: input.pausedTimeMs,
         trackUri: input.trackUri,
+        elevationGainM: input.elevationGainM ?? null,
+        source: input.source ?? 'recorded',
         notes: input.notes ?? null,
         createdAt: now,
         updatedAt: now,

@@ -14,6 +14,8 @@ function makeRide(startedAt: Date, overrides: Partial<Ride> = {}): Ride {
     movingTimeMs: 60_000,
     pausedTimeMs: 0,
     trackUri: `file:///rides/ride-${seq}.ndjson`,
+    elevationGainM: null,
+    source: 'recorded',
     notes: null,
     deletedAt: null,
     createdAt: startedAt,

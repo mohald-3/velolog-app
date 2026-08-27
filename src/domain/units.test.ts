@@ -4,6 +4,7 @@ import {
   distanceUnitToMeters,
   formatDistance,
   formatDistanceInput,
+  formatElevation,
   formatSpeed,
   metersToDistanceUnit,
   metersToKm,
@@ -87,6 +88,20 @@ describe('convertSpeed', () => {
 
   it('converts km/h to mph for imperial', () => {
     expect(convertSpeed(1.609344, 'imperial')).toBeCloseTo(1, 5);
+  });
+});
+
+describe('formatElevation', () => {
+  it('formats metric elevation in metres', () => {
+    expect(formatElevation(123.6, 'metric')).toBe('124 m');
+  });
+
+  it('formats imperial elevation in feet', () => {
+    expect(formatElevation(100, 'imperial')).toBe('328 ft');
+  });
+
+  it('respects a custom fraction digit count', () => {
+    expect(formatElevation(10, 'imperial', 1)).toBe('32.8 ft');
   });
 });
 

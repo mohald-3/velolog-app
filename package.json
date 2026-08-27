@@ -24,12 +24,14 @@
     "expo-status-bar": "~57.0.0",
     "expo-system-ui": "~57.0.0",
     "expo-task-manager": "~57.0.2",
+    "fast-xml-parser": "^5.11.0",
     "i18next": "^26.3.6",
     "react": "19.2.3",
     "react-i18next": "^17.0.9",
     "react-native": "0.86.0",
     "react-native-safe-area-context": "~5.7.0",
-    "react-native-screens": "4.25.2"
+    "react-native-screens": "4.25.2",
+    "react-native-svg": "15.15.4"
   },
   "devDependencies": {
     "@react-native/jest-preset": "^0.86.0",

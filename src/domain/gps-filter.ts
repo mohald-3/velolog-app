@@ -10,6 +10,10 @@ export interface RawGpsPoint {
   lon: number;
   /** device-reported horizontal accuracy in meters; null when unknown */
   accuracyM: number | null;
+  /** meters above sea level; optional so pre-M6 NDJSON tracks remain valid */
+  altitudeM?: number | null;
+  /** device-reported vertical accuracy in meters; optional for legacy/imported points */
+  verticalAccuracyM?: number | null;
 }
 
 export const EARTH_RADIUS_M = 6_371_000;

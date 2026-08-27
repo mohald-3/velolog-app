@@ -1,6 +1,6 @@
 import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core';
 
-import { componentTypeValues } from '../domain/types';
+import { componentTypeValues, rideSourceValues } from '../domain/types';
 
 export const bikes = sqliteTable('bikes', {
   id: text('id').primaryKey(),
@@ -81,6 +81,8 @@ export const rides = sqliteTable('rides', {
   movingTimeMs: integer('moving_time_ms').notNull(),
   pausedTimeMs: integer('paused_time_ms').notNull(),
   trackUri: text('track_uri').notNull(),
+  elevationGainM: real('elevation_gain_m'),
+  source: text('source', { enum: rideSourceValues }).notNull().default('recorded'),
   notes: text('notes'),
   deletedAt: integer('deleted_at', { mode: 'timestamp_ms' }),
   createdAt: integer('created_at', { mode: 'timestamp_ms' }).notNull(),
