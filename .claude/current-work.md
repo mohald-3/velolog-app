@@ -68,7 +68,7 @@ Done:
   interoperability coverage is deferred to M6 issue #58.
 
 Next:
-1. Execute M6 Phase 4 (#51): GPX import, review, and safe persistence.
+1. Review M6 Phase 4 (#51), verify the Android picker/review/save flow, and prepare its PR.
 
 ## After that
 
@@ -76,4 +76,4 @@ M6 — v0.3 planned scope: GPX export/import, distance charts, and elevation gai
 and ride photos remain deferred candidates.
 
 ---
-_Last updated: 2026-08-28 (M6 Phase 3 complete; Phase 4 is next)._
+_Last updated: 2026-08-28 (M6 Phase 4 implementation complete; review/device verification next)._
